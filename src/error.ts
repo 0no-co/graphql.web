@@ -17,7 +17,7 @@ export class GraphQLError extends Error {
     positions?: Maybe<ReadonlyArray<number>>,
     path?: Maybe<ReadonlyArray<string | number>>,
     originalError?: Maybe<Error>,
-    extensions?: Maybe<Extensions>,
+    extensions?: Maybe<Extensions>
   ) {
     super(message);
 

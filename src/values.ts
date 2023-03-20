@@ -4,7 +4,7 @@ import { Maybe } from './types';
 
 export function valueFromASTUntyped(
   node: ValueNode,
-  variables?: Maybe<Record<string, any>>,
+  variables?: Maybe<Record<string, any>>
 ): unknown {
   switch (node.kind) {
     case Kind.NULL:
@@ -19,8 +19,7 @@ export function valueFromASTUntyped(
       return node.value;
     case Kind.LIST: {
       const values: unknown[] = [];
-      for (const value of node.values)
-        values.push(valueFromASTUntyped(value, variables));
+      for (const value of node.values) values.push(valueFromASTUntyped(value, variables));
       return values;
     }
     case Kind.OBJECT: {
@@ -37,17 +36,13 @@ export function valueFromASTUntyped(
 export function valueFromTypeNode(
   node: ValueNode,
   type: TypeNode,
-  variables?: Maybe<Record<string, any>>,
+  variables?: Maybe<Record<string, any>>
 ): unknown {
   if (node.kind === Kind.VARIABLE) {
     const variableName = node.name.value;
-    return variables
-      ? valueFromTypeNode(variables[variableName], type, variables)
-      : undefined;
+    return variables ? valueFromTypeNode(variables[variableName], type, variables) : undefined;
   } else if (type.kind === Kind.NON_NULL_TYPE) {
-    return node.kind !== Kind.NULL
-      ? valueFromTypeNode(node, type, variables)
-      : undefined
+    return node.kind !== Kind.NULL ? valueFromTypeNode(node, type, variables) : undefined;
   } else if (node.kind === Kind.NULL) {
     return null;
   } else if (type.kind === Kind.LIST_TYPE) {

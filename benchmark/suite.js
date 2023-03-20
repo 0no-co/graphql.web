@@ -6,7 +6,7 @@ const kitchenSink = fs.readFileSync('./kitchen_sink.graphql', { encoding: 'utf8'
 const document = graphql.parse(kitchenSink, { noLocation: true });
 
 suite('parse kitchen sink query', () => {
-  benchmark('0no-co/graphql.web', () => {
+  benchmark('0no-co/graphql.web', () => {
     graphqlWeb.parse(kitchenSink);
   });
 
@@ -16,7 +16,7 @@ suite('parse kitchen sink query', () => {
 });
 
 suite('print kitchen sink query', () => {
-  benchmark('0no-co/graphql.web', () => {
+  benchmark('0no-co/graphql.web', () => {
     graphqlWeb.print(document);
   });
 
