@@ -2,9 +2,9 @@ import { Maybe, Extensions, Source } from './types';
 import { ASTNode } from './ast';
 
 export class GraphQLError extends Error {
-  readonly locations: undefined;
+  readonly locations: ReadonlyArray<any> | undefined;
   readonly path: ReadonlyArray<string | number> | undefined;
-  readonly nodes: ReadonlyArray<ASTNode> | undefined;
+  readonly nodes: ReadonlyArray<any> | undefined;
   readonly source: Source | undefined;
   readonly positions: ReadonlyArray<number> | undefined;
   readonly originalError: Error | undefined;
@@ -41,11 +41,15 @@ export class GraphQLError extends Error {
     this.extensions = extensions || {};
   }
 
-  toJSON() {
+  toJSON(): any {
     return { ...this };
   }
 
   toString() {
     return this.message;
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'GraphQLError';
   }
 }
