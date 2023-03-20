@@ -47,11 +47,22 @@ export function blockString(string: string) {
   return out;
 }
 
-const ignoredRe = /(?:[\s,]*|#[^\n\r]*)*/y;
+// Note: This is equivalent to: /(?:[\s,]*|#[^\n\r]*)*/y
 function ignored() {
-  ignoredRe.lastIndex = idx;
-  ignoredRe.test(input);
-  idx = ignoredRe.lastIndex;
+  for (
+    let char = input.charCodeAt(idx++) | 0;
+    char === 9 /*'\t'*/ ||
+    char === 10 /*'\n'*/ ||
+    char === 13 /*'\r'*/ ||
+    char === 32 /*' '*/ ||
+    char === 35 /*'#'*/ ||
+    char === 44 /*','*/ ||
+    char === 65279 /*'\ufeff'*/;
+    char = input.charCodeAt(idx++) | 0
+  ) {
+    if (char === 35 /*'#'*/) while ((char = input.charCodeAt(idx++)) !== 10 && char !== 13);
+  }
+  idx--;
 }
 
 const nameRe = /[_\w][_\d\w]*/y;
@@ -221,7 +232,6 @@ function directives(constant: boolean): ast.DirectiveNode[] {
 }
 
 function field(): ast.FieldNode | undefined {
-  ignored();
   let _name = name();
   if (_name) {
     ignored();
@@ -296,7 +306,6 @@ function typeCondition(): ast.NamedTypeNode | undefined {
 const fragmentSpreadRe = /\.\.\./y;
 
 function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode | undefined {
-  ignored();
   if (advance(fragmentSpreadRe)) {
     ignored();
     const _idx = idx;

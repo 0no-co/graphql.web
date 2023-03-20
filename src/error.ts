@@ -38,7 +38,7 @@ export class GraphQLError extends Error {
       }
     }
 
-    this.extensions = extensions || {};
+    this.extensions = _extensions || {};
   }
 
   toJSON(): any {
