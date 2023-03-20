@@ -31,7 +31,7 @@ spec-compliant or compatible with GraphQL.js’ implementation.
 > project](https://github.com/0no-co/graphql-web-lite) is maintained to be
 > a full shim/alias for the `graphql` package.
 
-### API
+### API
 
 Currently, only a select few exports are provided — namely, the ones listed here
 are used in `@urql/core`, and we expect them to be common in all client-side
