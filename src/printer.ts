@@ -1,4 +1,3 @@
-import { Kind } from './kind';
 import { ASTNode } from './ast';
 
 export function printString(string: string) {
@@ -17,7 +16,7 @@ const MAX_LINE_LENGTH = 80;
 export function print(node: ASTNode): string {
   let out: string;
   switch (node.kind) {
-    case Kind.OPERATION_DEFINITION:
+    case 'OperationDefinition':
       if (
         node.operation === 'query' &&
         !node.name &&
@@ -35,13 +34,13 @@ export function print(node: ASTNode): string {
       if (hasItems(node.directives)) out += ' ' + node.directives.map(print).join(' ');
       return out + ' ' + print(node.selectionSet);
 
-    case Kind.VARIABLE_DEFINITION:
+    case 'VariableDefinition':
       out = print(node.variable) + ': ' + print(node.type);
       if (node.defaultValue) out += ' = ' + print(node.defaultValue);
       if (hasItems(node.directives)) out += ' ' + node.directives.map(print).join(' ');
       return out;
 
-    case Kind.FIELD:
+    case 'Field':
       out = (node.alias ? print(node.alias) + ': ' : '') + node.name.value;
       if (hasItems(node.arguments)) {
         const args = node.arguments.map(print);
@@ -54,71 +53,74 @@ export function print(node: ASTNode): string {
       if (hasItems(node.directives)) out += ' ' + node.directives.map(print).join(' ');
       return node.selectionSet ? out + ' ' + print(node.selectionSet) : out;
 
-    case Kind.STRING:
+    case 'StringValue':
       return node.block ? printBlockString(node.value) : printString(node.value);
 
-    case Kind.BOOLEAN:
+    case 'BooleanValue':
       return '' + node.value;
 
-    case Kind.NULL:
+    case 'NullValue':
       return 'null';
 
-    case Kind.INT:
-    case Kind.FLOAT:
-    case Kind.ENUM:
-    case Kind.NAME:
+    case 'IntValue':
+    case 'FloatValue':
+    case 'EnumValue':
+    case 'Name':
       return node.value;
 
-    case Kind.LIST:
+    case 'ListValue':
       return '[' + node.values.map(print).join(', ') + ']';
 
-    case Kind.OBJECT:
+    case 'ObjectValue':
       return '{' + node.fields.map(print).join(', ') + '}';
 
-    case Kind.OBJECT_FIELD:
+    case 'ObjectField':
       return node.name.value + ': ' + print(node.value);
 
-    case Kind.VARIABLE:
+    case 'Variable':
       return '$' + node.name.value;
 
-    case Kind.DOCUMENT:
+    case 'Document':
       return hasItems(node.definitions) ? node.definitions.map(print).join('\n\n') : '';
 
-    case Kind.SELECTION_SET:
+    case 'SelectionSet':
       return '{\n  ' + node.selections.map(print).join('\n').replace(/\n/g, '\n  ') + '\n}';
 
-    case Kind.ARGUMENT:
+    case 'Argument':
       return node.name.value + ': ' + print(node.value);
 
-    case Kind.FRAGMENT_SPREAD:
+    case 'FragmentSpread':
       out = '...' + node.name.value;
       if (hasItems(node.directives)) out += ' ' + node.directives.map(print).join(' ');
       return out;
 
-    case Kind.INLINE_FRAGMENT:
+    case 'InlineFragment':
       out = '...';
       if (node.typeCondition) out += ' on ' + node.typeCondition.name.value;
       if (hasItems(node.directives)) out += ' ' + node.directives.map(print).join(' ');
       return out + ' ' + print(node.selectionSet);
 
-    case Kind.FRAGMENT_DEFINITION:
+    case 'FragmentDefinition':
       out = 'fragment ' + node.name.value;
       out += ' on ' + node.typeCondition.name.value;
       if (hasItems(node.directives)) out += ' ' + node.directives.map(print).join(' ');
       return out + ' ' + print(node.selectionSet);
 
-    case Kind.DIRECTIVE:
+    case 'Directive':
       out = '@' + node.name.value;
       if (hasItems(node.arguments)) out += '(' + node.arguments.map(print).join(', ') + ')';
       return out;
 
-    case Kind.NAMED_TYPE:
+    case 'NamedType':
       return node.name.value;
 
-    case Kind.LIST_TYPE:
+    case 'ListType':
       return '[' + print(node.type) + ']';
 
-    case Kind.NON_NULL_TYPE:
+    case 'NonNullType':
       return print(node.type) + '!';
+
+    default:
+      return '';
   }
 }
