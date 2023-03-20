@@ -40,11 +40,7 @@ function checkVisitorFnArgs(ast, args, isEdited = false) {
   }
 }
 
-function isNode(node) {
-  return node != null && typeof node.kind === 'string';
-}
-
-function getValue(node) {
+function getValue(node: any) {
   return 'value' in node ? node.value : undefined;
 }
 
@@ -55,7 +51,7 @@ describe('Visitor', () => {
   });
 
   it('validates path argument', () => {
-    const visited = [];
+    const visited: any[] = [];
 
     const ast = parse('{ a }', { noLocation: true });
 
@@ -86,7 +82,7 @@ describe('Visitor', () => {
 
   it('validates ancestors argument', () => {
     const ast = parse('{ a }', { noLocation: true });
-    const visitedNodes = [];
+    const visitedNodes: any[] = [];
 
     visit(ast, {
       enter(node, key, parent, _path, ancestors) {
@@ -261,7 +257,7 @@ describe('Visitor', () => {
   });
 
   it('allows skipping a sub-tree', () => {
-    const visited = [];
+    const visited: any[] = [];
 
     const ast = parse('{ a, b { x }, c }', { noLocation: true });
     visit(ast, {
@@ -299,7 +295,7 @@ describe('Visitor', () => {
   });
 
   it('allows early exit while visiting', () => {
-    const visited = [];
+    const visited: any[] = [];
 
     const ast = parse('{ a, b { x }, c }', { noLocation: true });
     visit(ast, {
@@ -334,7 +330,7 @@ describe('Visitor', () => {
   });
 
   it('allows early exit while leaving', () => {
-    const visited = [];
+    const visited: any[] = [];
 
     const ast = parse('{ a, b { x }, c }', { noLocation: true });
     visit(ast, {
@@ -371,7 +367,7 @@ describe('Visitor', () => {
   });
 
   it('allows a named functions visitor API', () => {
-    const visited = [];
+    const visited: any[] = [];
 
     const ast = parse('{ a, b { x }, c }', { noLocation: true });
     visit(ast, {

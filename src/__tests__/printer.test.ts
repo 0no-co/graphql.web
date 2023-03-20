@@ -39,13 +39,13 @@ describe('print', () => {
       kind: 'Field',
       name: { kind: 'Name', value: 'foo' },
     };
-    expect(print(ast)).toBe('foo');
+    expect(print(ast as any)).toBe('foo');
   });
 
   // NOTE: The shim won't throw for invalid AST nodes
   it('returns empty strings for invalid AST', () => {
     const badAST = { random: 'Data' };
-    expect(print(badAST)).toBe('');
+    expect(print(badAST as any)).toBe('');
   });
 
   it('correctly prints non-query operations without name', () => {
