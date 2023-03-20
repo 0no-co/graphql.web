@@ -44,6 +44,7 @@ GraphQL applications.
 | `visit` | A recursive reimplementation of GraphQL.js’ visitor. | [Source](./src/printer.ts) |
 | `Kind` | The GraphQL.js’ `Kind` enum, containing supported `ASTNode` kinds. | [Source](./src/kind.ts) |
 | `GraphQLError` | `GraphQLError` stripped of source/location debugging. | [Source](./src/kind.ts) |
+| `valueFromASTUntyped` | Coerces AST values into JS values. | [Source](./src/values.ts) |
 
 The stated goals of any reimplementation are:
 1. Not to implement any execution or type system parts of the GraphQL
