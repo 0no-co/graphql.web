@@ -16,7 +16,8 @@ export function visit(node: ASTNode, visitor: ASTVisitor | ASTReducer<any>) {
   ) {
     let hasEdited = false;
 
-    const enter = (visitor[node.kind] && visitor[node.kind].enter) || visitor[node.kind] || visitor.enter;
+    const enter =
+      (visitor[node.kind] && visitor[node.kind].enter) || visitor[node.kind] || visitor.enter;
     const resultEnter = enter && enter.call(visitor, node, key, parent, path, ancestors);
     if (resultEnter === false) {
       return node;
@@ -69,7 +70,7 @@ export function visit(node: ASTNode, visitor: ASTVisitor | ASTReducer<any>) {
     }
 
     if (parent) ancestors.pop();
-    const leave = visitor[node.kind] && visitor[node.kind].leave || visitor.leave;
+    const leave = (visitor[node.kind] && visitor[node.kind].leave) || visitor.leave;
     const resultLeave = leave && leave.call(visitor, node, key, parent, path, ancestors);
     if (resultLeave === BREAK) {
       throw BREAK;

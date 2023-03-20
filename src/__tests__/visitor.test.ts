@@ -200,9 +200,7 @@ describe('Visitor', () => {
 
     expect(ast).toEqual(parse('{ a, b, c { a, b, c } }', { noLocation: true }));
 
-    expect(editedAST).toEqual(
-      parse('{ a,    c { a,    c } }', { noLocation: true })
-    );
+    expect(editedAST).toEqual(parse('{ a,    c { a,    c } }', { noLocation: true }));
   });
 
   it('allows for editing on leave', () => {
@@ -218,9 +216,7 @@ describe('Visitor', () => {
 
     expect(ast).toEqual(parse('{ a, b, c { a, b, c } }', { noLocation: true }));
 
-    expect(editedAST).toEqual(
-      parse('{ a,    c { a,    c } }', { noLocation: true })
-    );
+    expect(editedAST).toEqual(parse('{ a,    c { a,    c } }', { noLocation: true }));
   });
 
   it('ignores false returned on leave', () => {
@@ -231,9 +227,7 @@ describe('Visitor', () => {
       },
     });
 
-    expect(returnedAST).toEqual(
-      parse('{ a, b, c { a, b, c } }', { noLocation: true })
-    );
+    expect(returnedAST).toEqual(parse('{ a, b, c { a, b, c } }', { noLocation: true }));
   });
 
   it('visits edited node', () => {
@@ -410,14 +404,11 @@ describe('Visitor', () => {
   });
 
   it('handles deep immutable edits correctly when using "enter"', () => {
-    const formatNode = (node) => {
+    const formatNode = node => {
       if (
         node.selectionSet &&
         !node.selectionSet.selections.some(
-          (node) =>
-            node.kind === Kind.FIELD &&
-            node.name.value === '__typename' &&
-            !node.alias
+          node => node.kind === Kind.FIELD && node.name.value === '__typename' && !node.alias
         )
       ) {
         return {
@@ -439,9 +430,7 @@ describe('Visitor', () => {
       }
     };
     const ast = parse('{ players { nodes { id } } }');
-    const expected = parse(
-      '{ players { nodes { id __typename } __typename } }'
-    );
+    const expected = parse('{ players { nodes { id __typename } __typename } }');
     const visited = visit(ast, {
       Field: formatNode,
       InlineFragment: formatNode,
