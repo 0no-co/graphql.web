@@ -52,12 +52,8 @@ export interface DocumentNode {
   readonly loc?: Location;
 }
 
-export type DefinitionNode =
-  | OperationDefinitionNode
-  | FragmentDefinitionNode;
-export type ExecutableDefinitionNode =
-  | OperationDefinitionNode
-  | FragmentDefinitionNode;
+export type DefinitionNode = OperationDefinitionNode | FragmentDefinitionNode;
+export type ExecutableDefinitionNode = OperationDefinitionNode | FragmentDefinitionNode;
 
 export interface OperationDefinitionNode {
   readonly kind: Kind.OPERATION_DEFINITION;
@@ -92,10 +88,7 @@ export interface SelectionSetNode {
   selections: ReadonlyArray<SelectionNode>;
 }
 
-export declare type SelectionNode =
-  | FieldNode
-  | FragmentSpreadNode
-  | InlineFragmentNode;
+export declare type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
 export interface FieldNode {
   readonly kind: Kind.FIELD;
