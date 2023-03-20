@@ -3,10 +3,29 @@ import type { Location } from './types';
 
 import type {
   TypeSystemDefinitionNode,
-  TypeSystemExtensionNode
+  TypeSystemExtensionNode,
+  SchemaDefinitionNode,
+  OperationTypeDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+  FieldDefinitionNode,
+  InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  UnionTypeDefinitionNode,
+  EnumTypeDefinitionNode,
+  EnumValueDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  DirectiveDefinitionNode,
+  SchemaExtensionNode,
+  ScalarTypeExtensionNode,
+  ObjectTypeExtensionNode,
+  InterfaceTypeExtensionNode,
+  UnionTypeExtensionNode,
+  EnumTypeExtensionNode,
+  InputObjectTypeExtensionNode,
 } from './schemaAst';
 
-export declare type ASTNode =
+export type ASTNode =
   | NameNode
   | DocumentNode
   | OperationDefinitionNode
@@ -31,8 +50,25 @@ export declare type ASTNode =
   | NamedTypeNode
   | ListTypeNode
   | NonNullTypeNode
-  | TypeSystemDefinitionNode
-  | TypeSystemExtensionNode;
+  | SchemaDefinitionNode
+  | OperationTypeDefinitionNode
+  | ScalarTypeDefinitionNode
+  | ObjectTypeDefinitionNode
+  | FieldDefinitionNode
+  | InputValueDefinitionNode
+  | InterfaceTypeDefinitionNode
+  | UnionTypeDefinitionNode
+  | EnumTypeDefinitionNode
+  | EnumValueDefinitionNode
+  | InputObjectTypeDefinitionNode
+  | DirectiveDefinitionNode
+  | SchemaExtensionNode
+  | ScalarTypeExtensionNode
+  | ObjectTypeExtensionNode
+  | InterfaceTypeExtensionNode
+  | UnionTypeExtensionNode
+  | EnumTypeExtensionNode
+  | InputObjectTypeExtensionNode;
 
 export interface NameNode {
   readonly kind: Kind.NAME;
