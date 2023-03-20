@@ -64,8 +64,7 @@ function name(): ast.NameNode | undefined {
   }
 }
 
-const nullRe = /null/y;
-const boolRe = /true|false/y;
+const constRe = /null|true|false/y;
 const variableRe = /\$[_\w][_\d\w]*/y;
 const intRe = /[-]?\d+/y;
 const floatRe = /(?:[-]?\d+)?(?:\.\d+)(?:[eE][+-]?\d+)?/y;
@@ -79,10 +78,10 @@ function value(constant: boolean): ast.ValueNode;
 function value(constant: boolean): ast.ValueNode | undefined {
   let out: ast.ValueNode | undefined;
   let match: string | undefined;
-  if (advance(nullRe)) {
-    out = { kind: 'NullValue' as Kind.NULL };
-  } else if (match = advance(boolRe)) {
-    out = {
+  if (match = advance(constRe)) {
+    out = match === 'null' ? {
+      kind: 'NullValue' as Kind.NULL,
+    } : {
       kind: 'BooleanValue' as Kind.BOOLEAN,
       value: match === 'true',
     };
