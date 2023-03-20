@@ -1,0 +1,14 @@
+{
+  "name": "benchmark",
+  "private": true,
+  "version": "1.0.0",
+  "main": "suite.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "NODE_ENV=production benchr suite.js"
+  },
+  "dependencies": {
+    "benchr": "4.3.0",
+    "graphql": "^16.6.0"
+  }
+}
