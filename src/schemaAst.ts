@@ -133,9 +133,7 @@ export interface DirectiveDefinitionNode {
   readonly locations: ReadonlyArray<NameNode>;
 }
 /** Type System Extensions */
-export declare type TypeSystemExtensionNode =
-  | SchemaExtensionNode
-  | TypeExtensionNode;
+export declare type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 export interface SchemaExtensionNode {
   readonly kind: Kind.SCHEMA_EXTENSION;
   readonly loc?: Location;

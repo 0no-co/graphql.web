@@ -6,19 +6,18 @@ export function visit<N extends ASTNode>(root: N, visitor: ASTVisitor): N;
 export function visit<R>(root: ASTNode, visitor: ASTReducer<R>): R;
 
 export function visit(node: ASTNode, visitor: ASTVisitor | ASTReducer<any>) {
-  const ancestors: Array<ASTNode | ReadonlyArray<ASTNode>>= [];
+  const ancestors: Array<ASTNode | ReadonlyArray<ASTNode>> = [];
   const path: Array<string | number> = [];
 
   function traverse(
     node: ASTNode,
     key?: string | number | undefined,
-    parent?: ASTNode | ReadonlyArray<ASTNode> | undefined,
+    parent?: ASTNode | ReadonlyArray<ASTNode> | undefined
   ) {
     let hasEdited = false;
 
-    const enter = visitor[node.kind] && visitor[node.kind].enter || visitor[node.kind];
-    const resultEnter =
-      enter && enter.call(visitor, node, key, parent, path, ancestors);
+    const enter = (visitor[node.kind] && visitor[node.kind].enter) || visitor[node.kind];
+    const resultEnter = enter && enter.call(visitor, node, key, parent, path, ancestors);
     if (resultEnter === false) {
       return node;
     } else if (resultEnter === null) {
@@ -71,8 +70,7 @@ export function visit(node: ASTNode, visitor: ASTVisitor | ASTReducer<any>) {
 
     if (parent) ancestors.pop();
     const leave = visitor[node.kind] && visitor[node.kind].leave;
-    const resultLeave =
-      leave && leave.call(visitor, node, key, parent, path, ancestors);
+    const resultLeave = leave && leave.call(visitor, node, key, parent, path, ancestors);
     if (resultLeave === BREAK) {
       throw BREAK;
     } else if (resultLeave !== undefined) {
@@ -96,9 +94,7 @@ export function visit(node: ASTNode, visitor: ASTVisitor | ASTReducer<any>) {
 export type ASTVisitor = EnterLeaveVisitor<ASTNode> | KindVisitor;
 
 type KindVisitor = {
-  readonly [NodeT in ASTNode as NodeT['kind']]?:
-    | ASTVisitFn<NodeT>
-    | EnterLeaveVisitor<NodeT>;
+  readonly [NodeT in ASTNode as NodeT['kind']]?: ASTVisitFn<NodeT> | EnterLeaveVisitor<NodeT>;
 };
 
 interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
@@ -111,7 +107,7 @@ export type ASTVisitFn<Node extends ASTNode> = (
   key: string | number | undefined,
   parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
   path: ReadonlyArray<string | number>,
-  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>
 ) => any;
 
 export type ASTReducer<R> = {
@@ -126,7 +122,7 @@ type ASTReducerFn<TReducedNode extends ASTNode, R> = (
   key: string | number | undefined,
   parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
   path: ReadonlyArray<string | number>,
-  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>
 ) => R;
 
 type ReducedField<T, R> = T extends null | undefined

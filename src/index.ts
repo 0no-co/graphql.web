@@ -1,7 +1,4 @@
-export type {
-  Source,
-  Location,
-} from './types';
+export type { Source, Location } from './types';
 
 export * from './ast';
 export * from './schemaAst';

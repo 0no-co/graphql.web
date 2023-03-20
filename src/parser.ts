@@ -19,7 +19,7 @@ function error(kind: string) {
 function advance(pattern: RegExp) {
   pattern.lastIndex = idx;
   if (pattern.test(input)) {
-    const match = input.slice(idx, idx = pattern.lastIndex);
+    const match = input.slice(idx, (idx = pattern.lastIndex));
     return match;
   }
 }
@@ -57,7 +57,7 @@ function ignored() {
 const nameRe = /[_\w][_\d\w]*/y;
 function name(): ast.NameNode | undefined {
   let match: string | undefined;
-  if (match = advance(nameRe)) {
+  if ((match = advance(nameRe))) {
     return {
       kind: 'Name' as Kind.NAME,
       value: match,
@@ -79,13 +79,16 @@ function value(constant: boolean): ast.ValueNode;
 function value(constant: boolean): ast.ValueNode | undefined {
   let out: ast.ValueNode | undefined;
   let match: string | undefined;
-  if (match = advance(constRe)) {
-    out = match === 'null' ? {
-      kind: 'NullValue' as Kind.NULL,
-    } : {
-      kind: 'BooleanValue' as Kind.BOOLEAN,
-      value: match === 'true',
-    };
+  if ((match = advance(constRe))) {
+    out =
+      match === 'null'
+        ? {
+            kind: 'NullValue' as Kind.NULL,
+          }
+        : {
+            kind: 'BooleanValue' as Kind.BOOLEAN,
+            value: match === 'true',
+          };
   } else if (!constant && (match = advance(variableRe))) {
     out = {
       kind: 'Variable' as Kind.VARIABLE,
@@ -94,36 +97,34 @@ function value(constant: boolean): ast.ValueNode | undefined {
         value: match.slice(1),
       },
     };
-  } else if (match = advance(floatRe)) {
+  } else if ((match = advance(floatRe))) {
     out = {
       kind: 'FloatValue' as Kind.FLOAT,
       value: match,
     };
-  } else if (match = advance(intRe)) {
+  } else if ((match = advance(intRe))) {
     out = {
       kind: 'IntValue' as Kind.INT,
       value: match,
     };
-  } else if (match = advance(nameRe)) {
+  } else if ((match = advance(nameRe))) {
     out = {
       kind: 'EnumValue' as Kind.ENUM,
       value: match,
     };
-  } else if (match = advance(blockStringRe)) {
+  } else if ((match = advance(blockStringRe))) {
     out = {
       kind: 'StringValue' as Kind.STRING,
       value: blockString(match.slice(3, -3)),
       block: true,
     };
-  } else if (match = advance(stringRe)) {
+  } else if ((match = advance(stringRe))) {
     out = {
       kind: 'StringValue' as Kind.STRING,
-      value: complexStringRe.test(match)
-        ? JSON.parse(match) as string
-        : match.slice(1, -1),
+      value: complexStringRe.test(match) ? (JSON.parse(match) as string) : match.slice(1, -1),
       block: false,
     };
-  } else if (out = list(constant) || object(constant)) {
+  } else if ((out = list(constant) || object(constant))) {
     return out;
   }
 
@@ -137,10 +138,8 @@ function list(constant: boolean): ast.ListValueNode | undefined {
     idx++;
     ignored();
     const values: ast.ValueNode[] = [];
-    while (match = value(constant))
-      values.push(match);
-    if (input.charCodeAt(idx++) !== 93 /*']'*/)
-      throw error('ListValue');
+    while ((match = value(constant))) values.push(match);
+    if (input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListValue');
     ignored();
     return {
       kind: 'ListValue' as Kind.LIST,
@@ -155,22 +154,19 @@ function object(constant: boolean): ast.ObjectValueNode | undefined {
     ignored();
     const fields: ast.ObjectFieldNode[] = [];
     let _name: ast.NameNode | undefined;
-    while (_name = name()) {
+    while ((_name = name())) {
       ignored();
-      if (input.charCodeAt(idx++) !== 58 /*':'*/)
-        throw error('ObjectField' as Kind.OBJECT_FIELD);
+      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField' as Kind.OBJECT_FIELD);
       ignored();
       const _value = value(constant);
-      if (!_value)
-        throw error('ObjectField');
+      if (!_value) throw error('ObjectField');
       fields.push({
         kind: 'ObjectField' as Kind.OBJECT_FIELD,
         name: _name,
         value: _value,
       });
     }
-    if (input.charCodeAt(idx++) !== 125 /*'}'*/)
-      throw error('ObjectValue');
+    if (input.charCodeAt(idx++) !== 125 /*'}'*/) throw error('ObjectValue');
     ignored();
     return {
       kind: 'ObjectValue' as Kind.OBJECT,
@@ -186,22 +182,19 @@ function arguments_(constant: boolean): ast.ArgumentNode[] {
     idx++;
     ignored();
     let _name: ast.NameNode | undefined;
-    while (_name = name()) {
+    while ((_name = name())) {
       ignored();
-      if (input.charCodeAt(idx++) !== 58 /*':'*/)
-        throw error('Argument');
+      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
       const _value = value(constant);
-      if (!_value)
-        throw error('Argument');
+      if (!_value) throw error('Argument');
       args.push({
         kind: 'Argument' as Kind.ARGUMENT,
         name: _name,
         value: _value,
       });
     }
-    if (!args.length || input.charCodeAt(idx++) !== 41 /*')'*/)
-      throw error('Argument');
+    if (!args.length || input.charCodeAt(idx++) !== 41 /*')'*/) throw error('Argument');
     ignored();
   }
   return args;
@@ -216,8 +209,7 @@ function directives(constant: boolean): ast.DirectiveNode[] {
   while (input.charCodeAt(idx) === 64 /*'@'*/) {
     idx++;
     const _name = name();
-    if (!_name)
-      throw error('Directive');
+    if (!_name) throw error('Directive');
     ignored();
     directives.push({
       kind: 'Directive' as Kind.DIRECTIVE,
@@ -239,8 +231,7 @@ function field(): ast.FieldNode | undefined {
       ignored();
       _alias = _name;
       _name = name();
-      if (!_name)
-        throw error('Field');
+      if (!_name) throw error('Field');
       ignored();
     }
     return {
@@ -261,13 +252,12 @@ function type(): ast.TypeNode | undefined {
     idx++;
     ignored();
     const _type = type();
-    if (!_type || input.charCodeAt(idx++) !== 93 /*']'*/)
-      throw error('ListType');
+    if (!_type || input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListType');
     match = {
       kind: 'ListType' as Kind.LIST_TYPE,
       type: _type,
     };
-  } else if (match = name()) {
+  } else if ((match = name())) {
     match = {
       kind: 'NamedType' as Kind.NAMED_TYPE,
       name: match,
@@ -294,8 +284,7 @@ function typeCondition(): ast.NamedTypeNode | undefined {
   if (advance(typeConditionRe)) {
     ignored();
     const _name = name();
-    if (!_name)
-      throw error('NamedType');
+    if (!_name) throw error('NamedType');
     ignored();
     return {
       kind: 'NamedType' as Kind.NAMED_TYPE,
@@ -323,8 +312,7 @@ function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode | und
       const _typeCondition = typeCondition();
       const _directives = directives(false);
       const _selectionSet = selectionSet();
-      if (!_selectionSet)
-        throw error('InlineFragment');
+      if (!_selectionSet) throw error('InlineFragment');
       return {
         kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
         typeCondition: _typeCondition,
@@ -342,10 +330,8 @@ function selectionSet(): ast.SelectionSetNode | undefined {
     idx++;
     ignored();
     const selections: ast.SelectionNode[] = [];
-    while (match = fragmentSpread() || field())
-      selections.push(match);
-    if (!selections.length || input.charCodeAt(idx++) !== 125 /*'}'*/)
-      throw error('SelectionSet');
+    while ((match = fragmentSpread() || field())) selections.push(match);
+    if (!selections.length || input.charCodeAt(idx++) !== 125 /*'}'*/) throw error('SelectionSet');
     ignored();
     return {
       kind: 'SelectionSet' as Kind.SELECTION_SET,
@@ -361,20 +347,17 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
   if (input.charCodeAt(idx) === 40 /*'('*/) {
     idx++;
     ignored();
-    while (match = advance(variableRe)) {
+    while ((match = advance(variableRe))) {
       ignored();
-      if (input.charCodeAt(idx++) !== 58 /*':'*/)
-        throw error('VariableDefinition');
+      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
       const _type = type();
-      if (!_type)
-        throw error('VariableDefinition');
+      if (!_type) throw error('VariableDefinition');
       let _defaultValue: ast.ValueNode | undefined;
       if (input.charCodeAt(idx) === 61 /*'='*/) {
         idx++;
         ignored();
         _defaultValue = value(true);
-        if (!_defaultValue)
-          throw error('VariableDefinition');
+        if (!_defaultValue) throw error('VariableDefinition');
       }
       ignored();
       vars.push({
@@ -391,8 +374,7 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
         directives: directives(true),
       });
     }
-    if (input.charCodeAt(idx++) !== 41 /*')'*/)
-      throw error('VariableDefinition');
+    if (input.charCodeAt(idx++) !== 41 /*')'*/) throw error('VariableDefinition');
     ignored();
   }
   return vars;
@@ -403,16 +385,13 @@ function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
   if (advance(fragmentDefinitionRe)) {
     ignored();
     const _name = name();
-    if (!_name)
-      throw error('FragmentDefinition');
+    if (!_name) throw error('FragmentDefinition');
     ignored();
     const _typeCondition = typeCondition();
-    if (!_typeCondition)
-      throw error('FragmentDefinition');
+    if (!_typeCondition) throw error('FragmentDefinition');
     const _directives = directives(false);
     const _selectionSet = selectionSet();
-    if (!_selectionSet)
-      throw error('FragmentDefinition');
+    if (!_selectionSet) throw error('FragmentDefinition');
     return {
       kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
       name: _name,
@@ -429,7 +408,7 @@ function operationDefinition(): ast.OperationDefinitionNode | undefined {
   let _name: ast.NameNode | undefined;
   let _variableDefinitions: ast.VariableDefinitionNode[] = [];
   let _directives: ast.DirectiveNode[] = [];
-  if (_operation = advance(operationDefinitionRe)) {
+  if ((_operation = advance(operationDefinitionRe))) {
     ignored();
     _name = name();
     _variableDefinitions = variableDefinitions();
@@ -452,10 +431,8 @@ function document(): ast.DocumentNode {
   let match: ast.ExecutableDefinitionNode | void;
   ignored();
   const definitions: ast.ExecutableDefinitionNode[] = [];
-  while (match = fragmentDefinition() || operationDefinition())
-    definitions.push(match);
-  if (idx !== input.length)
-    throw error('Document');
+  while ((match = fragmentDefinition() || operationDefinition())) definitions.push(match);
+  if (idx !== input.length) throw error('Document');
   return {
     kind: 'Document' as Kind.DOCUMENT,
     definitions,
@@ -464,11 +441,11 @@ function document(): ast.DocumentNode {
 
 type ParseOptions = {
   [option: string]: any;
-}
+};
 
 export function parse(
   string: string | Source,
-  _options?: ParseOptions | undefined,
+  _options?: ParseOptions | undefined
 ): ast.DocumentNode {
   input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
@@ -477,25 +454,23 @@ export function parse(
 
 export function parseValue(
   string: string | Source,
-  _options?: ParseOptions | undefined,
+  _options?: ParseOptions | undefined
 ): ast.ValueNode {
   input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
   ignored();
   const _value = value(false);
-  if (!_value)
-    throw error('ValueNode');
+  if (!_value) throw error('ValueNode');
   return _value;
 }
 
 export function parseType(
   string: string | Source,
-  _options?: ParseOptions | undefined,
+  _options?: ParseOptions | undefined
 ): ast.TypeNode {
   input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
   const _type = type();
-  if (!_type)
-    throw error('TypeNode');
+  if (!_type) throw error('TypeNode');
   return _type;
 }
