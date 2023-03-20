@@ -1,5 +1,4 @@
 import { TypeNode, ValueNode } from './ast';
-import { Kind } from './kind';
 import { Maybe } from './types';
 
 export function valueFromASTUntyped(
@@ -7,29 +6,29 @@ export function valueFromASTUntyped(
   variables?: Maybe<Record<string, any>>,
 ): unknown {
   switch (node.kind) {
-    case Kind.NULL:
+    case 'NullValue':
       return null;
-    case Kind.INT:
+    case 'IntValue':
       return parseInt(node.value, 10);
-    case Kind.FLOAT:
+    case 'FloatValue':
       return parseFloat(node.value);
-    case Kind.STRING:
-    case Kind.ENUM:
-    case Kind.BOOLEAN:
+    case 'StringValue':
+    case 'EnumValue':
+    case 'BooleanValue':
       return node.value;
-    case Kind.LIST: {
+    case 'ListValue': {
       const values: unknown[] = [];
       for (const value of node.values)
         values.push(valueFromASTUntyped(value, variables));
       return values;
     }
-    case Kind.OBJECT: {
+    case 'ObjectValue': {
       const obj = Object.create(null);
       for (const field of node.fields)
         obj[field.name.value] = valueFromASTUntyped(field.value, variables);
       return obj;
     }
-    case Kind.VARIABLE:
+    case 'Variable':
       return variables && variables[node.name.value];
   }
 }
@@ -39,19 +38,19 @@ export function valueFromTypeNode(
   type: TypeNode,
   variables?: Maybe<Record<string, any>>,
 ): unknown {
-  if (node.kind === Kind.VARIABLE) {
+  if (node.kind === 'Variable') {
     const variableName = node.name.value;
     return variables
       ? valueFromTypeNode(variables[variableName], type, variables)
       : undefined;
-  } else if (type.kind === Kind.NON_NULL_TYPE) {
-    return node.kind !== Kind.NULL
+  } else if (type.kind === 'NonNullType') {
+    return node.kind !== 'NullValue'
       ? valueFromTypeNode(node, type, variables)
       : undefined
-  } else if (node.kind === Kind.NULL) {
+  } else if (node.kind === 'NullValue') {
     return null;
-  } else if (type.kind === Kind.LIST_TYPE) {
-    if (node.kind === Kind.LIST) {
+  } else if (type.kind === 'ListType') {
+    if (node.kind === 'ListValue') {
       const values: unknown[] = [];
       for (const value of node.values) {
         const coerced = valueFromTypeNode(value, type.type, variables);
@@ -63,7 +62,7 @@ export function valueFromTypeNode(
       }
       return values;
     }
-  } else if (type.kind === Kind.NAMED_TYPE) {
+  } else if (type.kind === 'NamedType') {
     switch (type.name.value) {
       case 'Int':
       case 'Float':
