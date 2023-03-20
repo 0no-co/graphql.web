@@ -6,6 +6,7 @@
  */
 import { Kind, OperationTypeNode } from './kind';
 import { GraphQLError } from './error';
+import { Source } from './types';
 import type * as ast from './ast';
 
 let input: string;
@@ -466,29 +467,35 @@ type ParseOptions = {
 }
 
 export function parse(
-  string: string,
+  string: string | Source,
   _options?: ParseOptions | undefined,
 ): ast.DocumentNode {
-  input = string;
+  input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
   return document();
 }
 
 export function parseValue(
-  string: string,
+  string: string | Source,
   _options?: ParseOptions | undefined,
-): ast.ValueNode | undefined {
-  input = string;
+): ast.ValueNode {
+  input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
   ignored();
-  return value(false);
+  const _value = value(false);
+  if (!_value)
+    throw error('ValueNode');
+  return _value;
 }
 
 export function parseType(
-  string: string,
+  string: string | Source,
   _options?: ParseOptions | undefined,
-): ast.TypeNode | undefined {
-  input = string;
+): ast.TypeNode {
+  input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
-  return type();
+  const _type = type();
+  if (!_type)
+    throw error('TypeNode');
+  return _type;
 }

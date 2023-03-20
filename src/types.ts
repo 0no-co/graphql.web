@@ -4,5 +4,17 @@ export interface Extensions {
   [extension: string]: unknown;
 }
 
-export type Source = any;
-export type Location = any;
+export type Source = any | {
+  body: string;
+  name: string;
+  locationOffset: {
+    line: number;
+    column: number;
+  };
+};
+
+export type Location = any | {
+  start: number;
+  end: number;
+  source: Source;
+};
