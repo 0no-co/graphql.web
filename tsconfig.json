@@ -5,9 +5,9 @@
     "noEmit": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
-    "rootDir": "./src",
+    "rootDir": ".",
     "baseUrl": ".",
-    "outDir": "dist/cjs",
+    "allowJs": true,
     "lib": ["dom", "esnext"],
     "jsx": "react",
     "declaration": false,
@@ -20,5 +20,5 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["src"]
+  "include": ["src", "typings"]
 }

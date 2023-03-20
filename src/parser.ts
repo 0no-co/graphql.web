@@ -4,14 +4,14 @@
  * in graphql.js it will only parse the query language, but not the schema
  * language.
  */
-import { Kind } from './kind';
+import { Kind, OperationTypeNode } from './kind';
 import { GraphQLError } from './error';
 import type * as ast from './ast';
 
 let input: string;
 let idx: number;
 
-function error(kind: Kind) {
+function error(kind: string) {
   return new GraphQLError(`Syntax Error: Unexpected token at ${idx} in ${kind}`);
 }
 
@@ -58,7 +58,7 @@ function name(): ast.NameNode | undefined {
   let match: string | undefined;
   if (match = advance(nameRe)) {
     return {
-      kind: Kind.NAME,
+      kind: 'Name' as Kind.NAME,
       value: match,
     };
   }
@@ -80,44 +80,44 @@ function value(constant: boolean): ast.ValueNode | undefined {
   let out: ast.ValueNode | undefined;
   let match: string | undefined;
   if (advance(nullRe)) {
-    out = { kind: Kind.NULL };
+    out = { kind: 'NullValue' as Kind.NULL };
   } else if (match = advance(boolRe)) {
     out = {
-      kind: Kind.BOOLEAN,
+      kind: 'BooleanValue' as Kind.BOOLEAN,
       value: match === 'true',
     };
   } else if (!constant && (match = advance(variableRe))) {
     out = {
-      kind: Kind.VARIABLE,
+      kind: 'Variable' as Kind.VARIABLE,
       name: {
-        kind: Kind.NAME,
+        kind: 'Name' as Kind.NAME,
         value: match.slice(1),
       },
     };
   } else if (match = advance(floatRe)) {
     out = {
-      kind: Kind.FLOAT,
+      kind: 'FloatValue' as Kind.FLOAT,
       value: match,
     };
   } else if (match = advance(intRe)) {
     out = {
-      kind: Kind.INT,
+      kind: 'IntValue' as Kind.INT,
       value: match,
     };
   } else if (match = advance(nameRe)) {
     out = {
-      kind: Kind.ENUM,
+      kind: 'EnumValue' as Kind.ENUM,
       value: match,
     };
   } else if (match = advance(blockStringRe)) {
     out = {
-      kind: Kind.STRING,
+      kind: 'StringValue' as Kind.STRING,
       value: blockString(match.slice(3, -3)),
       block: true,
     };
   } else if (match = advance(stringRe)) {
     out = {
-      kind: Kind.STRING,
+      kind: 'StringValue' as Kind.STRING,
       value: complexStringRe.test(match)
         ? JSON.parse(match) as string
         : match.slice(1, -1),
@@ -140,10 +140,10 @@ function list(constant: boolean): ast.ListValueNode | undefined {
     while (match = value(constant))
       values.push(match);
     if (input.charCodeAt(idx++) !== 93 /*']'*/)
-      throw error(Kind.LIST);
+      throw error('ListValue');
     ignored();
     return {
-      kind: Kind.LIST,
+      kind: 'ListValue' as Kind.LIST,
       values,
     };
   }
@@ -158,22 +158,22 @@ function object(constant: boolean): ast.ObjectValueNode | undefined {
     while (_name = name()) {
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/)
-        throw error(Kind.OBJECT_FIELD);
+        throw error('ObjectField' as Kind.OBJECT_FIELD);
       ignored();
       const _value = value(constant);
       if (!_value)
-        throw error(Kind.OBJECT_FIELD);
+        throw error('ObjectField');
       fields.push({
-        kind: Kind.OBJECT_FIELD,
+        kind: 'ObjectField' as Kind.OBJECT_FIELD,
         name: _name,
         value: _value,
       });
     }
     if (input.charCodeAt(idx++) !== 125 /*'}'*/)
-      throw error(Kind.OBJECT);
+      throw error('ObjectValue');
     ignored();
     return {
-      kind: Kind.OBJECT,
+      kind: 'ObjectValue' as Kind.OBJECT,
       fields,
     };
   }
@@ -189,19 +189,19 @@ function arguments_(constant: boolean): ast.ArgumentNode[] {
     while (_name = name()) {
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/)
-        throw error(Kind.ARGUMENT);
+        throw error('Argument');
       ignored();
       const _value = value(constant);
       if (!_value)
-        throw error(Kind.ARGUMENT);
+        throw error('Argument');
       args.push({
-        kind: Kind.ARGUMENT,
+        kind: 'Argument' as Kind.ARGUMENT,
         name: _name,
         value: _value,
       });
     }
     if (!args.length || input.charCodeAt(idx++) !== 41 /*')'*/)
-      throw error(Kind.ARGUMENT);
+      throw error('Argument');
     ignored();
   }
   return args;
@@ -217,10 +217,10 @@ function directives(constant: boolean): ast.DirectiveNode[] {
     idx++;
     const _name = name();
     if (!_name)
-      throw error(Kind.DIRECTIVE);
+      throw error('Directive');
     ignored();
     directives.push({
-      kind: Kind.DIRECTIVE,
+      kind: 'Directive' as Kind.DIRECTIVE,
       name: _name,
       arguments: arguments_(constant),
     });
@@ -240,11 +240,11 @@ function field(): ast.FieldNode | undefined {
       _alias = _name;
       _name = name();
       if (!_name)
-        throw error(Kind.FIELD);
+        throw error('Field');
       ignored();
     }
     return {
-      kind: Kind.FIELD,
+      kind: 'Field' as Kind.FIELD,
       alias: _alias,
       name: _name,
       arguments: arguments_(false),
@@ -262,18 +262,18 @@ function type(): ast.TypeNode | undefined {
     ignored();
     const _type = type();
     if (!_type || input.charCodeAt(idx++) !== 93 /*']'*/)
-      throw error(Kind.LIST_TYPE);
+      throw error('ListType');
     match = {
-      kind: Kind.LIST_TYPE,
+      kind: 'ListType' as Kind.LIST_TYPE,
       type: _type,
     };
   } else if (match = name()) {
     match = {
-      kind: Kind.NAMED_TYPE,
+      kind: 'NamedType' as Kind.NAMED_TYPE,
       name: match,
     };
   } else {
-    throw error(Kind.NAMED_TYPE);
+    throw error('NamedType');
   }
 
   ignored();
@@ -281,7 +281,7 @@ function type(): ast.TypeNode | undefined {
     idx++;
     ignored();
     return {
-      kind: Kind.NON_NULL_TYPE,
+      kind: 'NonNullType' as Kind.NON_NULL_TYPE,
       type: match,
     };
   } else {
@@ -295,10 +295,10 @@ function typeCondition(): ast.NamedTypeNode | undefined {
     ignored();
     const _name = name();
     if (!_name)
-      throw error(Kind.NAMED_TYPE);
+      throw error('NamedType');
     ignored();
     return {
-      kind: Kind.NAMED_TYPE,
+      kind: 'NamedType' as Kind.NAMED_TYPE,
       name: _name,
     };
   }
@@ -314,7 +314,7 @@ function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode | und
     let _name: ast.NameNode | undefined;
     if ((_name = name()) && _name.value !== 'on') {
       return {
-        kind: Kind.FRAGMENT_SPREAD,
+        kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
         name: _name,
         directives: directives(false),
       };
@@ -324,9 +324,9 @@ function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode | und
       const _directives = directives(false);
       const _selectionSet = selectionSet();
       if (!_selectionSet)
-        throw error(Kind.INLINE_FRAGMENT);
+        throw error('InlineFragment');
       return {
-        kind: Kind.INLINE_FRAGMENT,
+        kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
         typeCondition: _typeCondition,
         directives: _directives,
         selectionSet: _selectionSet,
@@ -345,10 +345,10 @@ function selectionSet(): ast.SelectionSetNode | undefined {
     while (match = fragmentSpread() || field())
       selections.push(match);
     if (!selections.length || input.charCodeAt(idx++) !== 125 /*'}'*/)
-      throw error(Kind.SELECTION_SET);
+      throw error('SelectionSet');
     ignored();
     return {
-      kind: Kind.SELECTION_SET,
+      kind: 'SelectionSet' as Kind.SELECTION_SET,
       selections,
     };
   }
@@ -364,25 +364,25 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
     while (match = advance(variableRe)) {
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/)
-        throw error(Kind.VARIABLE_DEFINITION);
+        throw error('VariableDefinition');
       const _type = type();
       if (!_type)
-        throw error(Kind.VARIABLE_DEFINITION);
+        throw error('VariableDefinition');
       let _defaultValue: ast.ValueNode | undefined;
       if (input.charCodeAt(idx) === 61 /*'='*/) {
         idx++;
         ignored();
         _defaultValue = value(true);
         if (!_defaultValue)
-          throw error(Kind.VARIABLE_DEFINITION);
+          throw error('VariableDefinition');
       }
       ignored();
       vars.push({
-        kind: Kind.VARIABLE_DEFINITION,
+        kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
         variable: {
-          kind: Kind.VARIABLE,
+          kind: 'Variable' as Kind.VARIABLE,
           name: {
-            kind: Kind.NAME,
+            kind: 'Name' as Kind.NAME,
             value: match.slice(1),
           },
         },
@@ -392,7 +392,7 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
       });
     }
     if (input.charCodeAt(idx++) !== 41 /*')'*/)
-      throw error(Kind.VARIABLE_DEFINITION);
+      throw error('VariableDefinition');
     ignored();
   }
   return vars;
@@ -404,17 +404,17 @@ function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
     ignored();
     const _name = name();
     if (!_name)
-      throw error(Kind.FRAGMENT_DEFINITION);
+      throw error('FragmentDefinition');
     ignored();
     const _typeCondition = typeCondition();
     if (!_typeCondition)
-      throw error(Kind.FRAGMENT_DEFINITION);
+      throw error('FragmentDefinition');
     const _directives = directives(false);
     const _selectionSet = selectionSet();
     if (!_selectionSet)
-      throw error(Kind.FRAGMENT_DEFINITION);
+      throw error('FragmentDefinition');
     return {
-      kind: Kind.FRAGMENT_DEFINITION,
+      kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
       name: _name,
       typeCondition: _typeCondition,
       directives: _directives,
@@ -438,8 +438,8 @@ function operationDefinition(): ast.OperationDefinitionNode | undefined {
   const _selectionSet = selectionSet();
   if (_selectionSet) {
     return {
-      kind: Kind.OPERATION_DEFINITION,
-      operation: (_operation || 'query') as ast.OperationTypeNode,
+      kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
+      operation: (_operation || 'query') as OperationTypeNode,
       name: _name,
       variableDefinitions: _variableDefinitions,
       directives: _directives,
@@ -449,33 +449,46 @@ function operationDefinition(): ast.OperationDefinitionNode | undefined {
 }
 
 function document(): ast.DocumentNode {
-  let match: ast.DefinitionNode | void;
+  let match: ast.ExecutableDefinitionNode | void;
   ignored();
-  const definitions: ast.DefinitionNode[] = [];
+  const definitions: ast.ExecutableDefinitionNode[] = [];
   while (match = fragmentDefinition() || operationDefinition())
     definitions.push(match);
   if (idx !== input.length)
-    throw error(Kind.DOCUMENT);
+    throw error('Document');
   return {
-    kind: Kind.DOCUMENT,
+    kind: 'Document' as Kind.DOCUMENT,
     definitions,
   };
 }
 
-export function parse(string: string): ast.DocumentNode {
+type ParseOptions = {
+  [option: string]: any;
+}
+
+export function parse(
+  string: string,
+  _options?: ParseOptions | undefined,
+): ast.DocumentNode {
   input = string;
   idx = 0;
   return document();
 }
 
-export function parseValue(string: string): ast.ValueNode | undefined {
+export function parseValue(
+  string: string,
+  _options?: ParseOptions | undefined,
+): ast.ValueNode | undefined {
   input = string;
   idx = 0;
   ignored();
   return value(false);
 }
 
-export function parseType(string: string): ast.TypeNode | undefined {
+export function parseType(
+  string: string,
+  _options?: ParseOptions | undefined,
+): ast.TypeNode | undefined {
   input = string;
   idx = 0;
   return type();

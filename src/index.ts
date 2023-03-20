@@ -1,4 +1,10 @@
+export type {
+  Source,
+  Location,
+} from './types';
+
 export * from './ast';
+export * from './schemaAst';
 export * from './kind';
 export * from './error';
 export * from './parser';
