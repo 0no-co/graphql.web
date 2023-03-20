@@ -13,6 +13,7 @@ importers:
       '@rollup/plugin-terser': ^0.4.0
       '@typescript-eslint/eslint-plugin': ^5.55.0
       '@typescript-eslint/parser': ^5.55.0
+      dotenv: ^16.0.3
       eslint: ^8.36.0
       eslint-config-prettier: ^8.7.0
       eslint-plugin-prettier: ^4.2.1
@@ -39,6 +40,7 @@ importers:
       '@rollup/plugin-terser': 0.4.0_rollup@3.19.1
       '@typescript-eslint/eslint-plugin': 5.55.0_qsnvknysi52qtaxqdyqyohkcku
       '@typescript-eslint/parser': 5.55.0_j4766f7ecgqbon3u7zlxn5zszu
+      dotenv: 16.0.3
       eslint: 8.36.0
       eslint-config-prettier: 8.7.0_eslint@8.36.0
       eslint-plugin-prettier: 4.2.1_eqzx3hpkgx5nnvxls3azrcc7dm
@@ -1517,6 +1519,11 @@ packages:
     engines: {node: '>=6.0.0'}
     dependencies:
       esutils: 2.0.3
+    dev: true
+
+  /dotenv/16.0.3:
+    resolution: {integrity: sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==}
+    engines: {node: '>=12'}
     dev: true
 
   /eastasianwidth/0.2.0:
