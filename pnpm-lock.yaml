@@ -17,6 +17,7 @@ importers:
       eslint-config-prettier: ^8.7.0
       eslint-plugin-prettier: ^4.2.1
       eslint-plugin-tsdoc: ^0.2.17
+      graphql: ^16.6.0
       husky-v4: ^4.3.8
       lint-staged: ^13.2.0
       npm-run-all: ^4.1.5
@@ -42,6 +43,7 @@ importers:
       eslint-config-prettier: 8.7.0_eslint@8.36.0
       eslint-plugin-prettier: 4.2.1_eqzx3hpkgx5nnvxls3azrcc7dm
       eslint-plugin-tsdoc: 0.2.17
+      graphql: 16.6.0
       husky-v4: 4.3.8
       lint-staged: 13.2.0
       npm-run-all: 4.1.5
@@ -2110,7 +2112,6 @@ packages:
   /graphql/16.6.0:
     resolution: {integrity: sha512-KPIBPDlW7NxrbT/eh4qPXz5FiFdL5UbaA0XUNz2Rp3Z3hqBSkbj0GVjwFDztsWVauZUWsbKHgMg++sk8UX0bkw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
-    dev: false
 
   /hard-rejection/2.1.0:
     resolution: {integrity: sha512-VIZB+ibDhx7ObhAe7OVtoEbuP4h/MuOTHJ+J8h/eBXotJYl0fBgR72xDFCKgIh22OJZIOVNxBMWuhAr10r8HdA==}

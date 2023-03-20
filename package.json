@@ -74,6 +74,7 @@
     "eslint-config-prettier": "^8.7.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-tsdoc": "^0.2.17",
+    "graphql": "^16.6.0",
     "husky-v4": "^4.3.8",
     "lint-staged": "^13.2.0",
     "npm-run-all": "^4.1.5",
@@ -85,5 +86,8 @@
     "terser": "^5.16.6",
     "typescript": "^5.0.2",
     "vitest": "^0.29.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
