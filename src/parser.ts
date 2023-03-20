@@ -52,16 +52,15 @@ function ignored() {
   for (
     let char = input.charCodeAt(idx++) | 0;
     char === 9 /*'\t'*/ ||
-      char === 10 /*'\n'*/ ||
-      char === 13 /*'\r'*/ ||
-      char === 32 /*' '*/ ||
-      char === 35 /*'#'*/ ||
-      char === 44 /*','*/ ||
-      char === 65279 /*'\ufeff'*/;
+    char === 10 /*'\n'*/ ||
+    char === 13 /*'\r'*/ ||
+    char === 32 /*' '*/ ||
+    char === 35 /*'#'*/ ||
+    char === 44 /*','*/ ||
+    char === 65279 /*'\ufeff'*/;
     char = input.charCodeAt(idx++) | 0
   ) {
-    if (char === 35 /*'#'*/)
-      while ((char = input.charCodeAt(idx++)) !== 10 && char !== 13);
+    if (char === 35 /*'#'*/) while ((char = input.charCodeAt(idx++)) !== 10 && char !== 13);
   }
   idx--;
 }

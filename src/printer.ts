@@ -97,8 +97,7 @@ const nodes: {
   },
   FragmentSpread(node) {
     let out = '...' + node.name.value;
-    if (hasItems(node.directives))
-      out += ' ' + node.directives.map(nodes.Directive!).join(' ');
+    if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
     return out;
   },
   InlineFragment(node) {
