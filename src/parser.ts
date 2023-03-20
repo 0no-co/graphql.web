@@ -41,7 +41,7 @@ export function blockString(string: string) {
   }
   for (let i = firstNonEmptyLine; i <= lastNonEmptyLine; i++) {
     if (i !== firstNonEmptyLine) out += '\n';
-    out += lines[i].slice(commonIndent);
+    out += lines[i].slice(commonIndent).replace(/\\"""/g, '"""');
   }
   return out;
 }
@@ -68,7 +68,7 @@ const nullRe = /null/y;
 const boolRe = /true|false/y;
 const variableRe = /\$[_\w][_\d\w]*/y;
 const intRe = /[-]?\d+/y;
-const floatRe = /[-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
+const floatRe = /(?:[-]?\d+)?(?:\.\d+)(?:[eE][+-]?\d+)?/y;
 const complexStringRe = /\\/g;
 const blockStringRe = /"""(?:[\s\S]+(?="""))?"""/y;
 const stringRe = /"(?:[^"\r\n]+)?"/y;
@@ -310,14 +310,16 @@ function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode | und
   ignored();
   if (advance(fragmentSpreadRe)) {
     ignored();
+    const _idx = idx;
     let _name: ast.NameNode | undefined;
-    if (_name = name()) {
+    if ((_name = name()) && _name.value !== 'on') {
       return {
         kind: Kind.FRAGMENT_SPREAD,
         name: _name,
         directives: directives(false),
       };
     } else {
+      idx = _idx;
       const _typeCondition = typeCondition();
       const _directives = directives(false);
       const _selectionSet = selectionSet();

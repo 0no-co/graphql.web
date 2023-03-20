@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`parse > parses the kitchen sink query 1`] = `
+exports[`print > prints the kitchen sink document like graphql.js does 1`] = `
 {
   "definitions": [
     {
@@ -39,11 +39,11 @@ exports[`parse > parses the kitchen sink query 1`] = `
                   "kind": "ListValue",
                   "values": [
                     {
-                      "kind": "FloatValue",
+                      "kind": "IntValue",
                       "value": "123",
                     },
                     {
-                      "kind": "FloatValue",
+                      "kind": "IntValue",
                       "value": "456",
                     },
                   ],
@@ -71,16 +71,6 @@ exports[`parse > parses the kitchen sink query 1`] = `
                   "selectionSet": undefined,
                 },
                 {
-                  "directives": [],
-                  "kind": "FragmentSpread",
-                  "name": {
-                    "kind": "Name",
-                    "value": "on",
-                  },
-                },
-                {
-                  "alias": undefined,
-                  "arguments": [],
                   "directives": [
                     {
                       "arguments": [],
@@ -91,11 +81,7 @@ exports[`parse > parses the kitchen sink query 1`] = `
                       },
                     },
                   ],
-                  "kind": "Field",
-                  "name": {
-                    "kind": "Name",
-                    "value": "User",
-                  },
+                  "kind": "InlineFragment",
                   "selectionSet": {
                     "kind": "SelectionSet",
                     "selections": [
@@ -135,7 +121,7 @@ exports[`parse > parses the kitchen sink query 1`] = `
                                     "value": "first",
                                   },
                                   "value": {
-                                    "kind": "FloatValue",
+                                    "kind": "IntValue",
                                     "value": "10",
                                   },
                                 },
@@ -222,6 +208,13 @@ exports[`parse > parses the kitchen sink query 1`] = `
                         },
                       },
                     ],
+                  },
+                  "typeCondition": {
+                    "kind": "NamedType",
+                    "name": {
+                      "kind": "Name",
+                      "value": "User",
+                    },
                   },
                 },
                 {
@@ -369,7 +362,7 @@ exports[`parse > parses the kitchen sink query 1`] = `
                   "value": "story",
                 },
                 "value": {
-                  "kind": "FloatValue",
+                  "kind": "IntValue",
                   "value": "123",
                 },
               },
@@ -618,7 +611,7 @@ exports[`parse > parses the kitchen sink query 1`] = `
                   "value": "bar",
                 },
                 "value": {
-                  "kind": "FloatValue",
+                  "kind": "IntValue",
                   "value": "12",
                 },
               },
@@ -651,7 +644,7 @@ exports[`parse > parses the kitchen sink query 1`] = `
                       "value": {
                         "block": true,
                         "kind": "StringValue",
-                        "value": "block string uses \\\\\\"\\"\\"",
+                        "value": "block string uses \\"\\"\\"",
                       },
                     },
                   ],

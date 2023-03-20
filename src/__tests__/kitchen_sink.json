@@ -1,0 +1,733 @@
+{
+  "kind": "Document",
+  "definitions": [
+    {
+      "kind": "OperationDefinition",
+      "operation": "query",
+      "name": {
+        "kind": "Name",
+        "value": "queryName"
+      },
+      "variableDefinitions": [
+        {
+          "kind": "VariableDefinition",
+          "variable": {
+            "kind": "Variable",
+            "name": {
+              "kind": "Name",
+              "value": "foo"
+            }
+          },
+          "type": {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "ComplexType"
+            }
+          },
+          "directives": []
+        },
+        {
+          "kind": "VariableDefinition",
+          "variable": {
+            "kind": "Variable",
+            "name": {
+              "kind": "Name",
+              "value": "site"
+            }
+          },
+          "type": {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Site"
+            }
+          },
+          "defaultValue": {
+            "kind": "EnumValue",
+            "value": "MOBILE"
+          },
+          "directives": []
+        }
+      ],
+      "directives": [
+        {
+          "kind": "Directive",
+          "name": {
+            "kind": "Name",
+            "value": "onQuery"
+          },
+          "arguments": []
+        }
+      ],
+      "selectionSet": {
+        "kind": "SelectionSet",
+        "selections": [
+          {
+            "kind": "Field",
+            "alias": {
+              "kind": "Name",
+              "value": "whoever123is"
+            },
+            "name": {
+              "kind": "Name",
+              "value": "node"
+            },
+            "arguments": [
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "id"
+                },
+                "value": {
+                  "kind": "ListValue",
+                  "values": [
+                    {
+                      "kind": "IntValue",
+                      "value": "123"
+                    },
+                    {
+                      "kind": "IntValue",
+                      "value": "456"
+                    }
+                  ]
+                }
+              }
+            ],
+            "directives": [],
+            "selectionSet": {
+              "kind": "SelectionSet",
+              "selections": [
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "id"
+                  },
+                  "arguments": [],
+                  "directives": []
+                },
+                {
+                  "kind": "InlineFragment",
+                  "typeCondition": {
+                    "kind": "NamedType",
+                    "name": {
+                      "kind": "Name",
+                      "value": "User"
+                    }
+                  },
+                  "directives": [
+                    {
+                      "kind": "Directive",
+                      "name": {
+                        "kind": "Name",
+                        "value": "onInlineFragment"
+                      },
+                      "arguments": []
+                    }
+                  ],
+                  "selectionSet": {
+                    "kind": "SelectionSet",
+                    "selections": [
+                      {
+                        "kind": "Field",
+                        "name": {
+                          "kind": "Name",
+                          "value": "field2"
+                        },
+                        "arguments": [],
+                        "directives": [],
+                        "selectionSet": {
+                          "kind": "SelectionSet",
+                          "selections": [
+                            {
+                              "kind": "Field",
+                              "name": {
+                                "kind": "Name",
+                                "value": "id"
+                              },
+                              "arguments": [],
+                              "directives": []
+                            },
+                            {
+                              "kind": "Field",
+                              "alias": {
+                                "kind": "Name",
+                                "value": "alias"
+                              },
+                              "name": {
+                                "kind": "Name",
+                                "value": "field1"
+                              },
+                              "arguments": [
+                                {
+                                  "kind": "Argument",
+                                  "name": {
+                                    "kind": "Name",
+                                    "value": "first"
+                                  },
+                                  "value": {
+                                    "kind": "IntValue",
+                                    "value": "10"
+                                  }
+                                },
+                                {
+                                  "kind": "Argument",
+                                  "name": {
+                                    "kind": "Name",
+                                    "value": "after"
+                                  },
+                                  "value": {
+                                    "kind": "Variable",
+                                    "name": {
+                                      "kind": "Name",
+                                      "value": "foo"
+                                    }
+                                  }
+                                }
+                              ],
+                              "directives": [
+                                {
+                                  "kind": "Directive",
+                                  "name": {
+                                    "kind": "Name",
+                                    "value": "include"
+                                  },
+                                  "arguments": [
+                                    {
+                                      "kind": "Argument",
+                                      "name": {
+                                        "kind": "Name",
+                                        "value": "if"
+                                      },
+                                      "value": {
+                                        "kind": "Variable",
+                                        "name": {
+                                          "kind": "Name",
+                                          "value": "foo"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "selectionSet": {
+                                "kind": "SelectionSet",
+                                "selections": [
+                                  {
+                                    "kind": "Field",
+                                    "name": {
+                                      "kind": "Name",
+                                      "value": "id"
+                                    },
+                                    "arguments": [],
+                                    "directives": []
+                                  },
+                                  {
+                                    "kind": "FragmentSpread",
+                                    "name": {
+                                      "kind": "Name",
+                                      "value": "frag"
+                                    },
+                                    "directives": [
+                                      {
+                                        "kind": "Directive",
+                                        "name": {
+                                          "kind": "Name",
+                                          "value": "onFragmentSpread"
+                                        },
+                                        "arguments": []
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "InlineFragment",
+                  "directives": [
+                    {
+                      "kind": "Directive",
+                      "name": {
+                        "kind": "Name",
+                        "value": "skip"
+                      },
+                      "arguments": [
+                        {
+                          "kind": "Argument",
+                          "name": {
+                            "kind": "Name",
+                            "value": "unless"
+                          },
+                          "value": {
+                            "kind": "Variable",
+                            "name": {
+                              "kind": "Name",
+                              "value": "foo"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "selectionSet": {
+                    "kind": "SelectionSet",
+                    "selections": [
+                      {
+                        "kind": "Field",
+                        "name": {
+                          "kind": "Name",
+                          "value": "id"
+                        },
+                        "arguments": [],
+                        "directives": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "InlineFragment",
+                  "directives": [],
+                  "selectionSet": {
+                    "kind": "SelectionSet",
+                    "selections": [
+                      {
+                        "kind": "Field",
+                        "name": {
+                          "kind": "Name",
+                          "value": "id"
+                        },
+                        "arguments": [],
+                        "directives": []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "OperationDefinition",
+      "operation": "mutation",
+      "name": {
+        "kind": "Name",
+        "value": "likeStory"
+      },
+      "variableDefinitions": [],
+      "directives": [
+        {
+          "kind": "Directive",
+          "name": {
+            "kind": "Name",
+            "value": "onMutation"
+          },
+          "arguments": []
+        }
+      ],
+      "selectionSet": {
+        "kind": "SelectionSet",
+        "selections": [
+          {
+            "kind": "Field",
+            "name": {
+              "kind": "Name",
+              "value": "like"
+            },
+            "arguments": [
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "story"
+                },
+                "value": {
+                  "kind": "IntValue",
+                  "value": "123"
+                }
+              }
+            ],
+            "directives": [
+              {
+                "kind": "Directive",
+                "name": {
+                  "kind": "Name",
+                  "value": "onField"
+                },
+                "arguments": []
+              }
+            ],
+            "selectionSet": {
+              "kind": "SelectionSet",
+              "selections": [
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "story"
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "selectionSet": {
+                    "kind": "SelectionSet",
+                    "selections": [
+                      {
+                        "kind": "Field",
+                        "name": {
+                          "kind": "Name",
+                          "value": "id"
+                        },
+                        "arguments": [],
+                        "directives": [
+                          {
+                            "kind": "Directive",
+                            "name": {
+                              "kind": "Name",
+                              "value": "onField"
+                            },
+                            "arguments": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "OperationDefinition",
+      "operation": "subscription",
+      "name": {
+        "kind": "Name",
+        "value": "StoryLikeSubscription"
+      },
+      "variableDefinitions": [
+        {
+          "kind": "VariableDefinition",
+          "variable": {
+            "kind": "Variable",
+            "name": {
+              "kind": "Name",
+              "value": "input"
+            }
+          },
+          "type": {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "StoryLikeSubscribeInput"
+            }
+          },
+          "directives": []
+        }
+      ],
+      "directives": [
+        {
+          "kind": "Directive",
+          "name": {
+            "kind": "Name",
+            "value": "onSubscription"
+          },
+          "arguments": []
+        }
+      ],
+      "selectionSet": {
+        "kind": "SelectionSet",
+        "selections": [
+          {
+            "kind": "Field",
+            "name": {
+              "kind": "Name",
+              "value": "storyLikeSubscribe"
+            },
+            "arguments": [
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "input"
+                },
+                "value": {
+                  "kind": "Variable",
+                  "name": {
+                    "kind": "Name",
+                    "value": "input"
+                  }
+                }
+              }
+            ],
+            "directives": [],
+            "selectionSet": {
+              "kind": "SelectionSet",
+              "selections": [
+                {
+                  "kind": "Field",
+                  "name": {
+                    "kind": "Name",
+                    "value": "story"
+                  },
+                  "arguments": [],
+                  "directives": [],
+                  "selectionSet": {
+                    "kind": "SelectionSet",
+                    "selections": [
+                      {
+                        "kind": "Field",
+                        "name": {
+                          "kind": "Name",
+                          "value": "likers"
+                        },
+                        "arguments": [],
+                        "directives": [],
+                        "selectionSet": {
+                          "kind": "SelectionSet",
+                          "selections": [
+                            {
+                              "kind": "Field",
+                              "name": {
+                                "kind": "Name",
+                                "value": "count"
+                              },
+                              "arguments": [],
+                              "directives": []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "kind": "Field",
+                        "name": {
+                          "kind": "Name",
+                          "value": "likeSentence"
+                        },
+                        "arguments": [],
+                        "directives": [],
+                        "selectionSet": {
+                          "kind": "SelectionSet",
+                          "selections": [
+                            {
+                              "kind": "Field",
+                              "name": {
+                                "kind": "Name",
+                                "value": "text"
+                              },
+                              "arguments": [],
+                              "directives": []
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "FragmentDefinition",
+      "name": {
+        "kind": "Name",
+        "value": "frag"
+      },
+      "typeCondition": {
+        "kind": "NamedType",
+        "name": {
+          "kind": "Name",
+          "value": "Friend"
+        }
+      },
+      "directives": [
+        {
+          "kind": "Directive",
+          "name": {
+            "kind": "Name",
+            "value": "onFragmentDefinition"
+          },
+          "arguments": []
+        }
+      ],
+      "selectionSet": {
+        "kind": "SelectionSet",
+        "selections": [
+          {
+            "kind": "Field",
+            "name": {
+              "kind": "Name",
+              "value": "foo"
+            },
+            "arguments": [
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "size"
+                },
+                "value": {
+                  "kind": "Variable",
+                  "name": {
+                    "kind": "Name",
+                    "value": "site"
+                  }
+                }
+              },
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "bar"
+                },
+                "value": {
+                  "kind": "IntValue",
+                  "value": "12"
+                }
+              },
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "obj"
+                },
+                "value": {
+                  "kind": "ObjectValue",
+                  "fields": [
+                    {
+                      "kind": "ObjectField",
+                      "name": {
+                        "kind": "Name",
+                        "value": "key"
+                      },
+                      "value": {
+                        "kind": "StringValue",
+                        "value": "value",
+                        "block": false
+                      }
+                    },
+                    {
+                      "kind": "ObjectField",
+                      "name": {
+                        "kind": "Name",
+                        "value": "block"
+                      },
+                      "value": {
+                        "kind": "StringValue",
+                        "value": "block string uses \"\"\"",
+                        "block": true
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "directives": []
+          }
+        ]
+      }
+    },
+    {
+      "kind": "OperationDefinition",
+      "operation": "query",
+      "name": {
+        "kind": "Name",
+        "value": "teeny"
+      },
+      "variableDefinitions": [],
+      "directives": [],
+      "selectionSet": {
+        "kind": "SelectionSet",
+        "selections": [
+          {
+            "kind": "Field",
+            "name": {
+              "kind": "Name",
+              "value": "unnamed"
+            },
+            "arguments": [
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "truthy"
+                },
+                "value": {
+                  "kind": "BooleanValue",
+                  "value": true
+                }
+              },
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "falsey"
+                },
+                "value": {
+                  "kind": "BooleanValue",
+                  "value": false
+                }
+              },
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "nullish"
+                },
+                "value": {
+                  "kind": "NullValue"
+                }
+              }
+            ],
+            "directives": []
+          },
+          {
+            "kind": "Field",
+            "name": {
+              "kind": "Name",
+              "value": "query"
+            },
+            "arguments": [],
+            "directives": []
+          }
+        ]
+      }
+    },
+    {
+      "kind": "OperationDefinition",
+      "operation": "query",
+      "name": {
+        "kind": "Name",
+        "value": "tiny"
+      },
+      "variableDefinitions": [],
+      "directives": [],
+      "selectionSet": {
+        "kind": "SelectionSet",
+        "selections": [
+          {
+            "kind": "Field",
+            "name": {
+              "kind": "Name",
+              "value": "__typename"
+            },
+            "arguments": [],
+            "directives": []
+          }
+        ]
+      }
+    }
+  ]
+}

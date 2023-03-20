@@ -13,6 +13,8 @@ const hasItems = <T>(
   array: ReadonlyArray<T> | undefined | null
 ): array is ReadonlyArray<T> => !!(array && array.length);
 
+const MAX_LINE_LENGTH = 80;
+
 export function print(node: ASTNode): string {
   let out: string;
   switch (node.kind) {
@@ -43,8 +45,13 @@ export function print(node: ASTNode): string {
 
     case Kind.FIELD:
       out = (node.alias ? print(node.alias) + ': ' : '') + node.name.value
-      if (hasItems(node.arguments))
-        out += '(' + node.arguments.map(print).join(', ') + ')';
+      if (hasItems(node.arguments)) {
+        const args = node.arguments.map(print);
+        const argsLine = out + '(' + args.join(', ') + ')';
+        out = argsLine.length > MAX_LINE_LENGTH
+          ? out + '(\n  ' + args.join('\n').replace(/\n/g, '\n  ') + '\n)'
+          : argsLine;
+      }
       if (hasItems(node.directives))
         out += ' ' + node.directives.map(print).join(' ');
       return node.selectionSet
