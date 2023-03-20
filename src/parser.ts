@@ -26,11 +26,11 @@ function advance(pattern: RegExp) {
 
 const leadingRe = / +(?=[^\s])/y;
 export function blockString(string: string) {
+  const lines = string.split('\n');
   let out = '';
   let commonIndent = 0;
   let firstNonEmptyLine = 0;
-  let lastNonEmptyLine = -1;
-  const lines = string.split('\n');
+  let lastNonEmptyLine = lines.length - 1;
   for (let i = 0; i < lines.length; i++) {
     leadingRe.lastIndex = 0;
     if (leadingRe.test(lines[i])) {
