@@ -29,7 +29,7 @@
     "client-side graphql"
   ],
   "scripts": {
-    "test": "vitest",
+    "test": "vitest run",
     "check": "tsc",
     "lint": "eslint --ext=js,ts .",
     "build": "rollup -c scripts/rollup.config.mjs",
