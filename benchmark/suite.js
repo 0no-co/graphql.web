@@ -4,8 +4,7 @@ const graphql15 = require('graphql15');
 const graphql16 = require('graphql16');
 const graphql17 = require('graphql17');
 
-const kitchenSink =
-  fs.readFileSync('../src/__tests__/kitchen_sink.graphql', { encoding: 'utf8' });
+const kitchenSink = fs.readFileSync('../src/__tests__/kitchen_sink.graphql', { encoding: 'utf8' });
 const document = require('../src/__tests__/kitchen_sink.json');
 
 suite('parse kitchen sink query', () => {
@@ -77,11 +76,7 @@ suite('visit kitchen sink query', () => {
 function formatNode(node) {
   if (!node.selectionSet) return node;
   for (const selection of node.selectionSet.selections)
-    if (
-      selection.kind === 'Field' &&
-      selection.name.value === '__typename' &&
-      !selection.alias
-    )
+    if (selection.kind === 'Field' && selection.name.value === '__typename' && !selection.alias)
       return node;
 
   return {

@@ -113,34 +113,37 @@ describe('parse', () => {
     expect(() => parse('{ field: }')).toThrow();
     expect(() => parse('{ alias: field() }')).toThrow();
 
-    expect(
-      parse('{ alias: field { child } }').definitions[0]
-    ).toHaveProperty('selectionSet.selections.0', {
-      kind: Kind.FIELD,
-      directives: [],
-      arguments: [],
-      alias: {
-        kind: Kind.NAME,
-        value: 'alias',
-      },
-      name: {
-        kind: Kind.NAME,
-        value: 'field',
-      },
-      selectionSet: {
-        kind: Kind.SELECTION_SET,
-        selections: [{
-          kind: Kind.FIELD,
-          directives: [],
-          arguments: [],
-          name: {
-            kind: Kind.NAME,
-            value: 'child',
-          },
-        }]
-      },
-    });
-  })
+    expect(parse('{ alias: field { child } }').definitions[0]).toHaveProperty(
+      'selectionSet.selections.0',
+      {
+        kind: Kind.FIELD,
+        directives: [],
+        arguments: [],
+        alias: {
+          kind: Kind.NAME,
+          value: 'alias',
+        },
+        name: {
+          kind: Kind.NAME,
+          value: 'field',
+        },
+        selectionSet: {
+          kind: Kind.SELECTION_SET,
+          selections: [
+            {
+              kind: Kind.FIELD,
+              directives: [],
+              arguments: [],
+              name: {
+                kind: Kind.NAME,
+                value: 'child',
+              },
+            },
+          ],
+        },
+      }
+    );
+  });
 
   it('parses arguments', () => {
     expect(() => parse('{ field() }')).toThrow();
@@ -159,16 +162,18 @@ describe('parse', () => {
               kind: Kind.NAME,
               value: 'field',
             },
-            arguments: [{
-              kind: Kind.ARGUMENT,
-              name: {
-                kind: Kind.NAME,
-                value: 'name',
+            arguments: [
+              {
+                kind: Kind.ARGUMENT,
+                name: {
+                  kind: Kind.NAME,
+                  value: 'name',
+                },
+                value: {
+                  kind: Kind.NULL,
+                },
               },
-              value: {
-                kind: Kind.NULL,
-              },
-            }],
+            ],
           },
         ],
       },
@@ -179,25 +184,28 @@ describe('parse', () => {
     expect(() => parse('{ field @ }')).toThrow();
     expect(() => parse('{ field @(test: null) }')).toThrow();
 
-    expect(
-      parse('{ field @test(name: null) }')
-    ).toHaveProperty('definitions.0.selectionSet.selections.0.directives.0', {
-      kind: Kind.DIRECTIVE,
-      name: {
-        kind: Kind.NAME,
-        value: 'test',
-      },
-      arguments: [{
-        kind: Kind.ARGUMENT,
+    expect(parse('{ field @test(name: null) }')).toHaveProperty(
+      'definitions.0.selectionSet.selections.0.directives.0',
+      {
+        kind: Kind.DIRECTIVE,
         name: {
           kind: Kind.NAME,
-          value: 'name',
+          value: 'test',
         },
-        value: {
-          kind: Kind.NULL,
-        },
-      }],
-    });
+        arguments: [
+          {
+            kind: Kind.ARGUMENT,
+            name: {
+              kind: Kind.NAME,
+              value: 'name',
+            },
+            value: {
+              kind: Kind.NULL,
+            },
+          },
+        ],
+      }
+    );
   });
 
   it('parses inline fragments', () => {
@@ -205,24 +213,23 @@ describe('parse', () => {
     expect(() => parse('{ ... {} }')).toThrow();
     expect(() => parse('{ ... }')).toThrow();
 
-    expect(
-      parse('{ ... on Test { field } }')
-    ).toHaveProperty('definitions.0.selectionSet.selections.0', {
-      kind: Kind.INLINE_FRAGMENT,
-      directives: [],
-      typeCondition: {
-        kind: Kind.NAMED_TYPE,
-        name: {
-          kind: Kind.NAME,
-          value: 'Test',
+    expect(parse('{ ... on Test { field } }')).toHaveProperty(
+      'definitions.0.selectionSet.selections.0',
+      {
+        kind: Kind.INLINE_FRAGMENT,
+        directives: [],
+        typeCondition: {
+          kind: Kind.NAMED_TYPE,
+          name: {
+            kind: Kind.NAME,
+            value: 'Test',
+          },
         },
-      },
-      selectionSet: expect.any(Object),
-    });
+        selectionSet: expect.any(Object),
+      }
+    );
 
-    expect(
-      parse('{ ... { field } }')
-    ).toHaveProperty('definitions.0.selectionSet.selections.0', {
+    expect(parse('{ ... { field } }')).toHaveProperty('definitions.0.selectionSet.selections.0', {
       kind: Kind.INLINE_FRAGMENT,
       directives: [],
       typeCondition: undefined,
@@ -236,34 +243,34 @@ describe('parse', () => {
     expect(() => parse('query ($var:) { test }')).toThrow();
     expect(() => parse('query ($var: Int =) { test }')).toThrow();
 
-    expect(
-      parse('query ($var: Int = 1) { test }').definitions[0]
-    ).toMatchObject({
+    expect(parse('query ($var: Int = 1) { test }').definitions[0]).toMatchObject({
       kind: Kind.OPERATION_DEFINITION,
       operation: 'query',
       directives: [],
       selectionSet: expect.any(Object),
-      variableDefinitions: [{
-        kind: Kind.VARIABLE_DEFINITION,
-        type: {
-          kind: Kind.NAMED_TYPE,
-          name: {
-            kind: Kind.NAME,
-            value: 'Int',
+      variableDefinitions: [
+        {
+          kind: Kind.VARIABLE_DEFINITION,
+          type: {
+            kind: Kind.NAMED_TYPE,
+            name: {
+              kind: Kind.NAME,
+              value: 'Int',
+            },
+          },
+          variable: {
+            kind: Kind.VARIABLE,
+            name: {
+              kind: Kind.NAME,
+              value: 'var',
+            },
+          },
+          defaultValue: {
+            kind: Kind.INT,
+            value: '1',
           },
         },
-        variable: {
-          kind: Kind.VARIABLE,
-          name: {
-            kind: Kind.NAME,
-            value: 'var',
-          },
-        },
-        defaultValue: {
-          kind: Kind.INT,
-          value: '1',
-        },
-      }],
+      ],
     });
   });
 
@@ -485,16 +492,18 @@ describe('parseValue', () => {
 
     expect(parseValue('{name:null}')).toEqual({
       kind: Kind.OBJECT,
-      fields: [{
-        kind: Kind.OBJECT_FIELD,
-        name: {
-          kind: Kind.NAME,
-          value: 'name'
+      fields: [
+        {
+          kind: Kind.OBJECT_FIELD,
+          name: {
+            kind: Kind.NAME,
+            value: 'name',
+          },
+          value: {
+            kind: Kind.NULL,
+          },
         },
-        value: {
-          kind: Kind.NULL,
-        },
-      }],
+      ],
     });
   });
 
@@ -509,9 +518,11 @@ describe('parseValue', () => {
 
     expect(parseValue('[null]')).toEqual({
       kind: Kind.LIST,
-      values: [{
-        kind: Kind.NULL,
-      }],
+      values: [
+        {
+          kind: Kind.NULL,
+        },
+      ],
     });
   });
 
@@ -654,4 +665,4 @@ describe('parseType', () => {
       },
     });
   });
-})
+});
