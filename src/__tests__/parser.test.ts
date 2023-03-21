@@ -15,9 +15,11 @@ describe('parse', () => {
     expect(doc).toEqual(graphql_parse(sink, { noLocation: true }));
   });
 
-  it('parse provides errors', () => {
+  it('parses basic documents', () => {
     expect(() => parse('{')).toThrow();
     expect(() => parse('{}x  ')).toThrow();
+    expect(() => parse('{ field }')).not.toThrow();
+    expect(() => parse({ body: '{ field }' })).not.toThrow();
   });
 
   it('parses variable inline values', () => {
@@ -404,9 +406,10 @@ describe('parse', () => {
 });
 
 describe('parseValue', () => {
-  it('parses null value', () => {
-    const result = parseValue('null');
-    expect(result).toEqual({ kind: Kind.NULL });
+  it('parses basic values', () => {
+    expect(() => parseValue('')).toThrow();
+    expect(parseValue('null')).toEqual({ kind: Kind.NULL });
+    expect(parseValue({ body: 'null' })).toEqual({ kind: Kind.NULL });
   });
 
   it('parses list values', () => {
@@ -573,6 +576,12 @@ describe('parseValue', () => {
 });
 
 describe('parseType', () => {
+  it('parses basic types', () => {
+    expect(() => parseType('')).toThrow();
+    expect(() => parseType('Type')).not.toThrow();
+    expect(() => parseType({ body: 'Type' })).not.toThrow();
+  });
+
   it('throws on invalid inputs', () => {
     expect(() => parseType('!')).toThrow();
     expect(() => parseType('[String')).toThrow();

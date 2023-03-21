@@ -25,7 +25,7 @@ function advance(pattern: RegExp) {
 }
 
 const leadingRe = / +(?=[^\s])/y;
-export function blockString(string: string) {
+function blockString(string: string) {
   const lines = string.split('\n');
   let out = '';
   let commonIndent = 0;
