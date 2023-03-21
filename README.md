@@ -31,6 +31,15 @@ spec-compliant or compatible with GraphQL.js’ implementation.
 > project](https://github.com/0no-co/graphql-web-lite) is maintained to be
 > a full shim/alias for the `graphql` package.
 
+### Overview
+
+`@0no-co/graphql.web` aims to provide a minimal set of exports to implement
+client-side GraphQL utilities, mostly including parsing, printing, and visiting
+the GraphQL AST, and the `GraphQLError` class.
+
+Currently, `graphql.web` compresses to under 4kB and doesn’t regress on
+GraphQL.js’ performance when parsing, printing, or visiting the AST.
+
 ### API
 
 Currently, only a select few exports are provided — namely, the ones listed here
