@@ -498,6 +498,12 @@ describe('parseValue', () => {
 });
 
 describe('parseType', () => {
+  it('throws on invalid inputs', () => {
+    expect(() => parseType('!')).toThrow();
+    expect(() => parseType('[String')).toThrow();
+    expect(() => parseType('[String!')).toThrow();
+  });
+
   it('parses well known types', () => {
     const result = parseType('String');
     expect(result).toEqual({
