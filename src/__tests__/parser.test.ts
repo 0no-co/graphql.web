@@ -220,6 +220,43 @@ describe('parse', () => {
     });
   });
 
+  it('parses variable definitions', () => {
+    expect(() => parse('query ( { test }')).toThrow();
+    expect(() => parse('query ($var) { test }')).toThrow();
+    expect(() => parse('query ($var:) { test }')).toThrow();
+    expect(() => parse('query ($var: Int =) { test }')).toThrow();
+
+    expect(
+      parse('query ($var: Int = 1) { test }').definitions[0]
+    ).toMatchObject({
+      kind: Kind.OPERATION_DEFINITION,
+      operation: 'query',
+      directives: [],
+      selectionSet: expect.any(Object),
+      variableDefinitions: [{
+        kind: Kind.VARIABLE_DEFINITION,
+        type: {
+          kind: Kind.NAMED_TYPE,
+          name: {
+            kind: Kind.NAME,
+            value: 'Int',
+          },
+        },
+        variable: {
+          kind: Kind.VARIABLE,
+          name: {
+            kind: Kind.NAME,
+            value: 'var',
+          },
+        },
+        defaultValue: {
+          kind: Kind.INT,
+          value: '1',
+        },
+      }],
+    });
+  });
+
   it('creates ast', () => {
     const result = parse(`
       {
