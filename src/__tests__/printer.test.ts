@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 
 import { parse, print as graphql_print } from 'graphql';
-import { print } from '../printer';
+import { print, printString, printBlockString } from '../printer';
 
 function dedentString(string) {
   const trimmedStr = string
@@ -25,6 +25,21 @@ function dedent(strings, ...values) {
   for (let i = 1; i < strings.length; ++i) str += values[i - 1] + strings[i]; // interpolation
   return dedentString(str);
 }
+
+describe('printString', () => {
+  it('prints strings as expected', () => {
+    expect(printString('test')).toEqual('"test"');
+    expect(printString('\n')).toEqual('"\\n"');
+  });
+});
+
+describe('printBlockString', () => {
+  it('prints block strings as expected', () => {
+    expect(printBlockString('test')).toEqual('"""\ntest\n"""');
+    expect(printBlockString('\n')).toEqual('"""\n\n\n"""');
+    expect(printBlockString('"""')).toEqual('"""\n\\"""\n"""');
+  });
+});
 
 describe('print', () => {
   it('prints the kitchen sink document like graphql.js does', () => {
