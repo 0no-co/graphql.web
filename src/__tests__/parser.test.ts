@@ -261,8 +261,7 @@ describe('print', () => {
     });
 
     it('parses block strings', () => {
-      const result = parseValue('["""long""" "short"]');
-      expect(result).toEqual({
+      expect(parseValue('["""long""" "short"]')).toEqual({
         kind: Kind.LIST,
         values: [
           {
@@ -276,6 +275,12 @@ describe('print', () => {
             block: false,
           },
         ],
+      });
+
+      expect(parseValue('"""\n\n  first\n  second\n"""')).toEqual({
+        kind: Kind.STRING,
+        value: 'long',
+        block: true,
       });
     });
 
