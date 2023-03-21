@@ -50,11 +50,55 @@ describe('print', () => {
   });
 
   it('prints minimal ast', () => {
-    const ast = {
+    expect(print({
       kind: 'Field',
       name: { kind: 'Name', value: 'foo' },
-    };
-    expect(print(ast as any)).toBe('foo');
+    } as any)).toBe('foo');
+
+    expect(print({
+      kind: 'Name',
+      value: 'foo',
+    } as any)).toBe('foo');
+
+    expect(print({
+      kind: 'Document',
+      definitions: [],
+    } as any)).toBe('');
+  });
+
+  it('prints integers and floats', () => {
+    expect(print({
+      kind: 'IntValue',
+      value: '12',
+    } as any)).toBe('12');
+
+    expect(print({
+      kind: 'FloatValue',
+      value: '12e2',
+    } as any)).toBe('12e2');
+  });
+
+  it('prints lists of values', () => {
+    expect(print({
+      kind: 'ListValue',
+      values: [{ kind: 'NullValue' }]
+    } as any)).toBe('[null]');
+  });
+
+  it('prints types', () => {
+    expect(print({
+      kind: 'ListType',
+      type: {
+        kind: 'NonNullType',
+        type: {
+          kind: 'NamedType',
+          name: {
+            kind: 'Name',
+            value: 'Type'
+          },
+        },
+      }
+    } as any)).toBe('[Type!]');
   });
 
   // NOTE: The shim won't throw for invalid AST nodes
