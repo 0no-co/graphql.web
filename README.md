@@ -40,6 +40,11 @@ the GraphQL AST, and the `GraphQLError` class.
 Currently, `graphql.web` compresses to under 4kB and doesn’t regress on
 GraphQL.js’ performance when parsing, printing, or visiting the AST.
 
+For all primary APIs we aim to hit 100% test coverage and match the output,
+types, and API compatibility of GraphQL.js, including — as far as possible
+— TypeScript type compatibility of the AST types with the currently stable
+version of GraphQL.js.
+
 ### API
 
 Currently, only a select few exports are provided — namely, the ones listed here
