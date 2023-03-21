@@ -303,6 +303,31 @@ describe('print', () => {
       });
     });
 
+    it('parses objects', () => {
+      expect(parseValue('{}')).toEqual({
+        kind: Kind.OBJECT,
+        fields: [],
+      });
+
+      expect(() => parseValue('{name}')).toThrow();
+      expect(() => parseValue('{name:}')).toThrow();
+      expect(() => parseValue('{name:null')).toThrow();
+
+      expect(parseValue('{name:null}')).toEqual({
+        kind: Kind.OBJECT,
+        fields: [{
+          kind: Kind.OBJECT_FIELD,
+          name: {
+            kind: Kind.NAME,
+            value: 'name'
+          },
+          value: {
+            kind: Kind.NULL,
+          },
+        }],
+      });
+    });
+
     it('parses block strings', () => {
       expect(parseValue('["""long""" "short"]')).toEqual({
         kind: Kind.LIST,
