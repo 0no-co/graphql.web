@@ -443,7 +443,6 @@ function document(): ast.DocumentNode {
   ignored();
   const definitions: ast.ExecutableDefinitionNode[] = [];
   while ((match = fragmentDefinition() || operationDefinition())) definitions.push(match);
-  if (idx !== input.length) throw error('Document');
   return {
     kind: 'Document' as Kind.DOCUMENT,
     definitions,

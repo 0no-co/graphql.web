@@ -17,6 +17,7 @@ describe('parse', () => {
 
   it('parse provides errors', () => {
     expect(() => parse('{')).toThrow();
+    expect(() => parse('{}x  ')).toThrow();
   });
 
   it('parses variable inline values', () => {
