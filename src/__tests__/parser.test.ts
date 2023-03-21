@@ -99,6 +99,39 @@ describe('parse', () => {
     }).not.toThrow();
   });
 
+  it('parses fields', () => {
+    expect(() => parse('{ field: }')).toThrow();
+    expect(() => parse('{ alias: field() }')).toThrow();
+
+    expect(
+      parse('{ alias: field { child } }').definitions[0]
+    ).toHaveProperty('selectionSet.selections.0', {
+      kind: Kind.FIELD,
+      directives: [],
+      arguments: [],
+      alias: {
+        kind: Kind.NAME,
+        value: 'alias',
+      },
+      name: {
+        kind: Kind.NAME,
+        value: 'field',
+      },
+      selectionSet: {
+        kind: Kind.SELECTION_SET,
+        selections: [{
+          kind: Kind.FIELD,
+          directives: [],
+          arguments: [],
+          name: {
+            kind: Kind.NAME,
+            value: 'child',
+          },
+        }]
+      },
+    });
+  })
+
   it('parses arguments', () => {
     expect(() => parse('{ field() }')).toThrow();
     expect(() => parse('{ field(name) }')).toThrow();
