@@ -258,7 +258,7 @@ function field(): ast.FieldNode | undefined {
   }
 }
 
-function type(): ast.TypeNode | undefined {
+function type(): ast.TypeNode {
   let match: ast.NameNode | ast.TypeNode | undefined;
   ignored();
   if (input.charCodeAt(idx) === 91 /*'['*/) {
@@ -363,7 +363,6 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
       const _type = type();
-      if (!_type) throw error('VariableDefinition');
       let _defaultValue: ast.ValueNode | undefined;
       if (input.charCodeAt(idx) === 61 /*'='*/) {
         idx++;
