@@ -99,6 +99,41 @@ describe('parse', () => {
     }).not.toThrow();
   });
 
+  it('parses arguments', () => {
+    expect(() => parse('{ field() }')).toThrow();
+    expect(() => parse('{ field(name) }')).toThrow();
+    expect(() => parse('{ field(name:) }')).toThrow();
+    expect(() => parse('{ field(name: null }')).toThrow();
+
+    expect(parse('{ field(name: null) }').definitions[0]).toMatchObject({
+      kind: Kind.OPERATION_DEFINITION,
+      selectionSet: {
+        kind: Kind.SELECTION_SET,
+        selections: [
+          {
+            kind: Kind.FIELD,
+            name: {
+              kind: Kind.NAME,
+              value: 'field',
+            },
+            arguments: [
+              {
+                kind: Kind.ARGUMENT,
+                name: {
+                  kind: Kind.NAME,
+                  value: 'name',
+                },
+                value: {
+                  kind: Kind.NULL,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+  });
+
   it('creates ast', () => {
     const result = parse(`
       {
