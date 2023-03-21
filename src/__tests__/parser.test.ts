@@ -289,6 +289,20 @@ describe('print', () => {
       });
     });
 
+    it('parses strings', () => {
+      expect(parseValue('"test"')).toEqual({
+        kind: Kind.STRING,
+        value: 'test',
+        block: false,
+      });
+
+      expect(parseValue('"\\t\\t"')).toEqual({
+        kind: Kind.STRING,
+        value: '\t\t',
+        block: false,
+      });
+    });
+
     it('parses block strings', () => {
       expect(parseValue('["""long""" "short"]')).toEqual({
         kind: Kind.LIST,
