@@ -61,10 +61,14 @@ importers:
   benchmark:
     specifiers:
       benchr: 4.3.0
-      graphql: ^16.6.0
+      graphql15: npm:graphql@^15.8.0
+      graphql16: npm:graphql@^16.6.0
+      graphql17: npm:graphql@^17.0.0-alpha.2
     dependencies:
       benchr: 4.3.0
-      graphql: 16.6.0
+      graphql15: /graphql/15.8.0
+      graphql16: /graphql/16.6.0
+      graphql17: /graphql/17.0.0-alpha.2
 
 packages:
 
@@ -2116,9 +2120,19 @@ packages:
     resolution: {integrity: sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==}
     dev: true
 
+  /graphql/15.8.0:
+    resolution: {integrity: sha512-5gghUc24tP9HRznNpV2+FIoq3xKkj5dTQqf4v0CpdPbFVwFkWoxOM+o+2OC9ZSvjEMTjfmG9QT+gcvggTwW1zw==}
+    engines: {node: '>= 10.x'}
+    dev: false
+
   /graphql/16.6.0:
     resolution: {integrity: sha512-KPIBPDlW7NxrbT/eh4qPXz5FiFdL5UbaA0XUNz2Rp3Z3hqBSkbj0GVjwFDztsWVauZUWsbKHgMg++sk8UX0bkw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
+
+  /graphql/17.0.0-alpha.2:
+    resolution: {integrity: sha512-aRAd/BQ5hSO0+l7x+sHBfJVUp2JUOjPTE/iwJ3BhtYNH/MC7n4gjlZbKvnBVFZZAczyMS3vezS4teEZivoqIzw==}
+    engines: {node: ^14.19.0 || ^16.10.0 || >=18.0.0}
+    dev: false
 
   /hard-rejection/2.1.0:
     resolution: {integrity: sha512-VIZB+ibDhx7ObhAe7OVtoEbuP4h/MuOTHJ+J8h/eBXotJYl0fBgR72xDFCKgIh22OJZIOVNxBMWuhAr10r8HdA==}
