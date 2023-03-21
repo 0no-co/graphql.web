@@ -78,8 +78,8 @@ function name(): ast.NameNode | undefined {
 
 const constRe = /null|true|false/y;
 const variableRe = /\$[_\w][_\d\w]*/y;
-const intRe = /[-]?\d+/y;
-const floatRe = /(?:[-]?\d+)?(?:\.\d+)(?:[eE][+-]?\d+)?/y;
+const intRe = /-?\d+/y;
+const floatPartRe = /(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
 const complexStringRe = /\\/g;
 const blockStringRe = /"""(?:[\s\S]+(?="""))?"""/y;
 const stringRe = /"(?:[^"\r\n]+)?"/y;
@@ -108,16 +108,19 @@ function value(constant: boolean): ast.ValueNode | undefined {
         value: match.slice(1),
       },
     };
-  } else if ((match = advance(floatRe))) {
-    out = {
-      kind: 'FloatValue' as Kind.FLOAT,
-      value: match,
-    };
   } else if ((match = advance(intRe))) {
-    out = {
-      kind: 'IntValue' as Kind.INT,
-      value: match,
-    };
+    const intPart = match;
+    if ((match = advance(floatPartRe))) {
+      out = {
+        kind: 'FloatValue' as Kind.FLOAT,
+        value: intPart + match,
+      };
+    } else {
+      out = {
+        kind: 'IntValue' as Kind.INT,
+        value: intPart,
+      };
+    }
   } else if ((match = advance(nameRe))) {
     out = {
       kind: 'EnumValue' as Kind.ENUM,

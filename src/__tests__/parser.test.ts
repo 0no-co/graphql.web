@@ -260,6 +260,35 @@ describe('print', () => {
       });
     });
 
+    it('parses integers', () => {
+      expect(parseValue('12')).toEqual({
+        kind: Kind.INT,
+        value: '12',
+      });
+
+      expect(parseValue('-12')).toEqual({
+        kind: Kind.INT,
+        value: '-12',
+      });
+    });
+
+    it('parses floats', () => {
+      expect(parseValue('12e2')).toEqual({
+        kind: Kind.FLOAT,
+        value: '12e2',
+      });
+
+      expect(parseValue('0.2E3')).toEqual({
+        kind: Kind.FLOAT,
+        value: '0.2E3',
+      });
+
+      expect(parseValue('-1.2e+3')).toEqual({
+        kind: Kind.FLOAT,
+        value: '-1.2e+3',
+      });
+    });
+
     it('parses block strings', () => {
       expect(parseValue('["""long""" "short"]')).toEqual({
         kind: Kind.LIST,
@@ -279,7 +308,7 @@ describe('print', () => {
 
       expect(parseValue('"""\n\n  first\n  second\n"""')).toEqual({
         kind: Kind.STRING,
-        value: 'long',
+        value: 'first\nsecond',
         block: true,
       });
     });
