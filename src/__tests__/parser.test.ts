@@ -190,6 +190,36 @@ describe('parse', () => {
     });
   });
 
+  it('parses inline fragments', () => {
+    expect(() => parse('{ ... on Test }')).toThrow();
+    expect(() => parse('{ ... {} }')).toThrow();
+    expect(() => parse('{ ... }')).toThrow();
+
+    expect(
+      parse('{ ... on Test { field } }')
+    ).toHaveProperty('definitions.0.selectionSet.selections.0', {
+      kind: Kind.INLINE_FRAGMENT,
+      directives: [],
+      typeCondition: {
+        kind: Kind.NAMED_TYPE,
+        name: {
+          kind: Kind.NAME,
+          value: 'Test',
+        },
+      },
+      selectionSet: expect.any(Object),
+    });
+
+    expect(
+      parse('{ ... { field } }')
+    ).toHaveProperty('definitions.0.selectionSet.selections.0', {
+      kind: Kind.INLINE_FRAGMENT,
+      directives: [],
+      typeCondition: undefined,
+      selectionSet: expect.any(Object),
+    });
+  });
+
   it('creates ast', () => {
     const result = parse(`
       {
