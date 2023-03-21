@@ -1,5 +1,14 @@
 # @0no-co/graphql.web
 
+## 0.1.6
+
+### Patch Changes
+
+- ⚠️ Fix float pattern and int/float decision in value parsing
+  Submitted by [@kitten](https://github.com/kitten) (See [#8](https://github.com/0no-co/graphql.web/pull/8))
+- Remove redundant code paths from `visit` and parser
+  Submitted by [@kitten](https://github.com/kitten) (See [#8](https://github.com/0no-co/graphql.web/pull/8))
+
 ## 0.1.5
 
 ### Patch Changes
