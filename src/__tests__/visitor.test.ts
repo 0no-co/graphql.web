@@ -50,6 +50,33 @@ describe('Visitor', () => {
     expect(() => visit(ast, {})).not.toThrow();
   });
 
+  it('handles noop visitor', () => {
+    const ast = parse('{ a, b }', { noLocation: true });
+    expect(() =>
+      visit(ast, {
+        enter() {
+          /*noop*/
+        },
+      })
+    ).not.toThrow();
+
+    expect(() =>
+      visit(ast, {
+        enter(node) {
+          return node;
+        },
+      })
+    ).not.toThrow();
+
+    expect(() =>
+      visit(ast, {
+        enter() {
+          throw new Error();
+        },
+      })
+    ).toThrow();
+  });
+
   it('validates path argument', () => {
     const visited: any[] = [];
 

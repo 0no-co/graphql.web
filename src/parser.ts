@@ -25,7 +25,7 @@ function advance(pattern: RegExp) {
 }
 
 const leadingRe = / +(?=[^\s])/y;
-export function blockString(string: string) {
+function blockString(string: string) {
   const lines = string.split('\n');
   let out = '';
   let commonIndent = 0;
@@ -78,8 +78,8 @@ function name(): ast.NameNode | undefined {
 
 const constRe = /null|true|false/y;
 const variableRe = /\$[_\w][_\d\w]*/y;
-const intRe = /[-]?\d+/y;
-const floatRe = /(?:[-]?\d+)?(?:\.\d+)(?:[eE][+-]?\d+)?/y;
+const intRe = /-?\d+/y;
+const floatPartRe = /(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
 const complexStringRe = /\\/g;
 const blockStringRe = /"""(?:[\s\S]+(?="""))?"""/y;
 const stringRe = /"(?:[^"\r\n]+)?"/y;
@@ -108,16 +108,19 @@ function value(constant: boolean): ast.ValueNode | undefined {
         value: match.slice(1),
       },
     };
-  } else if ((match = advance(floatRe))) {
-    out = {
-      kind: 'FloatValue' as Kind.FLOAT,
-      value: match,
-    };
   } else if ((match = advance(intRe))) {
-    out = {
-      kind: 'IntValue' as Kind.INT,
-      value: match,
-    };
+    const intPart = match;
+    if ((match = advance(floatPartRe))) {
+      out = {
+        kind: 'FloatValue' as Kind.FLOAT,
+        value: intPart + match,
+      };
+    } else {
+      out = {
+        kind: 'IntValue' as Kind.INT,
+        value: intPart,
+      };
+    }
   } else if ((match = advance(nameRe))) {
     out = {
       kind: 'EnumValue' as Kind.ENUM,
@@ -255,7 +258,7 @@ function field(): ast.FieldNode | undefined {
   }
 }
 
-function type(): ast.TypeNode | undefined {
+function type(): ast.TypeNode {
   let match: ast.NameNode | ast.TypeNode | undefined;
   ignored();
   if (input.charCodeAt(idx) === 91 /*'['*/) {
@@ -360,7 +363,6 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
       const _type = type();
-      if (!_type) throw error('VariableDefinition');
       let _defaultValue: ast.ValueNode | undefined;
       if (input.charCodeAt(idx) === 61 /*'='*/) {
         idx++;
@@ -441,7 +443,6 @@ function document(): ast.DocumentNode {
   ignored();
   const definitions: ast.ExecutableDefinitionNode[] = [];
   while ((match = fragmentDefinition() || operationDefinition())) definitions.push(match);
-  if (idx !== input.length) throw error('Document');
   return {
     kind: 'Document' as Kind.DOCUMENT,
     definitions,
@@ -479,7 +480,5 @@ export function parseType(
 ): ast.TypeNode {
   input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
-  const _type = type();
-  if (!_type) throw error('TypeNode');
-  return _type;
+  return type();
 }

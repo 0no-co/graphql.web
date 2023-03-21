@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 
 import { parse, print as graphql_print } from 'graphql';
-import { print } from '../printer';
+import { print, printString, printBlockString } from '../printer';
 
 function dedentString(string) {
   const trimmedStr = string
@@ -26,6 +26,21 @@ function dedent(strings, ...values) {
   return dedentString(str);
 }
 
+describe('printString', () => {
+  it('prints strings as expected', () => {
+    expect(printString('test')).toEqual('"test"');
+    expect(printString('\n')).toEqual('"\\n"');
+  });
+});
+
+describe('printBlockString', () => {
+  it('prints block strings as expected', () => {
+    expect(printBlockString('test')).toEqual('"""\ntest\n"""');
+    expect(printBlockString('\n')).toEqual('"""\n\n\n"""');
+    expect(printBlockString('"""')).toEqual('"""\n\\"""\n"""');
+  });
+});
+
 describe('print', () => {
   it('prints the kitchen sink document like graphql.js does', () => {
     const sink = JSON.parse(readFileSync(__dirname + '/kitchen_sink.json', { encoding: 'utf8' }));
@@ -35,11 +50,69 @@ describe('print', () => {
   });
 
   it('prints minimal ast', () => {
-    const ast = {
-      kind: 'Field',
-      name: { kind: 'Name', value: 'foo' },
-    };
-    expect(print(ast as any)).toBe('foo');
+    expect(
+      print({
+        kind: 'Field',
+        name: { kind: 'Name', value: 'foo' },
+      } as any)
+    ).toBe('foo');
+
+    expect(
+      print({
+        kind: 'Name',
+        value: 'foo',
+      } as any)
+    ).toBe('foo');
+
+    expect(
+      print({
+        kind: 'Document',
+        definitions: [],
+      } as any)
+    ).toBe('');
+  });
+
+  it('prints integers and floats', () => {
+    expect(
+      print({
+        kind: 'IntValue',
+        value: '12',
+      } as any)
+    ).toBe('12');
+
+    expect(
+      print({
+        kind: 'FloatValue',
+        value: '12e2',
+      } as any)
+    ).toBe('12e2');
+  });
+
+  it('prints lists of values', () => {
+    expect(
+      print({
+        kind: 'ListValue',
+        values: [{ kind: 'NullValue' }],
+      } as any)
+    ).toBe('[null]');
+  });
+
+  it('prints types', () => {
+    expect(
+      print({
+        kind: 'ListType',
+        type: {
+          kind: 'NonNullType',
+          type: {
+            kind: 'NamedType',
+            name: {
+              kind: 'Name',
+              value: 'Type',
+            },
+          },
+        },
+      } as any)
+    ).toBe('[Type!]');
   });
 
   // NOTE: The shim won't throw for invalid AST nodes

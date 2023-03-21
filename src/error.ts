@@ -42,7 +42,7 @@ export class GraphQLError extends Error {
   }
 
   toJSON(): any {
-    return { ...this };
+    return { ...this, message: this.message };
   }
 
   toString() {

@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`print > prints the kitchen sink document like graphql.js does 1`] = `
+exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
 {
   "definitions": [
     {

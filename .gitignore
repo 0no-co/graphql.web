@@ -5,5 +5,6 @@
 .rts2_cache*
 .husky
 dist/
+coverage/
 package-lock.json
 .DS_Store
