@@ -420,6 +420,23 @@ describe('parseValue', () => {
     });
   });
 
+  it('parses lists', () => {
+    expect(parseValue('[]')).toEqual({
+      kind: Kind.LIST,
+      values: [],
+    });
+
+    expect(() => parseValue('[')).toThrow();
+    expect(() => parseValue('[null')).toThrow();
+
+    expect(parseValue('[null]')).toEqual({
+      kind: Kind.LIST,
+      values: [{
+        kind: Kind.NULL,
+      }],
+    });
+  });
+
   it('parses block strings', () => {
     expect(parseValue('["""long""" "short"]')).toEqual({
       kind: Kind.LIST,
