@@ -99,6 +99,13 @@ describe('parse', () => {
     }).not.toThrow();
   });
 
+  it('parses fragment definitions', () => {
+    expect(() => parse('fragment { test }')).toThrow();
+    expect(() => parse('fragment name { test }')).toThrow();
+    expect(() => parse('fragment name on name')).toThrow();
+    expect(() => parse('fragment Name on Type { field }')).not.toThrow();
+  });
+
   it('parses fields', () => {
     expect(() => parse('{ field: }')).toThrow();
     expect(() => parse('{ alias: field() }')).toThrow();
