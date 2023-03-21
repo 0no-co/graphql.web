@@ -480,7 +480,5 @@ export function parseType(
 ): ast.TypeNode {
   input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
-  const _type = type();
-  if (!_type) throw error('TypeNode');
-  return _type;
+  return type();
 }
