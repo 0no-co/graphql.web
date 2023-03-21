@@ -48,9 +48,7 @@ export function visit(node: ASTNode, visitor: ASTVisitor | ASTReducer<any>) {
             result = traverse(value[index], index, value);
             path.pop();
             ancestors.pop();
-            if (result === undefined) {
-              newValue.push(value[index]);
-            } else if (result === null) {
+            if (result == null) {
               hasEdited = true;
             } else {
               hasEdited = hasEdited || result !== value[index];
