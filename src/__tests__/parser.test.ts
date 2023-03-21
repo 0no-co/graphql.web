@@ -116,21 +116,44 @@ describe('parse', () => {
               kind: Kind.NAME,
               value: 'field',
             },
-            arguments: [
-              {
-                kind: Kind.ARGUMENT,
-                name: {
-                  kind: Kind.NAME,
-                  value: 'name',
-                },
-                value: {
-                  kind: Kind.NULL,
-                },
+            arguments: [{
+              kind: Kind.ARGUMENT,
+              name: {
+                kind: Kind.NAME,
+                value: 'name',
               },
-            ],
+              value: {
+                kind: Kind.NULL,
+              },
+            }],
           },
         ],
       },
+    });
+  });
+
+  it('parses directives', () => {
+    expect(() => parse('{ field @ }')).toThrow();
+    expect(() => parse('{ field @(test: null) }')).toThrow();
+
+    expect(
+      parse('{ field @test(name: null) }')
+    ).toHaveProperty('definitions.0.selectionSet.selections.0.directives.0', {
+      kind: Kind.DIRECTIVE,
+      name: {
+        kind: Kind.NAME,
+        value: 'test',
+      },
+      arguments: [{
+        kind: Kind.ARGUMENT,
+        name: {
+          kind: Kind.NAME,
+          value: 'name',
+        },
+        value: {
+          kind: Kind.NULL,
+        },
+      }],
     });
   });
 
