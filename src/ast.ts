@@ -1,7 +1,7 @@
 import type * as GraphQL from 'graphql';
 
 import type { Kind, OperationTypeNode } from './kind';
-import type { OrNever, Location } from './types';
+import type { Or, Location } from './types';
 
 import type {
   TypeSystemDefinitionNode,
@@ -27,7 +27,7 @@ import type {
   InputObjectTypeExtensionNode,
 } from './schemaAst';
 
-export type ASTNode =
+export type ASTNode = Or<GraphQL.ASTNode, (
   | NameNode
   | DocumentNode
   | OperationDefinitionNode
@@ -71,32 +71,32 @@ export type ASTNode =
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
-  | OrNever<GraphQL.ASTNode>;
+)>;
 
-export type NameNode = {
+export type NameNode = Or<GraphQL.NameNode, {
   readonly kind: Kind.NAME;
   readonly value: string;
   readonly loc?: Location;
-} | OrNever<GraphQL.NameNode>;
+}>;
 
-export type DocumentNode = {
+export type DocumentNode = Or<GraphQL.DocumentNode, {
   readonly kind: Kind.DOCUMENT;
   readonly definitions: ReadonlyArray<DefinitionNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.NameNode>;
+}>;
 
-export type DefinitionNode =
+export type DefinitionNode = Or<GraphQL.DefinitionNode, (
   | ExecutableDefinitionNode
   | TypeSystemDefinitionNode
   | TypeSystemExtensionNode
-  | OrNever<GraphQL.DefinitionNode>;
+)>;
 
-export type ExecutableDefinitionNode =
+export type ExecutableDefinitionNode = Or<GraphQL.ExecutableDefinitionNode, (
   | OperationDefinitionNode
   | FragmentDefinitionNode
-  | OrNever<GraphQL.ExecutableDefinitionNode>;
+)>;
 
-export type OperationDefinitionNode = {
+export type OperationDefinitionNode = Or<GraphQL.OperationDefinitionNode, {
   readonly kind: Kind.OPERATION_DEFINITION;
   readonly operation: OperationTypeNode;
   readonly name?: NameNode;
@@ -104,36 +104,36 @@ export type OperationDefinitionNode = {
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.OperationDefinitionNode>;
+}>;
 
-export type VariableDefinitionNode = {
+export type VariableDefinitionNode = Or<GraphQL.VariableDefinitionNode, {
   readonly kind: Kind.VARIABLE_DEFINITION;
   readonly variable: VariableNode;
   readonly type: TypeNode;
   readonly defaultValue?: ConstValueNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.VariableDefinitionNode>;
+}>;
 
-export type VariableNode = {
+export type VariableNode = Or<GraphQL.VariableNode, {
   readonly kind: Kind.VARIABLE;
   readonly name: NameNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.VariableNode>;
+}>;
 
-export type SelectionSetNode = {
+export type SelectionSetNode = Or<GraphQL.SelectionSetNode, {
   readonly kind: Kind.SELECTION_SET;
   readonly selections: ReadonlyArray<SelectionNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.SelectionSetNode>;
+}>;
 
-export declare type SelectionNode =
+export declare type SelectionNode = Or<GraphQL.SelectionNode, (
   | FieldNode
   | FragmentSpreadNode
   | InlineFragmentNode
-  | OrNever<GraphQL.SelectionNode>;
+)>;
 
-export type FieldNode = {
+export type FieldNode = Or<GraphQL.FieldNode, {
   readonly kind: Kind.FIELD;
   readonly alias?: NameNode;
   readonly name: NameNode;
@@ -141,47 +141,47 @@ export type FieldNode = {
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.FieldNode>
+}>;
 
-export type ArgumentNode = {
+export type ArgumentNode = Or<GraphQL.ArgumentNode, {
   readonly kind: Kind.ARGUMENT;
   readonly name: NameNode;
   readonly value: ValueNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.ArgumentNode>;
+}>;
 
-export type ConstArgumentNode = {
+export type ConstArgumentNode = Or<GraphQL.ConstArgumentNode, {
   readonly kind: Kind.ARGUMENT;
   readonly name: NameNode;
   readonly value: ConstValueNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.ConstArgumentNode>;
+}>;
 
-export type FragmentSpreadNode = {
+export type FragmentSpreadNode = Or<GraphQL.FragmentSpreadNode, {
   readonly kind: Kind.FRAGMENT_SPREAD;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.FragmentSpreadNode>;
+}>;
 
-export type InlineFragmentNode = {
+export type InlineFragmentNode = Or<GraphQL.InlineFragmentNode, {
   readonly kind: Kind.INLINE_FRAGMENT;
   readonly typeCondition?: NamedTypeNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.InlineFragmentNode>;
+}>;
 
-export type FragmentDefinitionNode = {
+export type FragmentDefinitionNode = Or<GraphQL.FragmentDefinitionNode, {
   readonly kind: Kind.FRAGMENT_DEFINITION;
   readonly name: NameNode;
   readonly typeCondition: NamedTypeNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet: SelectionSetNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.FragmentDefinitionNode>;
+}>;
 
-export type ValueNode =
+export type ValueNode = Or<GraphQL.ValueNode, (
   | VariableNode
   | IntValueNode
   | FloatValueNode
@@ -191,9 +191,9 @@ export type ValueNode =
   | EnumValueNode
   | ListValueNode
   | ObjectValueNode
-  | OrNever<GraphQL.ValueNode>;
+)>;
 
-export type ConstValueNode =
+export type ConstValueNode = Or<GraphQL.ConstValueNode, (
   | IntValueNode
   | FloatValueNode
   | StringValueNode
@@ -202,116 +202,116 @@ export type ConstValueNode =
   | EnumValueNode
   | ConstListValueNode
   | ConstObjectValueNode
-  | OrNever<GraphQL.ConstValueNode>;
+)>;
 
-export type IntValueNode = {
+export type IntValueNode = Or<GraphQL.IntValueNode, {
   readonly kind: Kind.INT;
   readonly value: string;
   readonly loc?: Location;
-} | OrNever<GraphQL.IntValueNode>;
+}>;
 
-export type FloatValueNode = {
+export type FloatValueNode = Or<GraphQL.FloatValueNode, {
   readonly kind: Kind.FLOAT;
   readonly value: string;
   readonly loc?: Location;
-} | OrNever<GraphQL.FloatValueNode>;
+}>;
 
-export type StringValueNode = {
+export type StringValueNode = Or<GraphQL.FloatValueNode, {
   readonly kind: Kind.STRING;
   readonly value: string;
   readonly block?: boolean;
   readonly loc?: Location;
-} | OrNever<GraphQL.FloatValueNode>;
+}>;
 
-export type BooleanValueNode = {
+export type BooleanValueNode = Or<GraphQL.BooleanValueNode, {
   readonly kind: Kind.BOOLEAN;
   readonly value: boolean;
   readonly loc?: Location;
-} | OrNever<GraphQL.BooleanValueNode>;
+}>;
 
-export type NullValueNode = {
+export type NullValueNode = Or<GraphQL.NullValueNode, {
   readonly kind: Kind.NULL;
   readonly loc?: Location;
-} | OrNever<GraphQL.NullValueNode>;
+}>;
 
-export type EnumValueNode = {
+export type EnumValueNode = Or<GraphQL.EnumValueNode, {
   readonly kind: Kind.ENUM;
   readonly value: string;
   readonly loc?: Location;
-} | OrNever<GraphQL.EnumValueNode>;
+}>;
 
-export type ListValueNode = {
+export type ListValueNode = Or<GraphQL.ListValueNode, {
   readonly kind: Kind.LIST;
   readonly values: ReadonlyArray<ValueNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.ListValueNode>;
+}>;
 
-export type ConstListValueNode = {
+export type ConstListValueNode = Or<GraphQL.ConstListValueNode, {
   readonly kind: Kind.LIST;
   readonly values: ReadonlyArray<ConstValueNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.ConstListValueNode>;
+}>;
 
-export type ObjectValueNode = {
+export type ObjectValueNode = Or<GraphQL.ObjectValueNode, {
   readonly kind: Kind.OBJECT;
   readonly fields: ReadonlyArray<ObjectFieldNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.ObjectValueNode>;
+}>;
 
-export type ConstObjectValueNode = {
+export type ConstObjectValueNode = Or<GraphQL.ConstObjectValueNode, {
   readonly kind: Kind.OBJECT;
   readonly fields: ReadonlyArray<ConstObjectFieldNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.ConstObjectValueNode>;
+}>;
 
-export type ObjectFieldNode = {
+export type ObjectFieldNode = Or<GraphQL.ObjectFieldNode, {
   readonly kind: Kind.OBJECT_FIELD;
   readonly name: NameNode;
   readonly value: ValueNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.ObjectFieldNode>;
+}>;
 
-export type ConstObjectFieldNode = {
+export type ConstObjectFieldNode = Or<GraphQL.ConstObjectFieldNode, {
   readonly kind: Kind.OBJECT_FIELD;
   readonly name: NameNode;
   readonly value: ConstValueNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.ConstObjectFieldNode>;
+}>;
 
-export type DirectiveNode = {
+export type DirectiveNode = Or<GraphQL.DirectiveNode, {
   readonly kind: Kind.DIRECTIVE;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.DirectiveNode>;
+}>;
 
-export type ConstDirectiveNode = {
+export type ConstDirectiveNode = Or<GraphQL.ConstDirectiveNode, {
   readonly kind: Kind.DIRECTIVE;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<ConstArgumentNode>;
   readonly loc?: Location;
-} | OrNever<GraphQL.ConstDirectiveNode>;
+}>;
 
-export type TypeNode =
+export type TypeNode = Or<GraphQL.TypeNode, (
   | NamedTypeNode
   | ListTypeNode
   | NonNullTypeNode
-  | OrNever<GraphQL.TypeNode>;
+)>;
 
-export type NamedTypeNode = {
+export type NamedTypeNode = Or<GraphQL.NamedTypeNode, {
   readonly kind: Kind.NAMED_TYPE;
   readonly name: NameNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.NamedTypeNode>;
+}>;
 
-export type ListTypeNode = {
+export type ListTypeNode = Or<GraphQL.ListTypeNode, {
   readonly kind: Kind.LIST_TYPE;
   readonly type: TypeNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.ListTypeNode>;
+}>;
 
-export type NonNullTypeNode = {
+export type NonNullTypeNode = Or<GraphQL.NonNullTypeNode, {
   readonly kind: Kind.NON_NULL_TYPE;
   readonly type: NamedTypeNode | ListTypeNode;
   readonly loc?: Location;
-} | OrNever<GraphQL.NonNullTypeNode>;
+}>;

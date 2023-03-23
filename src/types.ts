@@ -1,4 +1,4 @@
-export type OrNever<T> = 0 extends 1 & T ? never : T;
+export type Or<T, U> = 0 extends 1 & T ? U : T;
 
 export type Maybe<T> = T | undefined | null;
 
