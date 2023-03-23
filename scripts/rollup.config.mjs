@@ -150,7 +150,17 @@ const dtsConfig = {
   output: {
     dir: './dist',
     entryFileNames: '[name].d.ts',
-    format: 'es'
+    format: 'es',
+    plugins: [
+      {
+        renderChunk(code, chunk) {
+          if (chunk.fileName.endsWith('d.ts')) {
+            const gqlImportRe = /(import\s+(?:[*\s{}\w\d]+)\s*from\s*'graphql';?)/g;
+            return code.replace(gqlImportRe, x => '/*!@ts-ignore*/\n' + x);
+          }
+        },
+      },
+    ],
   },
 };
 

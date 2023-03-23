@@ -1,3 +1,5 @@
+export type OrNever<T> = 0 extends 1 & T ? never : T;
+
 export type Maybe<T> = T | undefined | null;
 
 export interface Extensions {
