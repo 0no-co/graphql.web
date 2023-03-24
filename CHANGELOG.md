@@ -1,5 +1,17 @@
 # @0no-co/graphql.web
 
+## 1.0.0
+
+### Major Changes
+
+- Release stable `v1.0.0` Release
+  Submitted by [@kitten](https://github.com/kitten) (See [`ca082c8`](https://github.com/0no-co/graphql.web/commit/ca082c82bcfbedda0b23f4887bffff2d1423e2e2))
+
+### Minor Changes
+
+- Alias all GraphQL AST types to the `'graphql'` package’s TypeScript AST types, if it’s installed. This will ensure that all AST types are always compatible.
+  Submitted by undefined (See https://github.com/0no-co/graphql.web/pull/10)
+
 ## 0.1.6
 
 ### Patch Changes
