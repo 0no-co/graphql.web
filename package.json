@@ -7,6 +7,7 @@
   "main": "./dist/graphql.web",
   "module": "./dist/graphql.web.mjs",
   "types": "./dist/graphql.web.d.ts",
+  "sideEffects": false,
   "files": [
     "LICENSE",
     "README.md",
@@ -21,7 +22,14 @@
     },
     "./package.json": "./package.json"
   },
-  "sideEffects": false,
+  "peerDependencies": {
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
+  },
+  "peerDependenciesMeta": {
+    "graphql": {
+      "optional": true
+    }
+  },
   "public": true,
   "keywords": [
     "graphql",

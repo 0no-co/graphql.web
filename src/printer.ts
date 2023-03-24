@@ -129,5 +129,5 @@ const nodes: {
 };
 
 export function print(node: ASTNode): string {
-  return nodes[node.kind] ? nodes[node.kind]!(node as any) : '';
+  return nodes[node.kind] ? (nodes as any)[node.kind]!(node) : '';
 }
