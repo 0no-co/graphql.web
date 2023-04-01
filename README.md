@@ -16,20 +16,23 @@
   <br />
 </div>
 
-`@0no-co/graphql.web` is an **experimental** library, aiming to provide an
-absolute minimum of features and exports of `graphql` utilities that typical
-GraphQL web apps or GraphQL clients need.
+`@0no-co/graphql.web` is a utility library, aiming to provide the minimum of
+functions that typical GraphQL clients need and would usually import from
+`graphql`, e.g. a GraphQL query parser, printer, and visitor.
 
 While its goal isn’t to be an exact match to [the GraphQL.js
-API](https://graphql.org/graphql-js/graphql/) it aims to provide API- and
+API](https://graphql.org/graphql-js/graphql/) it aims to remain API- and
 type-compatible where possible and necessary. However, its goal is to provide
 the smallest implementation for common GraphQL utilities that are still either
 spec-compliant or compatible with GraphQL.js’ implementation.
 
-> **Note:** While this library can be used as a drop-in replacement for
-> `graphql` in _some cases_, the [`graphql-web-lite`
-> project](https://github.com/0no-co/graphql-web-lite) is maintained to be
-> a full shim/alias for the `graphql` package.
+> **Note:** If you’re instead looking for a drop-in replacement for the
+> `graphql` package that you can just alias into your web apps, read more about
+> the [`graphql-web-lite` project](https://github.com/0no-co/graphql-web-lite),
+> which uses this library to shim the `graphql` package.
+
+[`@urql/core`](https://github.com/urql-graphql/urql) depends on this package to
+power its GraphQL query parsing and printing.
 
 ### Overview
 
