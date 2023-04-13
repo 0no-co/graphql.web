@@ -32,7 +32,8 @@ spec-compliant or compatible with GraphQL.js’ implementation.
 > which uses this library to shim the `graphql` package.
 
 [`@urql/core`](https://github.com/urql-graphql/urql) depends on this package to
-power its GraphQL query parsing and printing.
+power its GraphQL query parsing and printing. **If you’re using `@urql/core@^4`
+you’re already using this library! ✨**
 
 ### Overview
 
