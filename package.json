@@ -103,6 +103,7 @@
     "vitest": "^0.29.7"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   }
 }
