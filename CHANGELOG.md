@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.1
+
+### Patch Changes
+
+- Publish with npm provenance
+  Submitted by [@kitten](https://github.com/kitten) (See [#12](https://github.com/0no-co/graphql.web/pull/12))
+
 ## 1.0.0
 
 ### Major Changes
