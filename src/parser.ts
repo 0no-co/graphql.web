@@ -65,7 +65,7 @@ function ignored() {
   idx--;
 }
 
-const nameRe = /[_\w][_\d\w]*/y;
+const nameRe = /[_A-Za-z]\w*/y;
 function name(): ast.NameNode | undefined {
   let match: string | undefined;
   if ((match = advance(nameRe))) {
@@ -76,10 +76,15 @@ function name(): ast.NameNode | undefined {
   }
 }
 
-const constRe = /null|true|false/y;
-const variableRe = /\$[_\w][_\d\w]*/y;
+// NOTE(Safari10 Quirk): This needs to be wrapped in a non-capturing group
+const constRe = /(?:null|true|false)/y;
+
+const variableRe = /\$[_A-Za-z]\w*/y;
 const intRe = /-?\d+/y;
-const floatPartRe = /(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
+
+// NOTE(Safari10 Quirk): This cannot be further simplified
+const floatPartRe = /(?:\.\d+)?[eE][+-]?\d+|\.\d+/y;
+
 const complexStringRe = /\\/g;
 const blockStringRe = /"""(?:[\s\S]+(?="""))?"""/y;
 const stringRe = /"(?:[^"\r\n]+)?"/y;
@@ -413,7 +418,9 @@ function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
   }
 }
 
-const operationDefinitionRe = /query|mutation|subscription/y;
+// NOTE(Safari10 Quirk): This *might* need to be wrapped in a group, but worked without it too
+const operationDefinitionRe = /(?:query|mutation|subscription)/y;
+
 function operationDefinition(): ast.OperationDefinitionNode | undefined {
   let _operation: string | undefined;
   let _name: ast.NameNode | undefined;
