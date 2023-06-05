@@ -81,7 +81,10 @@ const constRe = /(?:null|true|false)/y;
 
 const variableRe = /\$[_\w][_\d\w]*/y;
 const intRe = /-?\d+/y;
-const floatPartRe = /(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
+
+// NOTE(Safari10 Quirk): This cannot be further simplified
+const floatPartRe = /(?:\.\d+)?[eE][+-]?\d+|\.\d+/y;
+
 const complexStringRe = /\\/g;
 const blockStringRe = /"""(?:[\s\S]+(?="""))?"""/y;
 const stringRe = /"(?:[^"\r\n]+)?"/y;
