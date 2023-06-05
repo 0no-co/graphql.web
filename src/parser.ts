@@ -418,7 +418,9 @@ function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
   }
 }
 
-const operationDefinitionRe = /query|mutation|subscription/y;
+// NOTE(Safari10 Quirk): This *might* need to be wrapped in a group, but worked without it too
+const operationDefinitionRe = /(?:query|mutation|subscription)/y;
+
 function operationDefinition(): ast.OperationDefinitionNode | undefined {
   let _operation: string | undefined;
   let _name: ast.NameNode | undefined;
