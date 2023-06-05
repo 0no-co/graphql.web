@@ -65,7 +65,7 @@ function ignored() {
   idx--;
 }
 
-const nameRe = /[_\w][_\d\w]*/y;
+const nameRe = /[_A-Za-z]\w*/y;
 function name(): ast.NameNode | undefined {
   let match: string | undefined;
   if ((match = advance(nameRe))) {
@@ -79,7 +79,7 @@ function name(): ast.NameNode | undefined {
 // NOTE(Safari10 Quirk): This needs to be wrapped in a non-capturing group
 const constRe = /(?:null|true|false)/y;
 
-const variableRe = /\$[_\w][_\d\w]*/y;
+const variableRe = /\$[_A-Za-z]\w*/y;
 const intRe = /-?\d+/y;
 
 // NOTE(Safari10 Quirk): This cannot be further simplified
