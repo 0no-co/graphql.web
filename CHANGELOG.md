@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.2
+
+### Patch Changes
+
+- ⚠️ Fix browser quirk occurring in Safari 10–13 causing sticky regular expressions in the parser to match when they shouldn't / match too eagerly
+  Submitted by [@kitten](https://github.com/kitten) (See [#15](https://github.com/0no-co/graphql.web/pull/15))
+
 ## 1.0.1
 
 ### Patch Changes
