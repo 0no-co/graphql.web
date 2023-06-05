@@ -76,7 +76,9 @@ function name(): ast.NameNode | undefined {
   }
 }
 
-const constRe = /null|true|false/y;
+// NOTE(Safari10 Quirk): This needs to be wrapped in a non-capturing group
+const constRe = /(?:null|true|false)/y;
+
 const variableRe = /\$[_\w][_\d\w]*/y;
 const intRe = /-?\d+/y;
 const floatPartRe = /(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
