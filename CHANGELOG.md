@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.4
+
+### Patch Changes
+
+- ⚠️ Fix empty string matches being too eager, e.g. `"", ""`
+  Submitted by [@kitten](https://github.com/kitten) (See [`29cbe5c`](https://github.com/0no-co/graphql.web/commit/29cbe5c8da183747c966aab8f214cfef9a9a5946))
+
 ## 1.0.3
 
 ### Patch Changes
