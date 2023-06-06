@@ -490,6 +490,18 @@ describe('parseValue', () => {
       value: 'x',
       block: false,
     });
+
+    expect(parseValue('"" ""')).toEqual({
+      kind: Kind.STRING,
+      value: '',
+      block: false,
+    });
+
+    expect(parseValue('" \\" " ""')).toEqual({
+      kind: Kind.STRING,
+      value: ' " ',
+      block: false,
+    });
   });
 
   it('parses objects', () => {
@@ -570,6 +582,18 @@ describe('parseValue', () => {
     expect(parseValue('"""x""" """x"""')).toEqual({
       kind: Kind.STRING,
       value: 'x',
+      block: true,
+    });
+
+    expect(parseValue('"""""" """"""')).toEqual({
+      kind: Kind.STRING,
+      value: '',
+      block: true,
+    });
+
+    expect(parseValue('""" \\""" """ """"""')).toEqual({
+      kind: Kind.STRING,
+      value: ' """ ',
       block: true,
     });
   });
