@@ -86,8 +86,8 @@ const intRe = /-?\d+/y;
 const floatPartRe = /(?:\.\d+)?[eE][+-]?\d+|\.\d+/y;
 
 const complexStringRe = /\\/g;
-const blockStringRe = /"""(?:[\s\S]+(?="""))?"""/y;
-const stringRe = /"(?:[^"\r\n]+)?"/y;
+const blockStringRe = /"""(?:[\s\S]*?[^\\])?"""/y;
+const stringRe = /"(?:[^\r\n]*?[^\\])?"/y;
 
 function value(constant: true): ast.ConstValueNode;
 function value(constant: boolean): ast.ValueNode;
