@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.3
+
+### Patch Changes
+
+- ⚠️ Fix string and block string matches eagerly matching past the end boundary of strings and ignoring escaped closing characters. In certain cases, `"""` and `"` boundaries would be skipped if any other string boundary follows in the input document
+  Submitted by [@kitten](https://github.com/kitten) (See [#17](https://github.com/0no-co/graphql.web/pull/17))
+
 ## 1.0.2
 
 ### Patch Changes
