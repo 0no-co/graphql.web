@@ -117,7 +117,7 @@ type TakeLiteral<In extends string> =
     ? [{ kind: 'BooleanValue', value: false }, In]
     : void;
 
-type TakeValue<In extends string> =
+export type TakeValue<In extends string> =
   TakeLiteral<In> extends [infer Node, infer Rest]
     ? [Node, Rest]
     : TakeVariable<In> extends [infer Node, infer Rest]
@@ -140,7 +140,7 @@ type _TakeListContinue<Nodes extends unknown[], In extends string> =
     : TakeValue<skipIgnored<In>> extends [infer Node, infer In]
     ? _TakeListContinue<[...Nodes, Node], skipIgnored<In>>
     : void;
-type TakeList<In extends string> =
+export type TakeList<In extends string> =
   In extends `${'['}${infer In}`
     ? _TakeListContinue<[], skipIgnored<In>>
     : void;
@@ -156,11 +156,11 @@ type TakeObjectField<In extends string> =
 
 type _TakeObjectContinue<Fields extends unknown[], In extends string> =
   In extends `${'}'}${infer In}`
-    ? [{ kind: 'ObjectValue', values: Fields }, In]
+    ? [{ kind: 'ObjectValue', fields: Fields }, In]
     : TakeObjectField<In> extends [infer Field, infer In]
     ? _TakeObjectContinue<[...Fields, Field], skipIgnored<In>>
     : void;
-type TakeObject<In extends string> =
+export type TakeObject<In extends string> =
   In extends `${'{'}${infer In}`
     ? _TakeObjectContinue<[], skipIgnored<In>>
     : void;
@@ -180,7 +180,7 @@ type _TakeArgumentsContinue<Arguments extends unknown[], In extends string> =
     : TakeArgument<In> extends [infer Argument, infer In]
     ? _TakeArgumentsContinue<[...Arguments, Argument], skipIgnored<In>>
     : void;
-type TakeArguments<In extends string> =
+export type TakeArguments<In extends string> =
   In extends `${'('}${infer In}`
     ? _TakeArgumentsContinue<[], skipIgnored<In>>
     : [[], In];
@@ -194,7 +194,7 @@ type TakeDirective<In extends string> =
     : void
     : void;
 
-type TakeDirectives<In extends string> =
+export type TakeDirectives<In extends string> =
   TakeDirective<In> extends [infer Directive, infer In]
     ? TakeDirectives<skipIgnored<In>> extends [[...infer Directives], infer In]
     ? [[Directive, ...Directives], In]
@@ -209,7 +209,7 @@ type _TakeFieldName<In extends string> =
     : void
     : [undefined, MaybeAlias, In]
     : void;
-type TakeField<In extends string> =
+export type TakeField<In extends string> =
   _TakeFieldName<In> extends [infer Alias, infer Name, infer In]
     ? TakeArguments<skipIgnored<In>> extends [infer Arguments, infer In]
     ? TakeDirectives<skipIgnored<In>> extends [infer Directives, infer In]
@@ -230,7 +230,7 @@ type TakeField<In extends string> =
     : void
     : void;
 
-type TakeType<In extends string> =
+export type TakeType<In extends string> =
   In extends `${'['}${infer In}`
     ? TakeType<skipIgnored<In>> extends [infer Subtype, infer In]
     ? In extends `${']'}${infer In}`
