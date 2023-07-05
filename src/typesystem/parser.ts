@@ -76,14 +76,14 @@ type TakeName<In extends string> =
     ? [{ kind: 'Name', value: Out }, In]
     : void
     : void;
-  
+
 type TakeEnum<In extends string> =
   In extends `${infer Out}${_RestName<In>}`
     ? In extends `${Out}${infer In}`
     ? [{ kind: 'EnumValue', value: Out }, In]
     : void
     : void;
-  
+
 type TakeVariable<In extends string> =
   In extends `${'$'}${infer In}`
     ? TakeName<In> extends [infer NameNode, infer Rest]
