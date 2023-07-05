@@ -307,7 +307,7 @@ type TakeSelectionSet<In extends string> =
     ? [SelectionSet, In]
     : [[], In];
 
-type TakeVarDefinition<In extends string> =
+export type TakeVarDefinition<In extends string> =
   TakeVariable<In, false> extends [infer Variable, infer In]
     ? skipIgnored<In> extends `${':'}${infer In}`
     ? TakeType<skipIgnored<In>> extends [infer Type, infer In]
@@ -430,10 +430,10 @@ type ParseDocument<In extends string> =
     ? { kind: 'Document', definitions: Definitions }
     : void;
 
-type ParseValue<In extends string> = TakeValue<In, false> extends [infer Node, string] ? Node : void;
-type ParseConstValue<In extends string> = TakeValue<In, true> extends [infer Node, string] ? Node : void;
-type ParseType<In extends string> = TakeType<In> extends [infer Node, string] ? Node : void;
-type ParseOperation<In extends string> = TakeOperation<In> extends [infer Node, string] ? Node : void;
+type ParseValue<In> = TakeValue<skipIgnored<In>, false> extends [infer Node, string] ? Node : void;
+type ParseConstValue<In> = TakeValue<skipIgnored<In>, true> extends [infer Node, string] ? Node : void;
+type ParseType<In> = TakeType<skipIgnored<In>> extends [infer Node, string] ? Node : void;
+type ParseOperation<In> = TakeOperation<skipIgnored<In>> extends [infer Node, string] ? Node : void;
 
 export type {
   ParseConstValue as ConstValue,
