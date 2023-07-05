@@ -111,10 +111,8 @@ type TakeString<In extends string> =
 type TakeLiteral<In extends string> =
   In extends `${'null'}${infer In}`
     ? [{ kind: 'NullValue' }, In]
-    : In extends `${'true'}${infer In}`
-    ? [{ kind: 'BooleanValue', value: true }, In]
-    : In extends `${'false'}${infer In}`
-    ? [{ kind: 'BooleanValue', value: false }, In]
+    : In extends `${'true' | 'false'}${infer In}`
+    ? [{ kind: 'BooleanValue', value: boolean }, In]
     : void;
 
 export type TakeValue<In extends string> =
