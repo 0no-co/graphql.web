@@ -106,8 +106,10 @@ type TakeNumber<In extends string> =
     : void;
 
 type TakeString<In extends string> =
-  In extends `${infer _}${_RestString<In>}`
-    ? [{ kind: 'StringValue', value: string }]
+  In extends `${infer Out}${_RestString<In>}`
+    ? In extends `${Out}${infer In}`
+    ? [{ kind: 'StringValue', value: string }, In]
+    : void
     : void;
  
 type TakeLiteral<In extends string> =
