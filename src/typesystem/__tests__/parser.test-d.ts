@@ -1,4 +1,5 @@
 import { test, assertType } from 'vitest';
+import type * as ast from '../../ast';
 
 import {
   Document,
@@ -1625,4 +1626,7 @@ test('parses kitchen sink query', () => {
 
   const expected = any as Document<typeof query>;
   assertType<actual>(expected);
+
+  // NOTE: This must also be able to pass the `DocumentNode` type
+  assertType<ast.DocumentNode>(expected);
 });
