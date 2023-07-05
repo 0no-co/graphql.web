@@ -77,6 +77,13 @@ type TakeName<In extends string> =
     : void
     : void;
 
+type TakeOptionalName<In extends string> =
+  In extends `${infer Out}${_RestName<In>}`
+    ? In extends `${Out}${infer In}`
+    ? [{ kind: 'Name', value: Out }, In]
+    : [undefined, In]
+    : [undefined, In];
+
 type TakeEnum<In extends string> =
   In extends `${infer Out}${_RestName<In>}`
     ? In extends `${Out}${infer In}`
@@ -391,9 +398,9 @@ type TakeOperation<In extends string> =
     ? ['subscription', In]
     : void;
 
-type TakeOperationDefinition<In extends string> =
+export type TakeOperationDefinition<In extends string> =
   TakeOperation<In> extends [infer Operation, infer In] ? (
-    TakeName<skipIgnored<In>> extends [infer Name, infer In]
+    TakeOptionalName<skipIgnored<In>> extends [infer Name, infer In]
       ? TakeVarDefinitions<skipIgnored<In>> extends [infer VarDefinitions, infer In]
       ? TakeDirectives<skipIgnored<In>, false> extends [infer Directives, infer In]
       ? TakeSelectionSetContinue<skipIgnored<In>> extends [infer SelectionSet, infer In]

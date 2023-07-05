@@ -4,6 +4,7 @@ import {
   TakeValue,
   TakeVarDefinition,
   TakeSelectionSetContinue,
+  TakeOperationDefinition,
 } from '../parser';
 
 test('parses variable inline values', () => {
@@ -121,4 +122,24 @@ test('does not accept fragment spread of "on"', () => {
   }, '']>(actualPass);
 
   assertType<void>(actualFail);
+});
+
+test('parses anonymous mutation operations', () => {
+  const actual: TakeOperationDefinition<'mutation { mutationField }'> = {} as any;
+
+  assertType<[{
+    kind: 'OperationDefinition',
+    operation: 'mutation',
+    name: undefined,
+    selectionSet: {
+      kind: 'SelectionSet',
+      selections: [{
+        kind: 'Field',
+        name: {
+          kind: 'Name',
+          value: 'mutationField',
+        },
+      }]
+    },
+  }, '']>(actual);
 });
