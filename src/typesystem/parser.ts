@@ -247,6 +247,11 @@ export type TakeType<In extends string> =
     : [{ kind: 'NamedType', name: Name }, In]
     : void;
 
+type TakeOn<In extends string> =
+  In extends `${infer Out}${_RestName<In>}`
+    ? ([Out, In] extends ['on', `${Out}${infer In}`] ? [In] : void)
+    : void;
+
 type TakeTypeCondition<In extends string> =
   In extends `${'on'}${infer In}`
     ? TakeName<skipIgnored<In>> extends [infer Name, infer In]
@@ -256,18 +261,20 @@ type TakeTypeCondition<In extends string> =
 
 type TakeFragmentSpread<In extends string> =
   In extends `${'...'}${infer In}` ? (
-    TakeTypeCondition<skipIgnored<In>> extends [infer TypeCondition, infer In] ? (
-      TakeDirectives<skipIgnored<In>, false> extends [infer Directives, infer In]
-        ? TakeSelectionSetContinue<skipIgnored<In>> extends [infer SelectionSet, infer In]
-          ? [
-              {
-                kind: 'InlineFragment',
-                typeCondition: TypeCondition,
-                directives: Directives,
-                selectionSet: SelectionSet,
-              },
-              In
-            ]
+    TakeOn<skipIgnored<In>> extends [infer In] ? (
+      TakeName<skipIgnored<In>> extends [infer Name, infer In]
+        ? TakeDirectives<skipIgnored<In>, false> extends [infer Directives, infer In]
+          ? TakeSelectionSetContinue<skipIgnored<In>> extends [infer SelectionSet, infer In]
+            ? [
+                {
+                  kind: 'InlineFragment',
+                  typeCondition: Name,
+                  directives: Directives,
+                  selectionSet: SelectionSet,
+                },
+                In
+              ]
+            : void
           : void
         : void
     ) : TakeName<skipIgnored<In>> extends [infer Name, infer In] ? (
@@ -298,7 +305,7 @@ type _TakeSelection<Selections extends unknown[], In extends string> =
     ? _TakeSelection<[...Selections, Selection], skipIgnored<In>>
     : void;
 
-type TakeSelectionSetContinue<In extends string> =
+export type TakeSelectionSetContinue<In extends string> =
   In extends `${'{'}${infer In}`
     ? _TakeSelection<[], skipIgnored<In>>
     : void;

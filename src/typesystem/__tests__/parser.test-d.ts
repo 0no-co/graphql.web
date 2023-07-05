@@ -3,6 +3,7 @@ import { test, assertType } from 'vitest'
 import {
   TakeValue,
   TakeVarDefinition,
+  TakeSelectionSetContinue,
 } from '../parser';
 
 test('parses variable inline values', () => {
@@ -101,4 +102,23 @@ test('parses variable definition directives', () => {
       arguments: [],
     }],
   }, '']>(actual);
+});
+
+test('does not accept fragment spread of "on"', () => {
+  const actualPass: TakeSelectionSetContinue<'{ ...On }'> = {} as any;
+  const actualFail: TakeSelectionSetContinue<'{ ...on }'> = {} as any;
+
+  assertType<[{
+    kind: 'SelectionSet',
+    selections: [{
+      kind: 'FragmentSpread',
+      directives: [],
+      name: {
+        kind: 'Name',
+        value: 'On',
+      },
+    }],
+  }, '']>(actualPass);
+
+  assertType<void>(actualFail);
 });
