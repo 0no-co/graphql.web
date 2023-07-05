@@ -137,12 +137,12 @@ type TakeValue<In extends string> =
 type _TakeListContinue<Nodes extends unknown[], In extends string> =
   In extends `${']'}${infer In}`
     ? [{ kind: 'ListValue', values: Nodes }, In]
-    : TakeValue<In> extends [infer Node, infer In]
+    : TakeValue<skipIgnored<In>> extends [infer Node, infer In]
     ? _TakeListContinue<[...Nodes, Node], skipIgnored<In>>
     : void;
 type TakeList<In extends string> =
   In extends `${'['}${infer In}`
-    ? _TakeListContinue<[], In>
+    ? _TakeListContinue<[], skipIgnored<In>>
     : void;
 
 type TakeObjectField<In extends string> =
