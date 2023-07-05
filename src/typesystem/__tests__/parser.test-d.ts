@@ -10,7 +10,6 @@ import {
   TakeOperationDefinition,
   TakeFragmentDefinition,
   TakeFragmentSpread,
-  _TakeObjectContinue,
   TakeDirective,
   TakeField,
 } from '../parser';
