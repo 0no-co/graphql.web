@@ -84,10 +84,12 @@ type TakeEnum<In extends string> =
     : void
     : void;
 
-type TakeVariable<In extends string> =
-  In extends `${'$'}${infer In}`
+type TakeVariable<In extends string, Const extends boolean> =
+  Const extends false
+    ? In extends `${'$'}${infer In}`
     ? TakeName<In> extends [infer NameNode, infer Rest]
     ? [{ kind: 'Variable', name: NameNode }, Rest]
+    : void
     : void
     : void;
 
@@ -115,10 +117,10 @@ type TakeLiteral<In extends string> =
     ? [{ kind: 'BooleanValue', value: boolean }, In]
     : void;
 
-export type TakeValue<In extends string> =
+export type TakeValue<In extends string, Const extends boolean> =
   TakeLiteral<In> extends [infer Node, infer Rest]
     ? [Node, Rest]
-    : TakeVariable<In> extends [infer Node, infer Rest]
+    : TakeVariable<In, Const> extends [infer Node, infer Rest]
     ? [Node, Rest]
     : TakeNumber<In> extends [infer Node, infer Rest]
     ? [Node, Rest]
@@ -126,75 +128,75 @@ export type TakeValue<In extends string> =
     ? [Node, Rest]
     : TakeString<In> extends [infer Node, infer Rest]
     ? [Node, Rest]
-    : TakeList<In> extends [infer Node, infer Rest]
+    : TakeList<In, Const> extends [infer Node, infer Rest]
     ? [Node, Rest]
-    : TakeObject<In> extends [infer Node, infer Rest]
+    : TakeObject<In, Const> extends [infer Node, infer Rest]
     ? [Node, Rest]
     : void;
 
-type _TakeListContinue<Nodes extends unknown[], In extends string> =
+type _TakeListContinue<Nodes extends unknown[], In extends string, Const extends boolean> =
   In extends `${']'}${infer In}`
     ? [{ kind: 'ListValue', values: Nodes }, In]
-    : TakeValue<skipIgnored<In>> extends [infer Node, infer In]
-    ? _TakeListContinue<[...Nodes, Node], skipIgnored<In>>
+    : TakeValue<skipIgnored<In>, Const> extends [infer Node, infer In]
+    ? _TakeListContinue<[...Nodes, Node], skipIgnored<In>, Const>
     : void;
-export type TakeList<In extends string> =
+export type TakeList<In extends string, Const extends boolean> =
   In extends `${'['}${infer In}`
-    ? _TakeListContinue<[], skipIgnored<In>>
+    ? _TakeListContinue<[], skipIgnored<In>, Const>
     : void;
 
-type TakeObjectField<In extends string> =
+type TakeObjectField<In extends string, Const extends boolean> =
   TakeName<In> extends [infer Name, infer In]
     ? skipIgnored<In> extends `${':'}${infer In}`
-    ? TakeValue<skipIgnored<In>> extends [infer Value, infer In]
+    ? TakeValue<skipIgnored<In>, Const> extends [infer Value, infer In]
     ? [{ kind: 'ObjectField', name: Name, value: Value }, In]
     : void
     : void
     : void;
 
-type _TakeObjectContinue<Fields extends unknown[], In extends string> =
+type _TakeObjectContinue<Fields extends unknown[], In extends string, Const extends boolean> =
   In extends `${'}'}${infer In}`
     ? [{ kind: 'ObjectValue', fields: Fields }, In]
-    : TakeObjectField<In> extends [infer Field, infer In]
-    ? _TakeObjectContinue<[...Fields, Field], skipIgnored<In>>
+    : TakeObjectField<In, Const> extends [infer Field, infer In]
+    ? _TakeObjectContinue<[...Fields, Field], skipIgnored<In>, Const>
     : void;
-export type TakeObject<In extends string> =
+export type TakeObject<In extends string, Const extends boolean> =
   In extends `${'{'}${infer In}`
-    ? _TakeObjectContinue<[], skipIgnored<In>>
+    ? _TakeObjectContinue<[], skipIgnored<In>, Const>
     : void;
 
-type TakeArgument<In extends string> =
+type TakeArgument<In extends string, Const extends boolean> =
   TakeName<In> extends [infer Name, infer In]
     ? skipIgnored<In> extends `${':'}${infer In}`
-    ? TakeValue<skipIgnored<In>> extends [infer Value, infer In]
+    ? TakeValue<skipIgnored<In>, Const> extends [infer Value, infer In]
     ? [{ kind: 'Argument', name: Name, value: Value }, In]
     : void
     : void
     : void;
 
-type _TakeArgumentsContinue<Arguments extends unknown[], In extends string> =
+type _TakeArgumentsContinue<Arguments extends unknown[], In extends string, Const extends boolean> =
   In extends `${')'}${infer In}`
     ? [Arguments, In]
-    : TakeArgument<In> extends [infer Argument, infer In]
-    ? _TakeArgumentsContinue<[...Arguments, Argument], skipIgnored<In>>
+    : TakeArgument<In, Const> extends [infer Argument, infer In]
+    ? _TakeArgumentsContinue<[...Arguments, Argument], skipIgnored<In>, Const>
     : void;
-export type TakeArguments<In extends string> =
+export type TakeArguments<In extends string, Const extends boolean> =
   In extends `${'('}${infer In}`
-    ? _TakeArgumentsContinue<[], skipIgnored<In>>
+    ? _TakeArgumentsContinue<[], skipIgnored<In>, Const>
     : [[], In];
 
-type TakeDirective<In extends string> =
+type TakeDirective<In extends string, Const extends boolean> =
   In extends `${'@'}${infer In}`
     ? TakeName<In> extends [infer Name, infer In]
-    ? TakeArguments<skipIgnored<In>> extends [infer Arguments, infer In]
+    ? TakeArguments<skipIgnored<In>, Const> extends [infer Arguments, infer In]
     ? [{ kind: 'Directive', name: Name, arguments: Arguments }, In]
     : void
     : void
     : void;
 
-export type TakeDirectives<In extends string> =
-  TakeDirective<In> extends [infer Directive, infer In]
-    ? TakeDirectives<skipIgnored<In>> extends [[...infer Directives], infer In]
+export type TakeDirectives<In extends string, Const extends boolean> =
+  TakeDirective<In, Const> extends [infer Directive, infer In]
+    ? TakeDirectives<skipIgnored<In>, Const> extends [[...infer Directives], infer In]
     ? [[Directive, ...Directives], In]
     : [[], In]
     : [[], In];
@@ -209,8 +211,8 @@ type _TakeFieldName<In extends string> =
     : void;
 export type TakeField<In extends string> =
   _TakeFieldName<In> extends [infer Alias, infer Name, infer In]
-    ? TakeArguments<skipIgnored<In>> extends [infer Arguments, infer In]
-    ? TakeDirectives<skipIgnored<In>> extends [infer Directives, infer In]
+    ? TakeArguments<skipIgnored<In>, false> extends [infer Arguments, infer In]
+    ? TakeDirectives<skipIgnored<In>, false> extends [infer Directives, infer In]
     ? TakeSelectionSet<skipIgnored<In>> extends [infer SelectionSet, infer In]
     ? [
         {
@@ -253,7 +255,7 @@ type TakeTypeCondition<In extends string> =
 type TakeFragmentSpread<In extends string> =
   In extends `${'...'}${infer In}` ? (
     TakeTypeCondition<skipIgnored<In>> extends [infer TypeCondition, infer In] ? (
-      TakeDirectives<skipIgnored<In>> extends [infer Directives, infer In]
+      TakeDirectives<skipIgnored<In>, false> extends [infer Directives, infer In]
         ? TakeSelectionSetContinue<skipIgnored<In>> extends [infer SelectionSet, infer In]
           ? [
               {
@@ -267,10 +269,10 @@ type TakeFragmentSpread<In extends string> =
           : void
         : void
     ) : TakeName<skipIgnored<In>> extends [infer Name, infer In] ? (
-      TakeDirectives<skipIgnored<In>> extends [infer Directives, infer In]
+      TakeDirectives<skipIgnored<In>, false> extends [infer Directives, infer In]
         ? [{ kind: 'FragmentSpread', name: Name, directives: Directives }, In]
         : void
-    ) : TakeDirectives<skipIgnored<In>> extends [infer Directives, infer In] ? (
+    ) : TakeDirectives<skipIgnored<In>, false> extends [infer Directives, infer In] ? (
       TakeSelectionSetContinue<skipIgnored<In>> extends [infer SelectionSet, infer In]
         ? [
             {
@@ -304,12 +306,12 @@ type TakeSelectionSet<In extends string> =
     : [[], In];
 
 type TakeVarDefinition<In extends string> =
-  TakeVariable<In> extends [infer Variable, infer In]
+  TakeVariable<In, false> extends [infer Variable, infer In]
     ? skipIgnored<In> extends `${':'}${infer In}`
     ? TakeType<skipIgnored<In>> extends [infer Type, infer In]
     ? skipIgnored<In> extends `${'='}${infer In}` ? (
-      TakeValue<skipIgnored<In>> extends [infer DefaultValue, infer In]
-        ? TakeDirectives<skipIgnored<In>> extends [infer Directives, infer In]
+      TakeValue<skipIgnored<In>, true> extends [infer DefaultValue, infer In]
+        ? TakeDirectives<skipIgnored<In>, true> extends [infer Directives, infer In]
           ? [
               {
                 kind: 'VariableDefinition',
@@ -322,7 +324,7 @@ type TakeVarDefinition<In extends string> =
             ]
           : void
         : void
-    ) : TakeDirectives<skipIgnored<In>> extends [infer Directives, infer In]
+    ) : TakeDirectives<skipIgnored<In>, true> extends [infer Directives, infer In]
       ? [
           {
             kind: 'VariableDefinition',
@@ -342,7 +344,7 @@ type _TakeVarDefinitionContinue<Definitions extends unknown[], In extends string
   In extends `${')'}${infer In}`
     ? [Definitions, In]
     : TakeVarDefinition<In> extends [infer Definition, infer In]
-    ? _TakeArgumentsContinue<[...Definitions, Definition], skipIgnored<In>>
+    ? _TakeArgumentsContinue<[...Definitions, Definition], skipIgnored<In>, true>
     : void;
 type TakeVarDefinitions<In extends string> =
   skipIgnored<In> extends `${'('}${infer In}`
@@ -353,7 +355,7 @@ type TakeFragmentDefinition<In extends string> =
   In extends `${'fragment'}${infer In}`
     ? TakeName<skipIgnored<In>> extends [infer Name, infer In]
     ? TakeTypeCondition<skipIgnored<In>> extends [infer TypeCondition, infer In]
-    ? TakeDirectives<skipIgnored<In>> extends [infer Directives, infer In]
+    ? TakeDirectives<skipIgnored<In>, true> extends [infer Directives, infer In]
     ? TakeSelectionSetContinue<skipIgnored<In>> extends [infer SelectionSet, infer In]
     ? [
         {
@@ -384,7 +386,7 @@ type TakeOperationDefinition<In extends string> =
   TakeOperation<In> extends [infer Operation, infer In] ? (
     TakeName<skipIgnored<In>> extends [infer Name, infer In]
       ? TakeVarDefinitions<skipIgnored<In>> extends [infer VarDefinitions, infer In]
-      ? TakeDirectives<skipIgnored<In>> extends [infer Directives, infer In]
+      ? TakeDirectives<skipIgnored<In>, false> extends [infer Directives, infer In]
       ? TakeSelectionSetContinue<skipIgnored<In>> extends [infer SelectionSet, infer In]
       ? [
           {
@@ -426,13 +428,15 @@ type ParseDocument<In extends string> =
     ? { kind: 'Document', definitions: Definitions }
     : void;
 
-type ParseValue<In extends string> = TakeValue<In> extends [infer Node, string] ? Node : void;
+type ParseValue<In extends string> = TakeValue<In, false> extends [infer Node, string] ? Node : void;
+type ParseConstValue<In extends string> = TakeValue<In, true> extends [infer Node, string] ? Node : void;
 type ParseType<In extends string> = TakeType<In> extends [infer Node, string] ? Node : void;
 type ParseOperation<In extends string> = TakeOperation<In> extends [infer Node, string] ? Node : void;
 
 export type {
-  ParseValue as Value,
-  ParseType as Type,
+  ParseConstValue as ConstValue,
   ParseOperation as Operation,
   ParseDocument as Document,
+  ParseValue as Value,
+  ParseType as Type,
 };
