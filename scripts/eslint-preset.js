@@ -10,6 +10,8 @@ module.exports = {
   plugins: ['prettier', 'tsdoc'],
   ignorePatterns: ['node_modules/', 'dist/', 'coverage/', 'perf/'],
   rules: {
+    'no-undef': 'off',
+    'no-empty': 'off',
     'sort-keys': 'off',
     'no-console': ['error', { allow: ['warn', 'error'] }],
     'prefer-arrow/prefer-arrow-functions': 'off',
@@ -19,7 +21,8 @@ module.exports = {
       'error',
       {
         singleQuote: true,
-        arrowParens: 'avoid',
+        tabWidth: 2,
+        printWidth: 100,
         trailingComma: 'es5',
       },
     ],
@@ -43,11 +46,62 @@ module.exports = {
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-misused-new': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/array-type': 'off',
-        '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
-        'prefer-rest-params': 'off',
+        '@typescript-eslint/no-namespace': 'off',
+        '@typescript-eslint/array-type': 'off',
         'tsdoc/syntax': 'error',
+
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector: 'PropertyDefinition[value]',
+            message: 'Property definitions with value initializers aren’t transpiled',
+          },
+          {
+            selector: 'MemberExpression[optional=true]',
+            message: 'Optional chaining (?.) operator is outside of specified browser support',
+          },
+          {
+            selector: 'LogicalExpression[operator="??"]',
+            message: 'Nullish coalescing (??) operator is outside of specified browser support',
+          },
+          {
+            selector: 'AssignmentExpression[operator="??="]',
+            message: 'Nullish coalescing assignment (??=) is outside of specified browser support',
+          },
+          {
+            selector: 'SequenceExpression',
+            message: 'Sequence expressions are to be avoided since they can be confusing',
+          },
+          {
+            selector: ':not(ForStatement) > VariableDeclaration[declarations.length>1]',
+            message: 'Only one variable declarator per variable declaration is preferred',
+          },
+        ],
+
+        '@typescript-eslint/no-import-type-side-effects': 'error',
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          {
+            disallowTypeAnnotations: false,
+            fixStyle: 'separate-type-imports',
+          },
+        ],
+      },
+    },
+
+    {
+      files: ['src/**/__tests__/**/*.ts'],
+      rules: {
+        'no-restricted-syntax': 'off',
+        'prefer-rest-params': 'off',
+      },
+    },
+
+    {
+      files: ['**/*.d.ts'],
+      rules: {
+        '@typescript-eslint/triple-slash-reference': 'off',
       },
     },
   ],
