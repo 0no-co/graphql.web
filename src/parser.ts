@@ -4,9 +4,9 @@
  * in graphql.js it will only parse the query language, but not the schema
  * language.
  */
-import { Kind, OperationTypeNode } from './kind';
+import type { Kind, OperationTypeNode } from './kind';
 import { GraphQLError } from './error';
-import { Source } from './types';
+import type { Source } from './types';
 import type * as ast from './ast';
 
 let input: string;

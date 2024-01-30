@@ -427,11 +427,11 @@ describe('Visitor', () => {
   });
 
   it('handles deep immutable edits correctly when using "enter"', () => {
-    const formatNode = node => {
+    const formatNode = (node) => {
       if (
         node.selectionSet &&
         !node.selectionSet.selections.some(
-          node => node.kind === Kind.FIELD && node.name.value === '__typename' && !node.alias
+          (node) => node.kind === Kind.FIELD && node.name.value === '__typename' && !node.alias
         )
       ) {
         return {

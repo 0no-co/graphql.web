@@ -1,4 +1,4 @@
-import { ASTNode } from './ast';
+import type { ASTNode } from './ast';
 
 export const BREAK = {};
 
@@ -131,5 +131,5 @@ type ASTReducerFn<TReducedNode extends ASTNode, R> = (
 type ReducedField<T, R> = T extends null | undefined
   ? T
   : T extends ReadonlyArray<any>
-  ? ReadonlyArray<R>
-  : R;
+    ? ReadonlyArray<R>
+    : R;
