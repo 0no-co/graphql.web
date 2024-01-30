@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import * as graphql16 from 'graphql16';
 
-import { parse, print as graphql_print } from 'graphql';
+import { parse } from '../parser';
 import { print, printString, printBlockString } from '../printer';
+import kitchenSinkAST from './fixtures/kitchen_sink.json';
 
-function dedentString(string) {
+function dedentString(string: string) {
   const trimmedStr = string
     .replace(/^\n*/m, '') //  remove leading newline
     .replace(/[ \t\n]*$/, ''); // remove trailing spaces and tabs
@@ -20,7 +21,7 @@ function dedentString(string) {
   return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
 }
 
-function dedent(strings, ...values) {
+function dedent(strings: readonly string[], ...values: unknown[]) {
   let str = strings[0];
   for (let i = 1; i < strings.length; ++i) str += values[i - 1] + strings[i]; // interpolation
   return dedentString(str);
@@ -43,12 +44,9 @@ describe('printBlockString', () => {
 
 describe('print', () => {
   it('prints the kitchen sink document like graphql.js does', () => {
-    const sink = JSON.parse(
-      readFileSync(__dirname + '/fixtures/kitchen_sink.json', { encoding: 'utf8' })
-    );
-    const doc = print(sink);
+    const doc = print(kitchenSinkAST);
     expect(doc).toMatchSnapshot();
-    expect(doc).toEqual(graphql_print(sink));
+    expect(doc).toEqual(graphql16.print(kitchenSinkAST));
   });
 
   it('prints minimal ast', () => {

@@ -1,18 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import * as graphql16 from 'graphql16';
 
-import { parse as graphql_parse } from 'graphql';
+import kitchenSinkDocument from './fixtures/kitchen_sink.graphql?raw';
 import { parse, parseType, parseValue } from '../parser';
 import { Kind } from '../kind';
 
 describe('parse', () => {
   it('parses the kitchen sink document like graphql.js does', () => {
-    const sink = readFileSync(__dirname + '/fixtures/kitchen_sink.graphql', {
-      encoding: 'utf8',
-    });
-    const doc = parse(sink);
+    const doc = parse(kitchenSinkDocument);
     expect(doc).toMatchSnapshot();
-    expect(doc).toEqual(graphql_parse(sink, { noLocation: true }));
+    expect(doc).toEqual(graphql16.parse(kitchenSinkDocument, { noLocation: true }));
   });
 
   it('parses basic documents', () => {

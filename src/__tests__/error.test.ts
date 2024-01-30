@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import * as graphql16 from 'graphql16';
 
 import { Kind } from '../kind';
-import { GraphQLError as graphql_GraphQLError } from 'graphql';
 import { GraphQLError } from '../error';
 
 describe('GraphQLError', () => {
@@ -10,7 +10,7 @@ describe('GraphQLError', () => {
 
     const error = new GraphQLError(...inputs);
     expect(error).toMatchInlineSnapshot('[GraphQLError: message]');
-    expect(error).toEqual(new (graphql_GraphQLError as any)(...inputs));
+    expect(error).toEqual(new (graphql16.GraphQLError as any)(...inputs));
   });
 
   it('normalizes incoming nodes to arrays', () => {
