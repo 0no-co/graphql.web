@@ -1,4 +1,4 @@
-import { ASTNode } from './ast';
+import type { ASTNode } from './ast';
 
 export function printString(string: string) {
   return JSON.stringify(string);

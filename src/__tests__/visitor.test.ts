@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { Kind, parse, print } from 'graphql';
+
+import { Kind } from '../kind';
+import { parse } from '../parser';
+import { print } from '../printer';
 import { visit, BREAK } from '../visitor';
 
-function checkVisitorFnArgs(ast, args, isEdited = false) {
+function checkVisitorFnArgs(ast: any, args: IArguments, isEdited = false) {
   const [node, key, parent, path, ancestors] = args;
 
   expect(node).toBeInstanceOf(Object);
@@ -427,11 +430,11 @@ describe('Visitor', () => {
   });
 
   it('handles deep immutable edits correctly when using "enter"', () => {
-    const formatNode = node => {
+    const formatNode = (node: any) => {
       if (
         node.selectionSet &&
         !node.selectionSet.selections.some(
-          node => node.kind === Kind.FIELD && node.name.value === '__typename' && !node.alias
+          (node: any) => node.kind === Kind.FIELD && node.name.value === '__typename' && !node.alias
         )
       ) {
         return {

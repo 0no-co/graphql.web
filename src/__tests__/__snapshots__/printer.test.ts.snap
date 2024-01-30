@@ -47,9 +47,9 @@ fragment frag on Friend @onFragmentDefinition {
   foo(
     size: $site
     bar: 12
-    obj: {key: \\"value\\", block: \\"\\"\\"
-    block string uses \\\\\\"\\"\\"
-    \\"\\"\\"}
+    obj: {key: "value", block: """
+    block string uses \\"""
+    """}
   )
 }
 

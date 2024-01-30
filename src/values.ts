@@ -1,5 +1,5 @@
-import { TypeNode, ValueNode } from './ast';
-import { Maybe } from './types';
+import type { TypeNode, ValueNode } from './ast';
+import type { Maybe } from './types';
 
 export function valueFromASTUntyped(
   node: ValueNode,

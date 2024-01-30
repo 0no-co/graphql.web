@@ -55,16 +55,17 @@ Currently, only a select few exports are provided — namely, the ones listed h
 are used in `@urql/core`, and we expect them to be common in all client-side
 GraphQL applications.
 
-| Export | Description | Links |
-| --- | ----------- | -------- |
-| `parse` | A tiny (but compliant) GraphQL query language parser. | [Source](./src/parser.ts) |
-| `print` | A (compliant) GraphQL query language printer. | [Source](./src/printer.ts) |
-| `visit` | A recursive reimplementation of GraphQL.js’ visitor. | [Source](./src/printer.ts) |
-| `Kind` | The GraphQL.js’ `Kind` enum, containing supported `ASTNode` kinds. | [Source](./src/kind.ts) |
-| `GraphQLError` | `GraphQLError` stripped of source/location debugging. | [Source](./src/kind.ts) |
-| `valueFromASTUntyped` | Coerces AST values into JS values. | [Source](./src/values.ts) |
+| Export                | Description                                                        | Links                      |
+| --------------------- | ------------------------------------------------------------------ | -------------------------- |
+| `parse`               | A tiny (but compliant) GraphQL query language parser.              | [Source](./src/parser.ts)  |
+| `print`               | A (compliant) GraphQL query language printer.                      | [Source](./src/printer.ts) |
+| `visit`               | A recursive reimplementation of GraphQL.js’ visitor.               | [Source](./src/printer.ts) |
+| `Kind`                | The GraphQL.js’ `Kind` enum, containing supported `ASTNode` kinds. | [Source](./src/kind.ts)    |
+| `GraphQLError`        | `GraphQLError` stripped of source/location debugging.              | [Source](./src/kind.ts)    |
+| `valueFromASTUntyped` | Coerces AST values into JS values.                                 | [Source](./src/values.ts)  |
 
 The stated goals of any reimplementation are:
+
 1. Not to implement any execution or type system parts of the GraphQL
    specification.
 2. To adhere to GraphQL.js’ types and APIs as much as possible.

@@ -1,5 +1,5 @@
-import { Maybe, Extensions, Source } from './types';
-import { ASTNode } from './ast';
+import type { Maybe, Extensions, Source } from './types';
+import type { ASTNode } from './ast';
 
 export class GraphQLError extends Error {
   readonly locations: ReadonlyArray<any> | undefined;
