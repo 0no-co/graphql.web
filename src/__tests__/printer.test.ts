@@ -43,7 +43,9 @@ describe('printBlockString', () => {
 
 describe('print', () => {
   it('prints the kitchen sink document like graphql.js does', () => {
-    const sink = JSON.parse(readFileSync(__dirname + '/kitchen_sink.json', { encoding: 'utf8' }));
+    const sink = JSON.parse(
+      readFileSync(__dirname + '/fixtures/kitchen_sink.json', { encoding: 'utf8' })
+    );
     const doc = print(sink);
     expect(doc).toMatchSnapshot();
     expect(doc).toEqual(graphql_print(sink));

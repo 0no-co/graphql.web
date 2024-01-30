@@ -2,6 +2,10 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    typecheck: {
+      enabled: true,
+      ignoreSourceErrors: true,
+    },
     coverage: {
       enabled: true,
       provider: 'v8',

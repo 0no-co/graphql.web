@@ -7,7 +7,7 @@ import { Kind } from '../kind';
 
 describe('parse', () => {
   it('parses the kitchen sink document like graphql.js does', () => {
-    const sink = readFileSync(__dirname + '/../../benchmark/kitchen_sink.graphql', {
+    const sink = readFileSync(__dirname + '/fixtures/kitchen_sink.graphql', {
       encoding: 'utf8',
     });
     const doc = parse(sink);
