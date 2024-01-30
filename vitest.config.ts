@@ -4,8 +4,13 @@ export default defineConfig({
   test: {
     coverage: {
       enabled: true,
-      provider: 'c8',
-      100: true,
+      provider: 'v8',
+      include: ['src'],
+      thresholds: {
+        statements: 100,
+        functions: 100,
+        branches: 100,
+      },
     },
     globals: false,
     clearMocks: true,
