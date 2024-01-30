@@ -75,12 +75,13 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-transform-block-scoping": "^7.23.4",
+    "@babel/plugin-transform-typescript": "^7.23.6",
     "@changesets/cli": "^2.27.1",
     "@changesets/get-github-info": "^0.6.0",
-    "@rollup/plugin-buble": "^1.0.3",
+    "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-sucrase": "^5.0.2",
     "@rollup/plugin-terser": "^0.4.4",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
