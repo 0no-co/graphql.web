@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      graphql:
+        specifier: ^14.0.0 || ^15.0.0 || ^16.0.0
+        version: 16.8.1
     devDependencies:
       '@babel/plugin-transform-block-scoping':
         specifier: ^7.23.4
@@ -56,9 +60,6 @@ importers:
       eslint-plugin-tsdoc:
         specifier: ^0.2.17
         version: 0.2.17
-      graphql:
-        specifier: ^16.8.1
-        version: 16.8.1
       graphql15:
         specifier: npm:graphql@^15.8.0
         version: /graphql@15.8.0
@@ -2587,7 +2588,6 @@ packages:
   /graphql@16.8.1:
     resolution: {integrity: sha512-59LZHPdGZVh695Ud9lRzPBVTtlX9ZCV150Er2W43ro37wVof0ctenSaskPPjN7lVTIN8mSZt8PHUNKZuNQUuxw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
-    dev: true
 
   /graphql@17.0.0-alpha.3:
     resolution: {integrity: sha512-+3gX29B8lQ3Q1KkABSgy6CyBF7nTMObd6EHwcIHg4Pkz03D5hy/eJiHjD/io68+ti3goJmpF+OLJXKaUkgReXg==}

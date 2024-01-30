@@ -1,5 +1,5 @@
 import { describe, it, expectTypeOf } from 'vitest';
-import type * as graphql from 'graphql';
+import type * as graphql from 'graphql16';
 
 import type { visit } from '../visitor';
 
