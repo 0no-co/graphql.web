@@ -1,4 +1,4 @@
-import type { ASTNode } from './ast';
+import type { ASTNode, ArgumentNode } from './ast';
 
 export function printString(string: string) {
   return JSON.stringify(string);
@@ -8,8 +8,8 @@ export function printBlockString(string: string) {
   return '"""\n' + string.replace(/"""/g, '\\"""') + '\n"""';
 }
 
-const hasItems = <T>(array: ReadonlyArray<T> | undefined | null): array is ReadonlyArray<T> =>
-  !!(array && array.length);
+const hasItems = <T>(array: unknown): array is ReadonlyArray<T> =>
+  !!(array && (array as unknown[]).length);
 
 const MAX_LINE_LENGTH = 80;
 
@@ -97,6 +97,8 @@ const nodes: {
   },
   FragmentSpread(node) {
     let out = '...' + node.name.value;
+    if ('arguments' in node && hasItems<ArgumentNode>(node.arguments))
+      out += '(' + node.arguments.map(nodes.Argument!).join(', ') + ')';
     if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
     return out;
   },
@@ -108,6 +110,8 @@ const nodes: {
   },
   FragmentDefinition(node) {
     let out = 'fragment ' + node.name.value;
+    if (hasItems(node.variableDefinitions))
+      out += '(' + node.variableDefinitions.map(nodes.VariableDefinition!).join(', ') + ')';
     out += ' on ' + node.typeCondition.name.value;
     if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
     return out + ' ' + print(node.selectionSet);

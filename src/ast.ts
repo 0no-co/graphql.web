@@ -108,12 +108,13 @@ export type OperationDefinitionNode = Or<
     readonly kind: Kind.OPERATION_DEFINITION;
     readonly operation: OperationTypeNode;
     readonly name?: NameNode;
-    readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly selectionSet: SelectionSetNode;
     readonly loc?: Location;
   }
->;
+> & {
+  readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
+};
 
 export type VariableDefinitionNode = Or<
   GraphQL.VariableDefinitionNode,
@@ -191,7 +192,9 @@ export type FragmentSpreadNode = Or<
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly loc?: Location;
   }
->;
+> & {
+  readonly arguments?: ReadonlyArray<ArgumentNode>;
+};
 
 export type InlineFragmentNode = Or<
   GraphQL.InlineFragmentNode,
@@ -209,6 +212,7 @@ export type FragmentDefinitionNode = Or<
   {
     readonly kind: Kind.FRAGMENT_DEFINITION;
     readonly name: NameNode;
+    readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
     readonly typeCondition: NamedTypeNode;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly selectionSet: SelectionSetNode;

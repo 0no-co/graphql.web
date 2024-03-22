@@ -4,6 +4,7 @@ import * as graphql16 from 'graphql16';
 import { parse } from '../parser';
 import { print, printString, printBlockString } from '../printer';
 import kitchenSinkAST from './fixtures/kitchen_sink.json';
+import { Kind } from 'src/kind';
 
 function dedentString(string: string) {
   const trimmedStr = string
@@ -113,6 +114,94 @@ describe('print', () => {
         },
       } as any)
     ).toBe('[Type!]');
+  });
+
+  it('prints fragment-definition with variables', () => {
+    expect(
+      print({
+        kind: Kind.FRAGMENT_DEFINITION,
+        directives: [],
+        name: {
+          kind: Kind.NAME,
+          value: 'x',
+        },
+        typeCondition: {
+          kind: Kind.NAMED_TYPE,
+          name: {
+            kind: Kind.NAME,
+            value: 'Type',
+          },
+        },
+        variableDefinitions: [
+          {
+            kind: Kind.VARIABLE_DEFINITION,
+            type: {
+              kind: Kind.NAMED_TYPE,
+              name: {
+                kind: Kind.NAME,
+                value: 'Int',
+              },
+            },
+            variable: {
+              kind: Kind.VARIABLE,
+              name: {
+                kind: Kind.NAME,
+                value: 'var',
+              },
+            },
+            defaultValue: {
+              kind: Kind.INT,
+              value: '1',
+            },
+            directives: [],
+          },
+        ],
+        selectionSet: {
+          kind: Kind.SELECTION_SET,
+          selections: [
+            {
+              alias: undefined,
+              kind: Kind.FIELD,
+              directives: [],
+              selectionSet: undefined,
+              arguments: [],
+              name: {
+                kind: Kind.NAME,
+                value: 'field',
+              },
+            },
+          ],
+        },
+      } as any)
+    ).toBe(`fragment x($var: Int = 1) on Type {
+  field
+}`);
+  });
+
+  it('prints fragment-spread with arguments', () => {
+    expect(
+      print({
+        kind: Kind.FRAGMENT_SPREAD,
+        directives: [],
+        name: {
+          kind: Kind.NAME,
+          value: 'x',
+        },
+        arguments: [
+          {
+            kind: 'Argument',
+            name: {
+              kind: 'Name',
+              value: 'var',
+            },
+            value: {
+              kind: 'IntValue',
+              value: '2',
+            },
+          },
+        ],
+      } as any)
+    ).toBe(`...x(var: 2)`);
   });
 
   // NOTE: The shim won't throw for invalid AST nodes
