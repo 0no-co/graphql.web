@@ -190,6 +190,7 @@ export type FragmentSpreadNode = Or<
   {
     readonly kind: Kind.FRAGMENT_SPREAD;
     readonly name: NameNode;
+    readonly arguments?: ReadonlyArray<ArgumentNode>;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly loc?: Location;
   }
@@ -212,6 +213,7 @@ export type FragmentDefinitionNode = Or<
     readonly kind: Kind.FRAGMENT_DEFINITION;
     readonly name: NameNode;
     readonly description?: StringValueNode;
+    readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
     readonly typeCondition: NamedTypeNode;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly selectionSet: SelectionSetNode;

@@ -25,6 +25,7 @@ function advance(pattern: RegExp) {
 }
 
 const leadingRe = / +(?=[^\s])/y;
+const nameRe = /[A-Za-z_][0-9A-Za-z_]*/y;
 function blockString(string: string) {
   const lines = string.split('\n');
   let out = '';
@@ -357,6 +358,7 @@ function selectionSet(): ast.SelectionSetNode {
             selections.push({
               kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
               name: nameNode(),
+              arguments: arguments_(false),
               directives: directives(false),
             });
           }
@@ -377,6 +379,7 @@ function selectionSet(): ast.SelectionSetNode {
           selections.push({
             kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
             name: nameNode(),
+            arguments: arguments_(false),
             directives: directives(false),
           });
       }
@@ -460,19 +463,27 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
 }
 
 function fragmentDefinition(description?: ast.StringValueNode): ast.FragmentDefinitionNode {
-  const name = nameNode();
-  if (input.charCodeAt(idx++) !== 111 /*'o'*/ || input.charCodeAt(idx++) !== 110 /*'n'*/)
-    throw error('FragmentDefinition');
+  let _name: string | undefined;
+  let _condition: string | undefined;
+  if ((_name = advance(nameRe)) == null) throw error('FragmentDefinition');
+  const _variableDefinitions = variableDefinitions();
+  if (advance(nameRe) !== 'on') throw error('FragmentDefinition');
+  ignored();
+  if ((_condition = advance(nameRe)) == null) throw error('FragmentDefinition');
+  ignored();
+  const _directives = directives(false);
+  if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
   ignored();
   const fragDef: ast.FragmentDefinitionNode = {
     kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
-    name,
+    name: { kind: 'Name' as Kind.NAME, value: _name },
     typeCondition: {
       kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: nameNode(),
+      name: { kind: 'Name' as Kind.NAME, value: _condition },
     },
-    directives: directives(false),
-    selectionSet: selectionSetStart(),
+    variableDefinitions: _variableDefinitions,
+    directives: _directives,
+    selectionSet: selectionSet(),
   };
   if (description) {
     fragDef.description = description;
