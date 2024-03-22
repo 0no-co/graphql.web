@@ -319,10 +319,12 @@ function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode | und
     const _idx = idx;
     let _name: ast.NameNode | undefined;
     if ((_name = name()) && _name.value !== 'on') {
+      const _arguments = arguments_(false);
       return {
         kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
         name: _name,
         directives: directives(false),
+        arguments: _arguments,
       };
     } else {
       idx = _idx;
@@ -403,7 +405,9 @@ function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
     const _name = name();
     if (!_name) throw error('FragmentDefinition');
     ignored();
+    const _variableDefinitions = variableDefinitions();
     const _typeCondition = typeCondition();
+
     if (!_typeCondition) throw error('FragmentDefinition');
     const _directives = directives(false);
     const _selectionSet = selectionSet();
@@ -412,6 +416,7 @@ function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
       kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
       name: _name,
       typeCondition: _typeCondition,
+      variableDefinitions: _variableDefinitions.length ? _variableDefinitions : undefined,
       directives: _directives,
       selectionSet: _selectionSet,
     };
