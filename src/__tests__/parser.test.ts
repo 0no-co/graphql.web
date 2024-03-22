@@ -164,7 +164,7 @@ describe('parse', () => {
     });
   });
 
-  it.only('parses fragment-spread arguments', () => {
+  it('parses fragment-spread arguments', () => {
     expect(
       parse('query x { ...x(var: 2) } fragment x($var: Int = 1) on Type { field }').definitions[0]
     ).toHaveProperty('selectionSet.selections.0', {
