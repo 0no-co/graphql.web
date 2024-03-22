@@ -185,7 +185,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                                     "selectionSet": undefined,
                                   },
                                   {
-                                    "arguments": [],
+                                    "arguments": undefined,
                                     "directives": [
                                       {
                                         "arguments": [],
@@ -645,8 +645,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                       "value": {
                         "block": true,
                         "kind": "StringValue",
-                        "value": "block string uses """
-",
+                        "value": "block string uses """",
                       },
                     },
                   ],

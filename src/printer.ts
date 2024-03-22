@@ -97,7 +97,8 @@ const nodes: {
   },
   FragmentSpread(node) {
     let out = '...' + node.name.value;
-    if (hasItems(node.arguments)) out += '(' + node.arguments.map(nodes.Argument!).join(', ') + ')';
+    if ('arguments' in node && Array.isArray(node.arguments) && hasItems(node.arguments))
+      out += '(' + node.arguments.map(nodes.Argument!).join(', ') + ')';
     if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
     return out;
   },

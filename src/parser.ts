@@ -324,7 +324,7 @@ function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode | und
         kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
         name: _name,
         directives: directives(false),
-        arguments: _arguments,
+        arguments: _arguments.length ? _arguments : undefined,
       };
     } else {
       idx = _idx;
