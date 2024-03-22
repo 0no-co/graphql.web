@@ -134,6 +134,90 @@ describe('parse', () => {
     expect(() => parse('fragment Name on Type { field }')).not.toThrow();
   });
 
+  it('parses fragment variable definitions', () => {
+    expect(parse('fragment x($var: Int = 1) on Type { field }').definitions[0]).toEqual({
+      kind: Kind.FRAGMENT_DEFINITION,
+      directives: undefined,
+      name: {
+        kind: Kind.NAME,
+        value: 'x',
+      },
+      typeCondition: {
+        kind: Kind.NAMED_TYPE,
+        name: {
+          kind: Kind.NAME,
+          value: 'Type',
+        },
+      },
+      variableDefinitions: [
+        {
+          kind: Kind.VARIABLE_DEFINITION,
+          type: {
+            kind: Kind.NAMED_TYPE,
+            name: {
+              kind: Kind.NAME,
+              value: 'Int',
+            },
+          },
+          variable: {
+            kind: Kind.VARIABLE,
+            name: {
+              kind: Kind.NAME,
+              value: 'var',
+            },
+          },
+          defaultValue: {
+            kind: Kind.INT,
+            value: '1',
+          },
+          directives: undefined,
+        },
+      ],
+      selectionSet: {
+        kind: Kind.SELECTION_SET,
+        selections: [
+          {
+            alias: undefined,
+            kind: Kind.FIELD,
+            directives: undefined,
+            selectionSet: undefined,
+            arguments: undefined,
+            name: {
+              kind: Kind.NAME,
+              value: 'field',
+            },
+          },
+        ],
+      },
+    });
+  });
+
+  it('parses fragment spread arguments', () => {
+    expect(
+      parse('query x { ...x(var: 2) } fragment x($var: Int = 1) on Type { field }').definitions[0]
+    ).toHaveProperty('selectionSet.selections.0', {
+      kind: Kind.FRAGMENT_SPREAD,
+      directives: undefined,
+      name: {
+        kind: Kind.NAME,
+        value: 'x',
+      },
+      arguments: [
+        {
+          kind: 'Argument',
+          name: {
+            kind: 'Name',
+            value: 'var',
+          },
+          value: {
+            kind: 'IntValue',
+            value: '2',
+          },
+        },
+      ],
+    });
+  });
+
   it('parses fields', () => {
     expect(() => parse('{ field: }')).toThrow();
     expect(() => parse('{ alias: field() }')).toThrow();
