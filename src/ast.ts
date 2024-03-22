@@ -190,11 +190,12 @@ export type FragmentSpreadNode = Or<
   {
     readonly kind: Kind.FRAGMENT_SPREAD;
     readonly name: NameNode;
-    readonly arguments?: ReadonlyArray<ArgumentNode>;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly loc?: Location;
   }
->;
+> & {
+  readonly arguments?: ReadonlyArray<ArgumentNode>;
+};
 
 export type InlineFragmentNode = Or<
   GraphQL.InlineFragmentNode,
