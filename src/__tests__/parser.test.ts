@@ -288,8 +288,8 @@ describe('parse', () => {
           kind: Kind.OPERATION_DEFINITION,
           operation: 'query',
           name: undefined,
-          variableDefinitions: [],
-          directives: [],
+          variableDefinitions: undefined,
+          directives: undefined,
           selectionSet: {
             kind: Kind.SELECTION_SET,
             selections: [

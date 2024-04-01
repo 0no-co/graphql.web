@@ -453,8 +453,8 @@ const operationDefinitionRe = /(?:query|mutation|subscription)/y;
 function operationDefinition(): ast.OperationDefinitionNode | undefined {
   let _operation: string | undefined;
   let _name: ast.NameNode | undefined;
-  let _variableDefinitions: ast.VariableDefinitionNode[] = [];
-  let _directives: ast.DirectiveNode[] = [];
+  let _variableDefinitions: ast.VariableDefinitionNode[] | undefined;
+  let _directives: ast.DirectiveNode[] | undefined;
   if ((_operation = advance(operationDefinitionRe))) {
     ignored();
     _name = name();
