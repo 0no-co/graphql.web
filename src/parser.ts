@@ -85,9 +85,8 @@ const valueRe = new RegExp(
     '("""(?:"""|(?:[\\s\\S]*?[^\\\\])"""))|' + // block string
     '("(?:"|[^\\r\\n]*?[^\\\\]"))|' + // string
     '(' +
-    nameRe.source +
-    ')' + // enum
-    ')',
+    nameRe.source + // enum
+    '))',
   'y'
 );
 
@@ -275,28 +274,27 @@ function directives(constant: boolean): ast.DirectiveNode[] {
   return directives;
 }
 
-function field(): ast.FieldNode | undefined {
-  let _name = name();
-  if (_name) {
+function field(aliasOrName: string): ast.FieldNode | undefined {
+  let _alias: ast.NameNode | undefined;
+  let _name: ast.NameNode | undefined = {
+    kind: 'Name' as Kind.NAME,
+    value: aliasOrName,
+  };
+  if (input.charCodeAt(idx) === 58 /*':'*/) {
+    idx++;
     ignored();
-    let _alias: ast.NameNode | undefined;
-    if (input.charCodeAt(idx) === 58 /*':'*/) {
-      idx++;
-      ignored();
-      _alias = _name;
-      _name = name();
-      if (!_name) throw error('Field');
-      ignored();
-    }
-    return {
-      kind: 'Field' as Kind.FIELD,
-      alias: _alias,
-      name: _name,
-      arguments: arguments_(false),
-      directives: directives(false),
-      selectionSet: selectionSet(),
-    };
+    _alias = _name;
+    if ((_name = name()) == null) throw error('Field');
+    ignored();
   }
+  return {
+    kind: 'Field' as Kind.FIELD,
+    alias: _alias,
+    name: _name,
+    arguments: arguments_(false),
+    directives: directives(false),
+    selectionSet: selectionSet(),
+  };
 }
 
 function type(): ast.TypeNode {
@@ -346,45 +344,79 @@ function typeCondition(): ast.NamedTypeNode | undefined {
   }
 }
 
-const fragmentSpreadRe = /\.\.\./y;
-
-function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode | undefined {
-  if (advance(fragmentSpreadRe)) {
-    ignored();
-    const _idx = idx;
-    let _name: ast.NameNode | undefined;
-    if ((_name = name()) && _name.value !== 'on') {
-      return {
-        kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
-        name: _name,
-        directives: directives(false),
-      };
-    } else {
-      idx = _idx;
-      const _typeCondition = typeCondition();
-      const _directives = directives(false);
-      const _selectionSet = selectionSet();
-      if (!_selectionSet) throw error('InlineFragment');
-      return {
-        kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
-        typeCondition: _typeCondition,
-        directives: _directives,
-        selectionSet: _selectionSet,
-      };
-    }
+function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode {
+  const _idx = idx;
+  let _name: ast.NameNode | undefined;
+  if ((_name = name()) && _name.value !== 'on') {
+    return {
+      kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
+      name: _name,
+      directives: directives(false),
+    };
+  } else {
+    idx = _idx;
+    const _typeCondition = typeCondition();
+    const _directives = directives(false);
+    const _selectionSet = selectionSet();
+    if (!_selectionSet) throw error('InlineFragment');
+    return {
+      kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
+      typeCondition: _typeCondition,
+      directives: _directives,
+      selectionSet: _selectionSet,
+    };
   }
 }
 
+const selectionRe = new RegExp(
+  '(?:' +
+    '(\\.\\.\\.)|' + // fragment spread
+    '(' +
+    nameRe.source + // field
+    '))',
+  'y'
+);
+
+const enum SelectionGroup {
+  Spread = 1,
+  Name = 2,
+}
+
+type SelectionExec = RegExpExecArray & {
+  [Prop in SelectionGroup]: string | undefined;
+};
+
 function selectionSet(): ast.SelectionSetNode | undefined {
-  let match: ast.SelectionNode | undefined;
   ignored();
   if (input.charCodeAt(idx) === 123 /*'{'*/) {
     idx++;
     ignored();
+    let match: string | undefined;
+    let exec: SelectionExec | null;
+    let selection: ast.SelectionNode | undefined;
     const selections: ast.SelectionNode[] = [];
-    while ((match = fragmentSpread() || field())) selections.push(match);
-    if (!selections.length || input.charCodeAt(idx++) !== 125 /*'}'*/) throw error('SelectionSet');
+    while (input.charCodeAt(idx) !== 125 /*'}'*/) {
+      selectionRe.lastIndex = idx;
+      if ((exec = selectionRe.exec(input) as SelectionExec) != null) {
+        idx = selectionRe.lastIndex;
+        if (exec[SelectionGroup.Spread] != null) {
+          ignored();
+          selections.push(fragmentSpread());
+        } else if ((match = exec[SelectionGroup.Name]) != null) {
+          ignored();
+          if ((selection = field(match)) != null) {
+            selections.push(selection);
+          } else {
+            throw error('SelectionSet');
+          }
+        }
+      } else {
+        throw error('SelectionSet');
+      }
+    }
+    idx++;
     ignored();
+    if (!selections.length) throw error('SelectionSet');
     return {
       kind: 'SelectionSet' as Kind.SELECTION_SET,
       selections,
