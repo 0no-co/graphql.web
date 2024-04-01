@@ -40,14 +40,6 @@ let INDENT = 0;
 
 const nodes = {
   OperationDefinition(node: OperationDefinitionNode): string {
-    if (
-      node.operation === 'query' &&
-      !node.name &&
-      !(node.variableDefinitions && node.variableDefinitions.length) &&
-      !(node.directives && node.directives.length)
-    ) {
-      return nodes.SelectionSet(node.selectionSet);
-    }
     let out: string = node.operation;
     if (node.name) out += ' ' + node.name.value;
     if (node.variableDefinitions && node.variableDefinitions.length) {
@@ -56,7 +48,9 @@ const nodes = {
     }
     if (node.directives && node.directives.length)
       out += ' ' + node.directives.map(nodes.Directive).join(' ');
-    return out + ' ' + nodes.SelectionSet!(node.selectionSet);
+    return out !== 'query'
+      ? out + ' ' + nodes.SelectionSet!(node.selectionSet)
+      : nodes.SelectionSet!(node.selectionSet);
   },
   VariableDefinition(node: VariableDefinitionNode): string {
     let out = nodes.Variable!(node.variable) + ': ' + _print(node.type);
