@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import * as graphql16 from 'graphql16';
 
 import kitchenSinkDocument from './fixtures/kitchen_sink.graphql?raw';
 import { parse, parseType, parseValue } from '../parser';
