@@ -78,8 +78,7 @@ function name(): ast.NameNode | undefined {
 
 const valueRe = new RegExp(
   '(?:' +
-    '(null)|' + // null
-    '(true|false)|' + // boolean
+    '(null|true|false)|' + // boolean and null
     '\\$(' +
     nameRe.source +
     ')|' + // variable
@@ -93,14 +92,13 @@ const valueRe = new RegExp(
 );
 
 const enum ValueGroup {
-  Null = 1,
-  Bool = 2,
-  Var = 3,
-  Int = 4,
-  Float = 5,
-  BlockString = 6,
-  String = 7,
-  Enum = 8,
+  Const = 1,
+  Var,
+  Int,
+  Float,
+  BlockString,
+  String,
+  Enum,
 }
 
 type ValueExec = RegExpExecArray & {
@@ -112,30 +110,52 @@ const complexStringRe = /\\/g;
 function value(constant: true): ast.ConstValueNode;
 function value(constant: boolean): ast.ValueNode;
 
-function value(constant: boolean): ast.ValueNode | undefined {
-  let match: string | undefined;
+function value(constant: boolean): ast.ValueNode {
+  let match: string | ast.NameNode | undefined;
   let exec: ValueExec | null;
   valueRe.lastIndex = idx;
   if (input.charCodeAt(idx) === 91 /*'['*/) {
     idx++;
     ignored();
-    return list(constant);
+    const values: ast.ValueNode[] = [];
+    while (input.charCodeAt(idx) !== 93 /*']'*/) values.push(value(constant));
+    idx++;
+    ignored();
+    return {
+      kind: 'ListValue' as Kind.LIST,
+      values,
+    };
   } else if (input.charCodeAt(idx) === 123 /*'{'*/) {
     idx++;
     ignored();
-    return object(constant);
+    const fields: ast.ObjectFieldNode[] = [];
+    while (input.charCodeAt(idx) !== 125 /*'}'*/) {
+      if ((match = name()) == null) throw error('ObjectField');
+      ignored();
+      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
+      ignored();
+      fields.push({
+        kind: 'ObjectField' as Kind.OBJECT_FIELD,
+        name: match,
+        value: value(constant),
+      });
+    }
+    idx++;
+    ignored();
+    return {
+      kind: 'ObjectValue' as Kind.OBJECT,
+      fields,
+    };
   } else if ((exec = valueRe.exec(input) as ValueExec) != null) {
     idx = valueRe.lastIndex;
     ignored();
-    if (exec[ValueGroup.Null] != null) {
-      return {
-        kind: 'NullValue' as Kind.NULL,
-      };
-    } else if ((match = exec[ValueGroup.Bool]) != null) {
-      return {
-        kind: 'BooleanValue' as Kind.BOOLEAN,
-        value: match === 'true',
-      };
+    if ((match = exec[ValueGroup.Const]) != null) {
+      return match === 'null'
+        ? { kind: 'NullValue' as Kind.NULL }
+        : {
+            kind: 'BooleanValue' as Kind.BOOLEAN,
+            value: match === 'true',
+          };
     } else if ((match = exec[ValueGroup.Var]) != null) {
       if (constant) {
         throw error('Variable');
@@ -180,48 +200,8 @@ function value(constant: boolean): ast.ValueNode | undefined {
       };
     }
   }
-}
 
-function list(constant: boolean): ast.ListValueNode | undefined {
-  let match: ast.ValueNode | undefined;
-  const values: ast.ValueNode[] = [];
-  while (input.charCodeAt(idx) !== 93 /*']'*/) {
-    if ((match = value(constant)) != null) {
-      values.push(match);
-    } else {
-      throw error('ListValue');
-    }
-  }
-  idx++;
-  ignored();
-  return {
-    kind: 'ListValue' as Kind.LIST,
-    values,
-  };
-}
-
-function object(constant: boolean): ast.ObjectValueNode | undefined {
-  const fields: ast.ObjectFieldNode[] = [];
-  let _name: ast.NameNode | undefined;
-  let _value: ast.ValueNode | undefined;
-  while (input.charCodeAt(idx) !== 125 /*'}'*/) {
-    if ((_name = name()) == null) throw error('ObjectValue');
-    ignored();
-    if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
-    ignored();
-    if ((_value = value(constant)) == null) throw error('ObjectField');
-    fields.push({
-      kind: 'ObjectField' as Kind.OBJECT_FIELD,
-      name: _name,
-      value: _value,
-    });
-  }
-  idx++;
-  ignored();
-  return {
-    kind: 'ObjectValue' as Kind.OBJECT,
-    fields,
-  };
+  throw error('Value');
 }
 
 function arguments_(constant: boolean): ast.ArgumentNode[] {
