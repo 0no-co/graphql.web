@@ -196,7 +196,6 @@ function value(constant: boolean): ast.ValueNode {
 }
 
 function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
-  ignored();
   if (input.charCodeAt(idx) === 40 /*'('*/) {
     const args: ast.ArgumentNode[] = [];
     idx++;
@@ -225,7 +224,6 @@ function directives(constant: true): ast.ConstDirectiveNode[] | undefined;
 function directives(constant: boolean): ast.DirectiveNode[] | undefined;
 
 function directives(constant: boolean): ast.DirectiveNode[] | undefined {
-  ignored();
   if (input.charCodeAt(idx) === 64 /*'@'*/) {
     const directives: ast.DirectiveNode[] = [];
     let _name: string | undefined;
@@ -243,9 +241,9 @@ function directives(constant: boolean): ast.DirectiveNode[] | undefined {
   }
 }
 
+// TODO: check ignored
 function type(): ast.TypeNode {
   let match: string | ast.TypeNode | undefined;
-  ignored();
   if (input.charCodeAt(idx) === 91 /*'['*/) {
     idx++;
     ignored();
@@ -343,6 +341,7 @@ function selectionSet(): ast.SelectionSetNode {
           if ((match = advance(nameRe)) == null) throw error('Field');
         }
         const _arguments = arguments_(false);
+        ignored();
         const _directives = directives(false);
         let _selectionSet: ast.SelectionSetNode | undefined;
         if (input.charCodeAt(idx) === 123 /*'{'*/) {
@@ -383,6 +382,7 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
       if ((_name = advance(nameRe)) == null) throw error('Variable');
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
+      ignored();
       const _type = type();
       let _defaultValue: ast.ConstValueNode | undefined;
       if (input.charCodeAt(idx) === 61 /*'='*/) {
@@ -416,6 +416,7 @@ function fragmentDefinition(): ast.FragmentDefinitionNode {
   if (advance(nameRe) !== 'on') throw error('FragmentDefinition');
   ignored();
   if ((_condition = advance(nameRe)) == null) throw error('FragmentDefinition');
+  ignored();
   const _directives = directives(false);
   if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
   ignored();
