@@ -49,8 +49,8 @@ const nodes = {
     if (node.directives && node.directives.length)
       out += ' ' + node.directives.map(nodes.Directive).join(' ');
     return out !== 'query'
-      ? out + ' ' + nodes.SelectionSet!(node.selectionSet)
-      : nodes.SelectionSet!(node.selectionSet);
+      ? out + ' ' + nodes.SelectionSet(node.selectionSet)
+      : nodes.SelectionSet(node.selectionSet);
   },
   VariableDefinition(node: VariableDefinitionNode): string {
     let out = nodes.Variable!(node.variable) + ': ' + _print(node.type);
@@ -146,7 +146,7 @@ const nodes = {
     if (node.typeCondition) out += ' on ' + node.typeCondition.name.value;
     if (node.directives && node.directives.length)
       out += ' ' + node.directives.map(nodes.Directive).join(' ');
-    out += ' ' + _print(node.selectionSet);
+    out += ' ' + nodes.SelectionSet(node.selectionSet);
     return out;
   },
   FragmentDefinition(node: FragmentDefinitionNode): string {
@@ -156,7 +156,7 @@ const nodes = {
     out += ' on ' + node.typeCondition.name.value;
     if (node.directives && node.directives.length)
       out += ' ' + node.directives.map(nodes.Directive).join(' ');
-    return out + ' ' + _print(node.selectionSet);
+    return out + ' ' + nodes.SelectionSet(node.selectionSet);
   },
   Directive(node: DirectiveNode): string {
     let out = '@' + node.name.value;
