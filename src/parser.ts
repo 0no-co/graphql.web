@@ -80,7 +80,9 @@ const valueRe = new RegExp(
   '(?:' +
     '(null)|' + // null
     '(true|false)|' + // boolean
-    '(\\$)|' + // variable
+    '\\$(' +
+    nameRe.source +
+    ')|' + // variable
     '(-?\\d+)|' + // int or float
     '("""(?:"""|(?:[\\s\\S]*?[^\\\\])"""))|' + // block string
     '("(?:"|[^\\r\\n]*?[^\\\\]"))|' + // string
@@ -135,16 +137,18 @@ function value(constant: boolean): ast.ValueNode | undefined {
         kind: 'BooleanValue' as Kind.BOOLEAN,
         value: match === 'true',
       };
-    } else if (exec[ValueGroup.Var] != null) {
-      let nameNode: ast.NameNode | undefined;
-      if (!constant && (nameNode = name())) {
+    } else if ((match = exec[ValueGroup.Var]) != null) {
+      if (constant) {
+        throw error('Variable');
+      } else {
         ignored();
         return {
           kind: 'Variable' as Kind.VARIABLE,
-          name: nameNode,
+          name: {
+            kind: 'Name' as Kind.NAME,
+            value: match,
+          },
         };
-      } else {
-        throw error('Variable');
       }
     } else if ((match = exec[ValueGroup.Int]) != null) {
       let floatPart: string | undefined;
