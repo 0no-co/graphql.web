@@ -26,6 +26,15 @@ import type {
   NonNullTypeNode,
 } from './ast';
 
+function mapJoin<T>(value: readonly T[], joiner: string, mapper: (value: T) => string): string {
+  let out = '';
+  for (let index = 0; index < value.length; index++) {
+    if (index) out += joiner;
+    out += mapper(value[index]);
+  }
+  return out;
+}
+
 function printString(string: string) {
   return JSON.stringify(string);
 }
@@ -36,7 +45,7 @@ function printBlockString(string: string) {
 
 const MAX_LINE_LENGTH = 80;
 
-let INDENT = 0;
+let LF = '\n';
 
 const nodes = {
   OperationDefinition(node: OperationDefinitionNode): string {
@@ -44,10 +53,10 @@ const nodes = {
     if (node.name) out += ' ' + node.name.value;
     if (node.variableDefinitions && node.variableDefinitions.length) {
       if (!node.name) out += ' ';
-      out += '(' + node.variableDefinitions.map(nodes.VariableDefinition).join(', ') + ')';
+      out += '(' + mapJoin(node.variableDefinitions, ', ', nodes.VariableDefinition) + ')';
     }
     if (node.directives && node.directives.length)
-      out += ' ' + node.directives.map(nodes.Directive).join(' ');
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     return out !== 'query'
       ? out + ' ' + nodes.SelectionSet(node.selectionSet)
       : nodes.SelectionSet(node.selectionSet);
@@ -56,34 +65,32 @@ const nodes = {
     let out = nodes.Variable!(node.variable) + ': ' + _print(node.type);
     if (node.defaultValue) out += ' = ' + _print(node.defaultValue);
     if (node.directives && node.directives.length)
-      out += ' ' + node.directives.map(nodes.Directive).join(' ');
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     return out;
   },
   Field(node: FieldNode): string {
     let out = node.alias ? node.alias.value + ': ' + node.name.value : node.name.value;
     if (node.arguments && node.arguments.length) {
-      const args = node.arguments.map(nodes.Argument);
-      const argsLine = '(' + args.join(', ') + ')';
-      if (out.length + argsLine.length > MAX_LINE_LENGTH) {
+      const args = mapJoin(node.arguments, ', ', nodes.Argument);
+      if (out.length + args.length + 2 > MAX_LINE_LENGTH) {
         out +=
-          '(\n' +
-          '  '.repeat(++INDENT) +
-          args.join('\n' + '  '.repeat(INDENT)) +
-          '\n' +
-          '  '.repeat(--INDENT) +
+          '(' +
+          (LF += '  ') +
+          mapJoin(node.arguments, LF, nodes.Argument) +
+          (LF = LF.slice(0, -2)) +
           ')';
       } else {
-        out += argsLine;
+        out += '(' + args + ')';
       }
     }
     if (node.directives && node.directives.length)
-      out += ' ' + node.directives.map(nodes.Directive).join(' ');
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     if (node.selectionSet) out += ' ' + nodes.SelectionSet(node.selectionSet);
     return out;
   },
   StringValue(node: StringValueNode): string {
     if (node.block) {
-      return printBlockString(node.value).replace(/\n/g, '\n' + '  '.repeat(INDENT + 1));
+      return printBlockString(node.value).replace(/\n/g, LF);
     } else {
       return printString(node.value);
     }
@@ -110,27 +117,20 @@ const nodes = {
     return '$' + node.name.value;
   },
   ListValue(node: ListValueNode): string {
-    return '[' + node.values.map(_print).join(', ') + ']';
+    return '[' + mapJoin(node.values, ', ', _print) + ']';
   },
   ObjectValue(node: ObjectValueNode): string {
-    return '{' + node.fields.map(nodes.ObjectField).join(', ') + '}';
+    return '{' + mapJoin(node.fields, ', ', nodes.ObjectField) + '}';
   },
   ObjectField(node: ObjectFieldNode): string {
     return node.name.value + ': ' + _print(node.value);
   },
   Document(node: DocumentNode): string {
     if (!node.definitions || !node.definitions.length) return '';
-    return node.definitions.map(_print).join('\n\n');
+    return mapJoin(node.definitions, '\n\n', _print);
   },
   SelectionSet(node: SelectionSetNode): string {
-    return (
-      '{\n' +
-      '  '.repeat(++INDENT) +
-      node.selections.map(_print).join('\n' + '  '.repeat(INDENT)) +
-      '\n' +
-      '  '.repeat(--INDENT) +
-      '}'
-    );
+    return '{' + (LF += '  ') + mapJoin(node.selections, LF, _print) + (LF = LF.slice(0, -2)) + '}';
   },
   Argument(node: ArgumentNode): string {
     return node.name.value + ': ' + _print(node.value);
@@ -138,30 +138,30 @@ const nodes = {
   FragmentSpread(node: FragmentSpreadNode): string {
     let out = '...' + node.name.value;
     if (node.directives && node.directives.length)
-      out += ' ' + node.directives.map(nodes.Directive).join(' ');
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     return out;
   },
   InlineFragment(node: InlineFragmentNode): string {
     let out = '...';
     if (node.typeCondition) out += ' on ' + node.typeCondition.name.value;
     if (node.directives && node.directives.length)
-      out += ' ' + node.directives.map(nodes.Directive).join(' ');
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     out += ' ' + nodes.SelectionSet(node.selectionSet);
     return out;
   },
   FragmentDefinition(node: FragmentDefinitionNode): string {
     let out = 'fragment ' + node.name.value;
     if (node.variableDefinitions && node.variableDefinitions.length)
-      out += '(' + node.variableDefinitions.map(nodes.VariableDefinition).join(', ') + ')';
+      out += '(' + mapJoin(node.variableDefinitions, ', ', nodes.VariableDefinition) + ')';
     out += ' on ' + node.typeCondition.name.value;
     if (node.directives && node.directives.length)
-      out += ' ' + node.directives.map(nodes.Directive).join(' ');
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     return out + ' ' + nodes.SelectionSet(node.selectionSet);
   },
   Directive(node: DirectiveNode): string {
     let out = '@' + node.name.value;
     if (node.arguments && node.arguments.length)
-      out += '(' + node.arguments.map(nodes.Argument).join(', ') + ')';
+      out += '(' + mapJoin(node.arguments, ', ', nodes.Argument) + ')';
     return out;
   },
   NamedType(node: NamedTypeNode): string {
@@ -178,7 +178,7 @@ const nodes = {
 const _print = (node: ASTNode): string => nodes[node.kind](node);
 
 function print(node: ASTNode): string {
-  INDENT = 0;
+  LF = '\n';
   return nodes[node.kind] ? nodes[node.kind](node) : '';
 }
 
