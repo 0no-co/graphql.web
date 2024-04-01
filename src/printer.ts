@@ -151,8 +151,6 @@ const nodes = {
   },
   FragmentDefinition(node: FragmentDefinitionNode): string {
     let out = 'fragment ' + node.name.value;
-    if (node.variableDefinitions && node.variableDefinitions.length)
-      out += '(' + mapJoin(node.variableDefinitions, ', ', nodes.VariableDefinition) + ')';
     out += ' on ' + node.typeCondition.name.value;
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
