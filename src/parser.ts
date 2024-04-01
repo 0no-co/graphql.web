@@ -393,37 +393,33 @@ function selectionSet(): ast.SelectionSetNode | undefined {
 }
 
 function variableDefinitions(): ast.VariableDefinitionNode[] {
-  let match: string | undefined;
   const vars: ast.VariableDefinitionNode[] = [];
   ignored();
   if (input.charCodeAt(idx) === 40 /*'('*/) {
     idx++;
     ignored();
+    let _name: ast.NameNode | undefined;
     while (input.charCodeAt(idx) === 36 /*'$'*/) {
       idx++;
-      if (!(match = advance(nameRe))) throw error('Variable');
+      if ((_name = name()) == null) throw error('Variable');
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
       const _type = type();
-      let _defaultValue: ast.ValueNode | undefined;
+      let _defaultValue: ast.ConstValueNode | undefined;
       if (input.charCodeAt(idx) === 61 /*'='*/) {
         idx++;
         ignored();
-        _defaultValue = value(true);
-        if (!_defaultValue) throw error('VariableDefinition');
+        if ((_defaultValue = value(true)) == null) throw error('VariableDefinition');
       }
       ignored();
       vars.push({
         kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
         variable: {
           kind: 'Variable' as Kind.VARIABLE,
-          name: {
-            kind: 'Name' as Kind.NAME,
-            value: match,
-          },
+          name: _name,
         },
         type: _type,
-        defaultValue: _defaultValue as ast.ConstValueNode,
+        defaultValue: _defaultValue,
         directives: directives(true),
       });
     }
