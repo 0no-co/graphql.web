@@ -201,17 +201,15 @@ function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
     idx++;
     ignored();
     let _name: string | undefined;
-    let _value: ast.ValueNode | undefined;
     do {
       if ((_name = advance(nameRe)) == null) throw error('Argument');
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
-      if ((_value = value(constant)) == null) throw error('Argument');
       args.push({
         kind: 'Argument' as Kind.ARGUMENT,
         name: { kind: 'Name' as Kind.NAME, value: _name },
-        value: _value,
+        value: value(constant),
       });
     } while (input.charCodeAt(idx) !== 41 /*')'*/);
     idx++;
@@ -388,7 +386,7 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
       if (input.charCodeAt(idx) === 61 /*'='*/) {
         idx++;
         ignored();
-        if ((_defaultValue = value(true)) == null) throw error('VariableDefinition');
+        _defaultValue = value(true);
       }
       ignored();
       vars.push({
@@ -465,16 +463,16 @@ function document(): ast.DocumentNode {
   let definition: ast.OperationDefinitionNode | undefined;
   ignored();
   const definitions: ast.ExecutableDefinitionNode[] = [];
-  while (idx < input.length) {
+  do {
     if ((match = advance(definitionRe)) === 'fragment') {
       ignored();
       definitions.push(fragmentDefinition());
     } else if ((definition = operationDefinition(match as OperationTypeNode)) != null) {
       definitions.push(definition);
     } else {
-      break;
+      throw error('Document');
     }
-  }
+  } while (idx < input.length);
   return {
     kind: 'Document' as Kind.DOCUMENT,
     definitions,
@@ -501,9 +499,7 @@ export function parseValue(
   input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
   ignored();
-  const _value = value(false);
-  if (!_value) throw error('ValueNode');
-  return _value;
+  return value(false);
 }
 
 export function parseType(

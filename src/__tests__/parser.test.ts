@@ -44,6 +44,18 @@ describe('parse', () => {
     }).toThrow();
   });
 
+  it('does not accept empty documents', () => {
+    expect(() => {
+      return parse('');
+    }).toThrow();
+  });
+
+  it('does not accept incomplete definitions', () => {
+    expect(() => {
+      return parse('{} query');
+    }).toThrow();
+  });
+
   it('parses multi-byte characters', () => {
     // Note: \u0A0A could be naively interpreted as two line-feed chars.
     const ast = parse(`
@@ -100,6 +112,7 @@ describe('parse', () => {
   it('parses fragment definitions', () => {
     expect(() => parse('fragment { test }')).toThrow();
     expect(() => parse('fragment name { test }')).toThrow();
+    expect(() => parse('fragment name on ')).toThrow();
     expect(() => parse('fragment name on name')).toThrow();
     expect(() => parse('fragment Name on Type { field }')).not.toThrow();
   });
@@ -143,8 +156,9 @@ describe('parse', () => {
   it('parses arguments', () => {
     expect(() => parse('{ field() }')).toThrow();
     expect(() => parse('{ field(name) }')).toThrow();
-    expect(() => parse('{ field(name:) }')).toThrow();
+    expect(() => parse('{ field(name: ) }')).toThrow();
     expect(() => parse('{ field(name: null }')).toThrow();
+    expect(() => parse('{ field(name: % )')).toThrow();
 
     expect(parse('{ field(name: null) }').definitions[0]).toMatchObject({
       kind: Kind.OPERATION_DEFINITION,
@@ -234,6 +248,7 @@ describe('parse', () => {
 
   it('parses variable definitions', () => {
     expect(() => parse('query ( { test }')).toThrow();
+    expect(() => parse('query ($) { test }')).toThrow();
     expect(() => parse('query ($var) { test }')).toThrow();
     expect(() => parse('query ($var:) { test }')).toThrow();
     expect(() => parse('query ($var: Int =) { test }')).toThrow();
