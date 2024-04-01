@@ -235,20 +235,22 @@ function arguments_(constant: boolean): ast.ArgumentNode[] {
     idx++;
     ignored();
     let _name: ast.NameNode | undefined;
-    while ((_name = name())) {
+    let _value: ast.ValueNode | undefined;
+    while (input.charCodeAt(idx) !== 41 /*')'*/) {
+      if ((_name = name()) == null) throw error('Argument');
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
-      const _value = value(constant);
-      if (!_value) throw error('Argument');
+      if ((_value = value(constant)) == null) throw error('Argument');
       args.push({
         kind: 'Argument' as Kind.ARGUMENT,
         name: _name,
         value: _value,
       });
     }
-    if (!args.length || input.charCodeAt(idx++) !== 41 /*')'*/) throw error('Argument');
+    idx++;
     ignored();
+    if (!args.length) throw error('Argument');
   }
   return args;
 }
