@@ -235,7 +235,7 @@ function arguments_(constant: boolean): ast.ArgumentNode[] {
     ignored();
     let _name: ast.NameNode | undefined;
     let _value: ast.ValueNode | undefined;
-    while (input.charCodeAt(idx) !== 41 /*')'*/) {
+    do {
       if ((_name = name()) == null) throw error('Argument');
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
@@ -246,10 +246,9 @@ function arguments_(constant: boolean): ast.ArgumentNode[] {
         name: _name,
         value: _value,
       });
-    }
+    } while (input.charCodeAt(idx) !== 41 /*')'*/);
     idx++;
     ignored();
-    if (!args.length) throw error('Argument');
   }
   return args;
 }
@@ -395,10 +394,10 @@ type SelectionExec = RegExpExecArray & {
 };
 
 function selectionSet(): ast.SelectionSetNode {
+  const selections: ast.SelectionNode[] = [];
   let match: string | undefined;
   let exec: SelectionExec | null;
-  const selections: ast.SelectionNode[] = [];
-  while (input.charCodeAt(idx) !== 125 /*'}'*/) {
+  do {
     selectionRe.lastIndex = idx;
     if ((exec = selectionRe.exec(input) as SelectionExec) != null) {
       idx = selectionRe.lastIndex;
@@ -412,10 +411,9 @@ function selectionSet(): ast.SelectionSetNode {
     } else {
       throw error('SelectionSet');
     }
-  }
+  } while (input.charCodeAt(idx) !== 125 /*'}'*/);
   idx++;
   ignored();
-  if (!selections.length) throw error('SelectionSet');
   return {
     kind: 'SelectionSet' as Kind.SELECTION_SET,
     selections,
