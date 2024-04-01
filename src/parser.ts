@@ -283,38 +283,32 @@ function type(): ast.TypeNode {
   }
 }
 
-const typeConditionRe = /on/y;
-function typeCondition(): ast.NamedTypeNode | undefined {
-  if (advance(typeConditionRe)) {
-    ignored();
-    const _name = name();
-    if (!_name) throw error('NamedType');
-    ignored();
-    return {
-      kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: _name,
-    };
-  }
-}
-
 function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode {
-  const _idx = idx;
-  let _name: ast.NameNode | undefined;
-  if ((_name = name()) && _name.value !== 'on') {
+  let match = advance(nameRe);
+  if (match != null && match !== 'on') {
+    ignored();
     return {
       kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
-      name: _name,
+      name: { kind: 'Name' as Kind.NAME, value: match },
       directives: directives(false),
     };
   } else {
-    idx = _idx;
-    const _typeCondition = typeCondition();
+    ignored();
+    if (match === 'on') {
+      if ((match = advance(nameRe)) == null) throw error('NamedType');
+      ignored();
+    }
     const _directives = directives(false);
     if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
     ignored();
     return {
       kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
-      typeCondition: _typeCondition,
+      typeCondition: match
+        ? {
+            kind: 'NamedType' as Kind.NAMED_TYPE,
+            name: { kind: 'Name' as Kind.NAME, value: match },
+          }
+        : undefined,
       directives: _directives,
       selectionSet: selectionSet(),
     };
@@ -432,20 +426,25 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
 
 const fragmentDefinitionRe = /fragment/y;
 function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
+  let _name: string | undefined;
+  let _condition: string | undefined;
   if (advance(fragmentDefinitionRe)) {
     ignored();
-    const _name = name();
-    if (!_name) throw error('FragmentDefinition');
+    if ((_name = advance(nameRe)) == null) throw error('FragmentDefinition');
     ignored();
-    const _typeCondition = typeCondition();
-    if (!_typeCondition) throw error('FragmentDefinition');
+    if (advance(nameRe) !== 'on') throw error('FragmentDefinition');
+    ignored();
+    if ((_condition = advance(nameRe)) == null) throw error('FragmentDefinition');
     const _directives = directives(false);
     if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
     ignored();
     return {
       kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
-      name: _name,
-      typeCondition: _typeCondition,
+      name: { kind: 'Name' as Kind.NAME, value: _name },
+      typeCondition: {
+        kind: 'NamedType' as Kind.NAMED_TYPE,
+        name: { kind: 'Name' as Kind.NAME, value: _condition },
+      },
       directives: _directives,
       selectionSet: selectionSet(),
     };
