@@ -283,38 +283,6 @@ function type(): ast.TypeNode {
   }
 }
 
-function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode {
-  let match = advance(nameRe);
-  if (match != null && match !== 'on') {
-    ignored();
-    return {
-      kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
-      name: { kind: 'Name' as Kind.NAME, value: match },
-      directives: directives(false),
-    };
-  } else {
-    ignored();
-    if (match === 'on') {
-      if ((match = advance(nameRe)) == null) throw error('NamedType');
-      ignored();
-    }
-    const _directives = directives(false);
-    if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
-    ignored();
-    return {
-      kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
-      typeCondition: match
-        ? {
-            kind: 'NamedType' as Kind.NAMED_TYPE,
-            name: { kind: 'Name' as Kind.NAME, value: match },
-          }
-        : undefined,
-      directives: _directives,
-      selectionSet: selectionSet(),
-    };
-  }
-}
-
 const selectionRe = new RegExp(
   '(?:' +
     '(\\.\\.\\.)|' + // fragment spread
@@ -343,7 +311,35 @@ function selectionSet(): ast.SelectionSetNode {
       idx = selectionRe.lastIndex;
       if (exec[SelectionGroup.Spread] != null) {
         ignored();
-        selections.push(fragmentSpread());
+        let match = advance(nameRe);
+        if (match != null && match !== 'on') {
+          ignored();
+          selections.push({
+            kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
+            name: { kind: 'Name' as Kind.NAME, value: match },
+            directives: directives(false),
+          });
+        } else {
+          ignored();
+          if (match === 'on') {
+            if ((match = advance(nameRe)) == null) throw error('NamedType');
+            ignored();
+          }
+          const _directives = directives(false);
+          if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
+          ignored();
+          selections.push({
+            kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
+            typeCondition: match
+              ? {
+                  kind: 'NamedType' as Kind.NAMED_TYPE,
+                  name: { kind: 'Name' as Kind.NAME, value: match },
+                }
+              : undefined,
+            directives: _directives,
+            selectionSet: selectionSet(),
+          });
+        }
       } else if ((match = exec[SelectionGroup.Name]) != null) {
         let _alias: ast.NameNode | undefined;
         let _name: ast.NameNode | undefined = {
