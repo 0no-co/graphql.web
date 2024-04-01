@@ -67,21 +67,30 @@ function ignored() {
 
 const nameRe = /[_A-Za-z]\w*/y;
 
+// NOTE: This should be compressed by our build step
+// This merges all possible value parsing into one regular expression
 const valueRe = new RegExp(
   '(?:' +
-    '(null|true|false)|' + // boolean and null
+    // `null`, `true`, and `false` literals (BooleanValue & NullValue)
+    '(null|true|false)|' +
+    // Variables starting with `$` then having a name (VariableNode)
     '\\$(' +
     nameRe.source +
-    ')|' + // variable
-    '(-?\\d+)((?:\\.\\d+)?[eE][+-]?\\d+|\\.\\d+)?|' + // int part and float part
-    '("""(?:"""|(?:[\\s\\S]*?[^\\\\])"""))|' + // block string
+    ')|' +
+    // Numbers, starting with int then optionally following with a float part (IntValue and FloatValue)
+    '(-?\\d+)((?:\\.\\d+)?[eE][+-]?\\d+|\\.\\d+)?|' +
+    // Block strings starting with `"""` until the next unescaped `"""` (StringValue)
+    '("""(?:"""|(?:[\\s\\S]*?[^\\\\])"""))|' +
+    // Strings starting with `"` must be on one line (StringValue)
     '("(?:"|[^\\r\\n]*?[^\\\\]"))|' + // string
+    // Enums are simply names except for our literals (EnumValue)
     '(' +
-    nameRe.source + // enum
+    nameRe.source +
     '))',
   'y'
 );
 
+// NOTE: Each of the groups above end up in the RegExpExecArray at the specified indices (starting with 1)
 const enum ValueGroup {
   Const = 1,
   Var,
@@ -106,6 +115,7 @@ function value(constant: boolean): ast.ValueNode {
   let exec: ValueExec | null;
   valueRe.lastIndex = idx;
   if (input.charCodeAt(idx) === 91 /*'['*/) {
+    // Lists are checked ahead of time with `[` chars
     idx++;
     ignored();
     const values: ast.ValueNode[] = [];
@@ -117,6 +127,7 @@ function value(constant: boolean): ast.ValueNode {
       values,
     };
   } else if (input.charCodeAt(idx) === 123 /*'{'*/) {
+    // Objects are checked ahead of time with `{` chars
     idx++;
     ignored();
     const fields: ast.ObjectFieldNode[] = [];
@@ -138,6 +149,7 @@ function value(constant: boolean): ast.ValueNode {
       fields,
     };
   } else if ((exec = valueRe.exec(input) as ValueExec) != null) {
+    // Starting from here, the merged `valueRe` is used
     idx = valueRe.lastIndex;
     ignored();
     if ((match = exec[ValueGroup.Const]) != null) {
@@ -181,6 +193,8 @@ function value(constant: boolean): ast.ValueNode {
     } else if ((match = exec[ValueGroup.String]) != null) {
       return {
         kind: 'StringValue' as Kind.STRING,
+        // When strings don't contain escape codes, a simple slice will be enough, otherwise
+        // `JSON.parse` matches GraphQL's string parsing perfectly
         value: complexStringRe.test(match) ? (JSON.parse(match) as string) : match.slice(1, -1),
         block: false,
       };
@@ -239,7 +253,6 @@ function directives(constant: boolean): ast.DirectiveNode[] | undefined {
   }
 }
 
-// TODO: check ignored
 function type(): ast.TypeNode {
   let match: string | ast.TypeNode | undefined;
   if (input.charCodeAt(idx) === 91 /*'['*/) {
@@ -272,18 +285,23 @@ function type(): ast.TypeNode {
   }
 }
 
+// NOTE: This should be compressed by our build step
+// This merges the two possible selection parsing branches into one regular expression
 const selectionRe = new RegExp(
   '(?:' +
-    '(\\.\\.\\.)|' + // fragment spread
+    // fragment spreads (FragmentSpread or InlineFragment nodes)
+    '(\\.\\.\\.)|' +
+    // field aliases or names (FieldNode)
     '(' +
-    nameRe.source + // field
+    nameRe.source +
     '))',
   'y'
 );
 
+// NOTE: Each of the groups above end up in the RegExpExecArray at the indices 1&2
 const enum SelectionGroup {
   Spread = 1,
-  Name = 2,
+  Name,
 }
 
 type SelectionExec = RegExpExecArray & {
@@ -302,6 +320,7 @@ function selectionSet(): ast.SelectionSetNode {
         ignored();
         let match = advance(nameRe);
         if (match != null && match !== 'on') {
+          // A simple `...Name` spread with optional directives
           ignored();
           selections.push({
             kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
@@ -311,6 +330,7 @@ function selectionSet(): ast.SelectionSetNode {
         } else {
           ignored();
           if (match === 'on') {
+            // An inline `... on Name` spread; if this doesn't match, the type condition has been omitted
             if ((match = advance(nameRe)) == null) throw error('NamedType');
             ignored();
           }
@@ -332,6 +352,7 @@ function selectionSet(): ast.SelectionSetNode {
       } else if ((match = exec[SelectionGroup.Name]) != null) {
         let _alias: string | undefined;
         ignored();
+        // Parse the optional alias, by reassigning and then getting the name
         if (input.charCodeAt(idx) === 58 /*':'*/) {
           idx++;
           ignored();
