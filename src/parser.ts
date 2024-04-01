@@ -83,7 +83,7 @@ const valueRe = new RegExp(
     '\\$(' +
     nameRe.source +
     ')|' + // variable
-    '(-?\\d+)|' + // int or float
+    '(-?\\d+)((?:\\.\\d+)?[eE][+-]?\\d+|\\.\\d+)?|' + // int part and float part
     '("""(?:"""|(?:[\\s\\S]*?[^\\\\])"""))|' + // block string
     '("(?:"|[^\\r\\n]*?[^\\\\]"))|' + // string
     '(' +
@@ -97,16 +97,16 @@ const enum ValueGroup {
   Bool = 2,
   Var = 3,
   Int = 4,
-  BlockString = 5,
-  String = 6,
-  Enum = 7,
+  Float = 5,
+  BlockString = 6,
+  String = 7,
+  Enum = 8,
 }
 
 type ValueExec = RegExpExecArray & {
   [Prop in ValueGroup]: string | undefined;
 };
 
-const floatPartRe = /(?:\.\d+)?[eE][+-]?\d+|\.\d+/y;
 const complexStringRe = /\\/g;
 
 function value(constant: true): ast.ConstValueNode;
@@ -126,13 +126,12 @@ function value(constant: boolean): ast.ValueNode | undefined {
     return object(constant);
   } else if ((exec = valueRe.exec(input) as ValueExec) != null) {
     idx = valueRe.lastIndex;
+    ignored();
     if (exec[ValueGroup.Null] != null) {
-      ignored();
       return {
         kind: 'NullValue' as Kind.NULL,
       };
     } else if ((match = exec[ValueGroup.Bool]) != null) {
-      ignored();
       return {
         kind: 'BooleanValue' as Kind.BOOLEAN,
         value: match === 'true',
@@ -141,7 +140,6 @@ function value(constant: boolean): ast.ValueNode | undefined {
       if (constant) {
         throw error('Variable');
       } else {
-        ignored();
         return {
           kind: 'Variable' as Kind.VARIABLE,
           name: {
@@ -152,35 +150,30 @@ function value(constant: boolean): ast.ValueNode | undefined {
       }
     } else if ((match = exec[ValueGroup.Int]) != null) {
       let floatPart: string | undefined;
-      if ((floatPart = advance(floatPartRe))) {
-        ignored();
+      if ((floatPart = exec[ValueGroup.Float]) != null) {
         return {
           kind: 'FloatValue' as Kind.FLOAT,
           value: match + floatPart,
         };
       } else {
-        ignored();
         return {
           kind: 'IntValue' as Kind.INT,
           value: match,
         };
       }
     } else if ((match = exec[ValueGroup.BlockString]) != null) {
-      ignored();
       return {
         kind: 'StringValue' as Kind.STRING,
         value: blockString(match.slice(3, -3)),
         block: true,
       };
     } else if ((match = exec[ValueGroup.String]) != null) {
-      ignored();
       return {
         kind: 'StringValue' as Kind.STRING,
         value: complexStringRe.test(match) ? (JSON.parse(match) as string) : match.slice(1, -1),
         block: false,
       };
     } else if ((match = exec[ValueGroup.Enum]) != null) {
-      ignored();
       return {
         kind: 'EnumValue' as Kind.ENUM,
         value: match,
