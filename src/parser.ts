@@ -250,37 +250,6 @@ function directives(constant: boolean): ast.DirectiveNode[] {
   return directives;
 }
 
-function field(aliasOrName: string): ast.FieldNode {
-  let _alias: ast.NameNode | undefined;
-  let _name: ast.NameNode | undefined = {
-    kind: 'Name' as Kind.NAME,
-    value: aliasOrName,
-  };
-  if (input.charCodeAt(idx) === 58 /*':'*/) {
-    idx++;
-    ignored();
-    _alias = _name;
-    if ((_name = name()) == null) throw error('Field');
-    ignored();
-  }
-  const _arguments = arguments_(false);
-  const _directives = directives(false);
-  let _selectionSet: ast.SelectionSetNode | undefined;
-  if (input.charCodeAt(idx) === 123 /*'{'*/) {
-    idx++;
-    ignored();
-    _selectionSet = selectionSet();
-  }
-  return {
-    kind: 'Field' as Kind.FIELD,
-    alias: _alias,
-    name: _name,
-    arguments: _arguments,
-    directives: _directives,
-    selectionSet: _selectionSet,
-  };
-}
-
 function type(): ast.TypeNode {
   let match: ast.NameNode | ast.TypeNode | undefined;
   ignored();
@@ -382,8 +351,35 @@ function selectionSet(): ast.SelectionSetNode {
         ignored();
         selections.push(fragmentSpread());
       } else if ((match = exec[SelectionGroup.Name]) != null) {
+        let _alias: ast.NameNode | undefined;
+        let _name: ast.NameNode | undefined = {
+          kind: 'Name' as Kind.NAME,
+          value: match,
+        };
         ignored();
-        selections.push(field(match));
+        if (input.charCodeAt(idx) === 58 /*':'*/) {
+          idx++;
+          ignored();
+          _alias = _name;
+          if ((_name = name()) == null) throw error('Field');
+          ignored();
+        }
+        const _arguments = arguments_(false);
+        const _directives = directives(false);
+        let _selectionSet: ast.SelectionSetNode | undefined;
+        if (input.charCodeAt(idx) === 123 /*'{'*/) {
+          idx++;
+          ignored();
+          _selectionSet = selectionSet();
+        }
+        selections.push({
+          kind: 'Field' as Kind.FIELD,
+          alias: _alias,
+          name: _name,
+          arguments: _arguments,
+          directives: _directives,
+          selectionSet: _selectionSet,
+        });
       }
     } else {
       throw error('SelectionSet');
