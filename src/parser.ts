@@ -420,42 +420,38 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
   return vars;
 }
 
-const fragmentDefinitionRe = /fragment/y;
-function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
+function fragmentDefinition(): ast.FragmentDefinitionNode {
   let _name: string | undefined;
   let _condition: string | undefined;
-  if (advance(fragmentDefinitionRe)) {
-    ignored();
-    if ((_name = advance(nameRe)) == null) throw error('FragmentDefinition');
-    ignored();
-    if (advance(nameRe) !== 'on') throw error('FragmentDefinition');
-    ignored();
-    if ((_condition = advance(nameRe)) == null) throw error('FragmentDefinition');
-    const _directives = directives(false);
-    if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
-    ignored();
-    return {
-      kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
-      name: { kind: 'Name' as Kind.NAME, value: _name },
-      typeCondition: {
-        kind: 'NamedType' as Kind.NAMED_TYPE,
-        name: { kind: 'Name' as Kind.NAME, value: _condition },
-      },
-      directives: _directives,
-      selectionSet: selectionSet(),
-    };
-  }
+  if ((_name = advance(nameRe)) == null) throw error('FragmentDefinition');
+  ignored();
+  if (advance(nameRe) !== 'on') throw error('FragmentDefinition');
+  ignored();
+  if ((_condition = advance(nameRe)) == null) throw error('FragmentDefinition');
+  const _directives = directives(false);
+  if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
+  ignored();
+  return {
+    kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
+    name: { kind: 'Name' as Kind.NAME, value: _name },
+    typeCondition: {
+      kind: 'NamedType' as Kind.NAMED_TYPE,
+      name: { kind: 'Name' as Kind.NAME, value: _condition },
+    },
+    directives: _directives,
+    selectionSet: selectionSet(),
+  };
 }
 
-// NOTE(Safari10 Quirk): This *might* need to be wrapped in a group, but worked without it too
-const operationDefinitionRe = /(?:query|mutation|subscription)/y;
+const definitionRe = /(?:query|mutation|subscription|fragment)/y;
 
-function operationDefinition(): ast.OperationDefinitionNode | undefined {
-  let _operation: string | undefined;
+function operationDefinition(
+  operation: OperationTypeNode | undefined
+): ast.OperationDefinitionNode | undefined {
   let _name: ast.NameNode | undefined;
   let _variableDefinitions: ast.VariableDefinitionNode[] | undefined;
   let _directives: ast.DirectiveNode[] | undefined;
-  if ((_operation = advance(operationDefinitionRe))) {
+  if (operation) {
     ignored();
     _name = name();
     _variableDefinitions = variableDefinitions();
@@ -466,7 +462,7 @@ function operationDefinition(): ast.OperationDefinitionNode | undefined {
     ignored();
     return {
       kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
-      operation: (_operation || 'query') as OperationTypeNode,
+      operation: operation || ('query' as OperationTypeNode.QUERY),
       name: _name,
       variableDefinitions: _variableDefinitions,
       directives: _directives,
@@ -476,10 +472,20 @@ function operationDefinition(): ast.OperationDefinitionNode | undefined {
 }
 
 function document(): ast.DocumentNode {
-  let match: ast.ExecutableDefinitionNode | void;
+  let match: string | undefined;
+  let definition: ast.OperationDefinitionNode | undefined;
   ignored();
   const definitions: ast.ExecutableDefinitionNode[] = [];
-  while ((match = fragmentDefinition() || operationDefinition())) definitions.push(match);
+  while (idx < input.length) {
+    if ((match = advance(definitionRe)) === 'fragment') {
+      ignored();
+      definitions.push(fragmentDefinition());
+    } else if ((definition = operationDefinition(match as OperationTypeNode)) != null) {
+      definitions.push(definition);
+    } else {
+      break;
+    }
+  }
   return {
     kind: 'Document' as Kind.DOCUMENT,
     definitions,
