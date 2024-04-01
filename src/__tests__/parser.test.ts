@@ -114,7 +114,7 @@ describe('parse', () => {
       {
         kind: Kind.FIELD,
         directives: undefined,
-        arguments: [],
+        arguments: undefined,
         alias: {
           kind: Kind.NAME,
           value: 'alias',
@@ -129,7 +129,7 @@ describe('parse', () => {
             {
               kind: Kind.FIELD,
               directives: undefined,
-              arguments: [],
+              arguments: undefined,
               name: {
                 kind: Kind.NAME,
                 value: 'child',
@@ -323,7 +323,7 @@ describe('parse', () => {
                         kind: Kind.NAME,
                         value: 'id',
                       },
-                      arguments: [],
+                      arguments: undefined,
                       directives: undefined,
                       selectionSet: undefined,
                     },
@@ -334,7 +334,7 @@ describe('parse', () => {
                         kind: Kind.NAME,
                         value: 'name',
                       },
-                      arguments: [],
+                      arguments: undefined,
                       directives: undefined,
                       selectionSet: undefined,
                     },
@@ -376,7 +376,7 @@ describe('parse', () => {
                   kind: Kind.NAME,
                   value: 'node',
                 },
-                arguments: [],
+                arguments: undefined,
                 directives: undefined,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
@@ -388,7 +388,7 @@ describe('parse', () => {
                         kind: Kind.NAME,
                         value: 'id',
                       },
-                      arguments: [],
+                      arguments: undefined,
                       directives: undefined,
                       selectionSet: undefined,
                     },

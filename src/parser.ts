@@ -204,10 +204,10 @@ function value(constant: boolean): ast.ValueNode {
   throw error('Value');
 }
 
-function arguments_(constant: boolean): ast.ArgumentNode[] {
-  const args: ast.ArgumentNode[] = [];
+function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
   ignored();
   if (input.charCodeAt(idx) === 40 /*'('*/) {
+    const args: ast.ArgumentNode[] = [];
     idx++;
     ignored();
     let _name: ast.NameNode | undefined;
@@ -226,8 +226,8 @@ function arguments_(constant: boolean): ast.ArgumentNode[] {
     } while (input.charCodeAt(idx) !== 41 /*')'*/);
     idx++;
     ignored();
+    return args;
   }
-  return args;
 }
 
 function directives(constant: true): ast.ConstDirectiveNode[] | undefined;
