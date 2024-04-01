@@ -189,8 +189,14 @@ function value(constant: boolean): ast.ValueNode | undefined {
 function list(constant: boolean): ast.ListValueNode | undefined {
   let match: ast.ValueNode | undefined;
   const values: ast.ValueNode[] = [];
-  while ((match = value(constant))) values.push(match);
-  if (input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListValue');
+  while (input.charCodeAt(idx) !== 93 /*']'*/) {
+    if ((match = value(constant)) != null) {
+      values.push(match);
+    } else {
+      throw error('ListValue');
+    }
+  }
+  idx++;
   ignored();
   return {
     kind: 'ListValue' as Kind.LIST,
@@ -201,19 +207,20 @@ function list(constant: boolean): ast.ListValueNode | undefined {
 function object(constant: boolean): ast.ObjectValueNode | undefined {
   const fields: ast.ObjectFieldNode[] = [];
   let _name: ast.NameNode | undefined;
-  while ((_name = name())) {
+  let _value: ast.ValueNode | undefined;
+  while (input.charCodeAt(idx) !== 125 /*'}'*/) {
+    if ((_name = name()) == null) throw error('ObjectValue');
     ignored();
-    if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField' as Kind.OBJECT_FIELD);
+    if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
     ignored();
-    const _value = value(constant);
-    if (!_value) throw error('ObjectField');
+    if ((_value = value(constant)) == null) throw error('ObjectField');
     fields.push({
       kind: 'ObjectField' as Kind.OBJECT_FIELD,
       name: _name,
       value: _value,
     });
   }
-  if (input.charCodeAt(idx++) !== 125 /*'}'*/) throw error('ObjectValue');
+  idx++;
   ignored();
   return {
     kind: 'ObjectValue' as Kind.OBJECT,
