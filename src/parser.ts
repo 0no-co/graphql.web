@@ -76,122 +76,149 @@ function name(): ast.NameNode | undefined {
   }
 }
 
-// NOTE(Safari10 Quirk): This needs to be wrapped in a non-capturing group
-const constRe = /(?:null|true|false)/y;
+const valueRe = new RegExp(
+  '(?:' +
+    '(null)|' + // null
+    '(true|false)|' + // boolean
+    '(\\$)|' + // variable
+    '(-?\\d+)|' + // int or float
+    '("""(?:"""|(?:[\\s\\S]*?[^\\\\])"""))|' + // block string
+    '("(?:"|[^\\r\\n]*?[^\\\\]"))|' + // string
+    '(' +
+    nameRe.source +
+    ')' + // enum
+    ')',
+  'y'
+);
 
-const variableRe = /\$[_A-Za-z]\w*/y;
-const intRe = /-?\d+/y;
+const enum ValueGroup {
+  Null = 1,
+  Bool = 2,
+  Var = 3,
+  Int = 4,
+  BlockString = 5,
+  String = 6,
+  Enum = 7,
+}
 
-// NOTE(Safari10 Quirk): This cannot be further simplified
+type ValueExec = RegExpExecArray & {
+  [Prop in ValueGroup]: string | undefined;
+};
+
 const floatPartRe = /(?:\.\d+)?[eE][+-]?\d+|\.\d+/y;
-
 const complexStringRe = /\\/g;
-const blockStringRe = /"""(?:"""|(?:[\s\S]*?[^\\])""")/y;
-const stringRe = /"(?:"|[^\r\n]*?[^\\]")/y;
 
 function value(constant: true): ast.ConstValueNode;
 function value(constant: boolean): ast.ValueNode;
 
 function value(constant: boolean): ast.ValueNode | undefined {
-  let out: ast.ValueNode | undefined;
   let match: string | undefined;
-  if ((match = advance(constRe))) {
-    out =
-      match === 'null'
-        ? {
-            kind: 'NullValue' as Kind.NULL,
-          }
-        : {
-            kind: 'BooleanValue' as Kind.BOOLEAN,
-            value: match === 'true',
-          };
-  } else if (!constant && (match = advance(variableRe))) {
-    out = {
-      kind: 'Variable' as Kind.VARIABLE,
-      name: {
-        kind: 'Name' as Kind.NAME,
-        value: match.slice(1),
-      },
-    };
-  } else if ((match = advance(intRe))) {
-    const intPart = match;
-    if ((match = advance(floatPartRe))) {
-      out = {
-        kind: 'FloatValue' as Kind.FLOAT,
-        value: intPart + match,
+  let exec: ValueExec | null;
+  valueRe.lastIndex = idx;
+  if (input.charCodeAt(idx) === 91 /*'['*/) {
+    idx++;
+    ignored();
+    return list(constant);
+  } else if (input.charCodeAt(idx) === 123 /*'{'*/) {
+    idx++;
+    ignored();
+    return object(constant);
+  } else if ((exec = valueRe.exec(input) as ValueExec) != null) {
+    idx = valueRe.lastIndex;
+    if (exec[ValueGroup.Null] != null) {
+      ignored();
+      return {
+        kind: 'NullValue' as Kind.NULL,
       };
-    } else {
-      out = {
-        kind: 'IntValue' as Kind.INT,
-        value: intPart,
+    } else if ((match = exec[ValueGroup.Bool]) != null) {
+      ignored();
+      return {
+        kind: 'BooleanValue' as Kind.BOOLEAN,
+        value: match === 'true',
+      };
+    } else if (exec[ValueGroup.Var] != null) {
+      let nameNode: ast.NameNode | undefined;
+      if (!constant && (nameNode = name())) {
+        ignored();
+        return {
+          kind: 'Variable' as Kind.VARIABLE,
+          name: nameNode,
+        };
+      } else {
+        throw error('Variable');
+      }
+    } else if ((match = exec[ValueGroup.Int]) != null) {
+      let floatPart: string | undefined;
+      if ((floatPart = advance(floatPartRe))) {
+        ignored();
+        return {
+          kind: 'FloatValue' as Kind.FLOAT,
+          value: match + floatPart,
+        };
+      } else {
+        ignored();
+        return {
+          kind: 'IntValue' as Kind.INT,
+          value: match,
+        };
+      }
+    } else if ((match = exec[ValueGroup.BlockString]) != null) {
+      ignored();
+      return {
+        kind: 'StringValue' as Kind.STRING,
+        value: blockString(match.slice(3, -3)),
+        block: true,
+      };
+    } else if ((match = exec[ValueGroup.String]) != null) {
+      ignored();
+      return {
+        kind: 'StringValue' as Kind.STRING,
+        value: complexStringRe.test(match) ? (JSON.parse(match) as string) : match.slice(1, -1),
+        block: false,
+      };
+    } else if ((match = exec[ValueGroup.Enum]) != null) {
+      ignored();
+      return {
+        kind: 'EnumValue' as Kind.ENUM,
+        value: match,
       };
     }
-  } else if ((match = advance(nameRe))) {
-    out = {
-      kind: 'EnumValue' as Kind.ENUM,
-      value: match,
-    };
-  } else if ((match = advance(blockStringRe))) {
-    out = {
-      kind: 'StringValue' as Kind.STRING,
-      value: blockString(match.slice(3, -3)),
-      block: true,
-    };
-  } else if ((match = advance(stringRe))) {
-    out = {
-      kind: 'StringValue' as Kind.STRING,
-      value: complexStringRe.test(match) ? (JSON.parse(match) as string) : match.slice(1, -1),
-      block: false,
-    };
-  } else if ((out = list(constant) || object(constant))) {
-    return out;
   }
-
-  ignored();
-  return out;
 }
 
 function list(constant: boolean): ast.ListValueNode | undefined {
   let match: ast.ValueNode | undefined;
-  if (input.charCodeAt(idx) === 91 /*'['*/) {
-    idx++;
-    ignored();
-    const values: ast.ValueNode[] = [];
-    while ((match = value(constant))) values.push(match);
-    if (input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListValue');
-    ignored();
-    return {
-      kind: 'ListValue' as Kind.LIST,
-      values,
-    };
-  }
+  const values: ast.ValueNode[] = [];
+  while ((match = value(constant))) values.push(match);
+  if (input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListValue');
+  ignored();
+  return {
+    kind: 'ListValue' as Kind.LIST,
+    values,
+  };
 }
 
 function object(constant: boolean): ast.ObjectValueNode | undefined {
-  if (input.charCodeAt(idx) === 123 /*'{'*/) {
-    idx++;
+  const fields: ast.ObjectFieldNode[] = [];
+  let _name: ast.NameNode | undefined;
+  while ((_name = name())) {
     ignored();
-    const fields: ast.ObjectFieldNode[] = [];
-    let _name: ast.NameNode | undefined;
-    while ((_name = name())) {
-      ignored();
-      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField' as Kind.OBJECT_FIELD);
-      ignored();
-      const _value = value(constant);
-      if (!_value) throw error('ObjectField');
-      fields.push({
-        kind: 'ObjectField' as Kind.OBJECT_FIELD,
-        name: _name,
-        value: _value,
-      });
-    }
-    if (input.charCodeAt(idx++) !== 125 /*'}'*/) throw error('ObjectValue');
+    if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField' as Kind.OBJECT_FIELD);
     ignored();
-    return {
-      kind: 'ObjectValue' as Kind.OBJECT,
-      fields,
-    };
+    const _value = value(constant);
+    if (!_value) throw error('ObjectField');
+    fields.push({
+      kind: 'ObjectField' as Kind.OBJECT_FIELD,
+      name: _name,
+      value: _value,
+    });
   }
+  if (input.charCodeAt(idx++) !== 125 /*'}'*/) throw error('ObjectValue');
+  ignored();
+  return {
+    kind: 'ObjectValue' as Kind.OBJECT,
+    fields,
+  };
 }
 
 function arguments_(constant: boolean): ast.ArgumentNode[] {
@@ -364,7 +391,9 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
   if (input.charCodeAt(idx) === 40 /*'('*/) {
     idx++;
     ignored();
-    while ((match = advance(variableRe))) {
+    while (input.charCodeAt(idx) === 36 /*'$'*/) {
+      idx++;
+      if (!(match = advance(nameRe))) throw error('Variable');
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
       const _type = type();
@@ -382,7 +411,7 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
           kind: 'Variable' as Kind.VARIABLE,
           name: {
             kind: 'Name' as Kind.NAME,
-            value: match.slice(1),
+            value: match,
           },
         },
         type: _type,
