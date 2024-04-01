@@ -274,7 +274,7 @@ function directives(constant: boolean): ast.DirectiveNode[] {
   return directives;
 }
 
-function field(aliasOrName: string): ast.FieldNode | undefined {
+function field(aliasOrName: string): ast.FieldNode {
   let _alias: ast.NameNode | undefined;
   let _name: ast.NameNode | undefined = {
     kind: 'Name' as Kind.NAME,
@@ -287,13 +287,21 @@ function field(aliasOrName: string): ast.FieldNode | undefined {
     if ((_name = name()) == null) throw error('Field');
     ignored();
   }
+  const _arguments = arguments_(false);
+  const _directives = directives(false);
+  let _selectionSet: ast.SelectionSetNode | undefined;
+  if (input.charCodeAt(idx) === 123 /*'{'*/) {
+    idx++;
+    ignored();
+    _selectionSet = selectionSet();
+  }
   return {
     kind: 'Field' as Kind.FIELD,
     alias: _alias,
     name: _name,
-    arguments: arguments_(false),
-    directives: directives(false),
-    selectionSet: selectionSet(),
+    arguments: _arguments,
+    directives: _directives,
+    selectionSet: _selectionSet,
   };
 }
 
@@ -357,13 +365,13 @@ function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode {
     idx = _idx;
     const _typeCondition = typeCondition();
     const _directives = directives(false);
-    const _selectionSet = selectionSet();
-    if (!_selectionSet) throw error('InlineFragment');
+    if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
+    ignored();
     return {
       kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
       typeCondition: _typeCondition,
       directives: _directives,
-      selectionSet: _selectionSet,
+      selectionSet: selectionSet(),
     };
   }
 }
@@ -386,42 +394,32 @@ type SelectionExec = RegExpExecArray & {
   [Prop in SelectionGroup]: string | undefined;
 };
 
-function selectionSet(): ast.SelectionSetNode | undefined {
-  ignored();
-  if (input.charCodeAt(idx) === 123 /*'{'*/) {
-    idx++;
-    ignored();
-    let match: string | undefined;
-    let exec: SelectionExec | null;
-    let selection: ast.SelectionNode | undefined;
-    const selections: ast.SelectionNode[] = [];
-    while (input.charCodeAt(idx) !== 125 /*'}'*/) {
-      selectionRe.lastIndex = idx;
-      if ((exec = selectionRe.exec(input) as SelectionExec) != null) {
-        idx = selectionRe.lastIndex;
-        if (exec[SelectionGroup.Spread] != null) {
-          ignored();
-          selections.push(fragmentSpread());
-        } else if ((match = exec[SelectionGroup.Name]) != null) {
-          ignored();
-          if ((selection = field(match)) != null) {
-            selections.push(selection);
-          } else {
-            throw error('SelectionSet');
-          }
-        }
-      } else {
-        throw error('SelectionSet');
+function selectionSet(): ast.SelectionSetNode {
+  let match: string | undefined;
+  let exec: SelectionExec | null;
+  const selections: ast.SelectionNode[] = [];
+  while (input.charCodeAt(idx) !== 125 /*'}'*/) {
+    selectionRe.lastIndex = idx;
+    if ((exec = selectionRe.exec(input) as SelectionExec) != null) {
+      idx = selectionRe.lastIndex;
+      if (exec[SelectionGroup.Spread] != null) {
+        ignored();
+        selections.push(fragmentSpread());
+      } else if ((match = exec[SelectionGroup.Name]) != null) {
+        ignored();
+        selections.push(field(match));
       }
+    } else {
+      throw error('SelectionSet');
     }
-    idx++;
-    ignored();
-    if (!selections.length) throw error('SelectionSet');
-    return {
-      kind: 'SelectionSet' as Kind.SELECTION_SET,
-      selections,
-    };
   }
+  idx++;
+  ignored();
+  if (!selections.length) throw error('SelectionSet');
+  return {
+    kind: 'SelectionSet' as Kind.SELECTION_SET,
+    selections,
+  };
 }
 
 function variableDefinitions(): ast.VariableDefinitionNode[] {
@@ -471,14 +469,14 @@ function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
     const _typeCondition = typeCondition();
     if (!_typeCondition) throw error('FragmentDefinition');
     const _directives = directives(false);
-    const _selectionSet = selectionSet();
-    if (!_selectionSet) throw error('FragmentDefinition');
+    if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
+    ignored();
     return {
       kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
       name: _name,
       typeCondition: _typeCondition,
       directives: _directives,
-      selectionSet: _selectionSet,
+      selectionSet: selectionSet(),
     };
   }
 }
@@ -497,15 +495,16 @@ function operationDefinition(): ast.OperationDefinitionNode | undefined {
     _variableDefinitions = variableDefinitions();
     _directives = directives(false);
   }
-  const _selectionSet = selectionSet();
-  if (_selectionSet) {
+  if (input.charCodeAt(idx) === 123 /*'{'*/) {
+    idx++;
+    ignored();
     return {
       kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
       operation: (_operation || 'query') as OperationTypeNode,
       name: _name,
       variableDefinitions: _variableDefinitions,
       directives: _directives,
-      selectionSet: _selectionSet,
+      selectionSet: selectionSet(),
     };
   }
 }
