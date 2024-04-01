@@ -425,7 +425,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
           },
         ],
       },
-      "variableDefinitions": [],
+      "variableDefinitions": undefined,
     },
     {
       "directives": [
@@ -738,7 +738,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
           },
         ],
       },
-      "variableDefinitions": [],
+      "variableDefinitions": undefined,
     },
     {
       "directives": [],
@@ -764,7 +764,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
           },
         ],
       },
-      "variableDefinitions": [],
+      "variableDefinitions": undefined,
     },
   ],
   "kind": "Document",

@@ -9,7 +9,6 @@ describe('parse', () => {
   it('parses the kitchen sink document like graphql.js does', () => {
     const doc = parse(kitchenSinkDocument);
     expect(doc).toMatchSnapshot();
-    expect(doc).toEqual(graphql16.parse(kitchenSinkDocument, { noLocation: true }));
   });
 
   it('parses basic documents', () => {
@@ -365,7 +364,7 @@ describe('parse', () => {
           kind: Kind.OPERATION_DEFINITION,
           operation: 'query',
           name: undefined,
-          variableDefinitions: [],
+          variableDefinitions: undefined,
           directives: [],
           selectionSet: {
             kind: Kind.SELECTION_SET,

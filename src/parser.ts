@@ -383,15 +383,15 @@ function selectionSet(): ast.SelectionSetNode {
   };
 }
 
-function variableDefinitions(): ast.VariableDefinitionNode[] {
-  const vars: ast.VariableDefinitionNode[] = [];
+function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
   ignored();
   if (input.charCodeAt(idx) === 40 /*'('*/) {
+    const vars: ast.VariableDefinitionNode[] = [];
     idx++;
     ignored();
     let _name: ast.NameNode | undefined;
-    while (input.charCodeAt(idx) === 36 /*'$'*/) {
-      idx++;
+    do {
+      if (input.charCodeAt(idx++) !== 36 /*'$'*/) throw error('Variable');
       if ((_name = name()) == null) throw error('Variable');
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
@@ -413,11 +413,11 @@ function variableDefinitions(): ast.VariableDefinitionNode[] {
         defaultValue: _defaultValue,
         directives: directives(true),
       });
-    }
-    if (input.charCodeAt(idx++) !== 41 /*')'*/) throw error('VariableDefinition');
+    } while (input.charCodeAt(idx) !== 41 /*')'*/);
+    idx++;
     ignored();
+    return vars;
   }
-  return vars;
 }
 
 function fragmentDefinition(): ast.FragmentDefinitionNode {
