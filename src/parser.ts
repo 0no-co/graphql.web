@@ -230,24 +230,26 @@ function arguments_(constant: boolean): ast.ArgumentNode[] {
   return args;
 }
 
-function directives(constant: true): ast.ConstDirectiveNode[];
-function directives(constant: boolean): ast.DirectiveNode[];
+function directives(constant: true): ast.ConstDirectiveNode[] | undefined;
+function directives(constant: boolean): ast.DirectiveNode[] | undefined;
 
-function directives(constant: boolean): ast.DirectiveNode[] {
-  const directives: ast.DirectiveNode[] = [];
+function directives(constant: boolean): ast.DirectiveNode[] | undefined {
   ignored();
-  while (input.charCodeAt(idx) === 64 /*'@'*/) {
-    idx++;
-    const _name = name();
-    if (!_name) throw error('Directive');
-    ignored();
-    directives.push({
-      kind: 'Directive' as Kind.DIRECTIVE,
-      name: _name,
-      arguments: arguments_(constant),
-    });
+  if (input.charCodeAt(idx) === 64 /*'@'*/) {
+    const directives: ast.DirectiveNode[] = [];
+    do {
+      idx++;
+      const _name = name();
+      if (!_name) throw error('Directive');
+      ignored();
+      directives.push({
+        kind: 'Directive' as Kind.DIRECTIVE,
+        name: _name,
+        arguments: arguments_(constant),
+      });
+    } while (input.charCodeAt(idx) === 64 /*'@'*/);
+    return directives;
   }
-  return directives;
 }
 
 function type(): ast.TypeNode {

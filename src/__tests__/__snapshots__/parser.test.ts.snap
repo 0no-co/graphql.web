@@ -50,7 +50,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                 },
               },
             ],
-            "directives": [],
+            "directives": undefined,
             "kind": "Field",
             "name": {
               "kind": "Name",
@@ -62,7 +62,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                 {
                   "alias": undefined,
                   "arguments": [],
-                  "directives": [],
+                  "directives": undefined,
                   "kind": "Field",
                   "name": {
                     "kind": "Name",
@@ -88,7 +88,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                       {
                         "alias": undefined,
                         "arguments": [],
-                        "directives": [],
+                        "directives": undefined,
                         "kind": "Field",
                         "name": {
                           "kind": "Name",
@@ -100,7 +100,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                             {
                               "alias": undefined,
                               "arguments": [],
-                              "directives": [],
+                              "directives": undefined,
                               "kind": "Field",
                               "name": {
                                 "kind": "Name",
@@ -176,7 +176,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                                   {
                                     "alias": undefined,
                                     "arguments": [],
-                                    "directives": [],
+                                    "directives": undefined,
                                     "kind": "Field",
                                     "name": {
                                       "kind": "Name",
@@ -250,7 +250,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                       {
                         "alias": undefined,
                         "arguments": [],
-                        "directives": [],
+                        "directives": undefined,
                         "kind": "Field",
                         "name": {
                           "kind": "Name",
@@ -263,7 +263,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                   "typeCondition": undefined,
                 },
                 {
-                  "directives": [],
+                  "directives": undefined,
                   "kind": "InlineFragment",
                   "selectionSet": {
                     "kind": "SelectionSet",
@@ -271,7 +271,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                       {
                         "alias": undefined,
                         "arguments": [],
-                        "directives": [],
+                        "directives": undefined,
                         "kind": "Field",
                         "name": {
                           "kind": "Name",
@@ -291,7 +291,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
       "variableDefinitions": [
         {
           "defaultValue": undefined,
-          "directives": [],
+          "directives": undefined,
           "kind": "VariableDefinition",
           "type": {
             "kind": "NamedType",
@@ -313,7 +313,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
             "kind": "EnumValue",
             "value": "MOBILE",
           },
-          "directives": [],
+          "directives": undefined,
           "kind": "VariableDefinition",
           "type": {
             "kind": "NamedType",
@@ -388,7 +388,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                 {
                   "alias": undefined,
                   "arguments": [],
-                  "directives": [],
+                  "directives": undefined,
                   "kind": "Field",
                   "name": {
                     "kind": "Name",
@@ -465,7 +465,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                 },
               },
             ],
-            "directives": [],
+            "directives": undefined,
             "kind": "Field",
             "name": {
               "kind": "Name",
@@ -477,7 +477,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                 {
                   "alias": undefined,
                   "arguments": [],
-                  "directives": [],
+                  "directives": undefined,
                   "kind": "Field",
                   "name": {
                     "kind": "Name",
@@ -489,7 +489,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                       {
                         "alias": undefined,
                         "arguments": [],
-                        "directives": [],
+                        "directives": undefined,
                         "kind": "Field",
                         "name": {
                           "kind": "Name",
@@ -501,7 +501,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                             {
                               "alias": undefined,
                               "arguments": [],
-                              "directives": [],
+                              "directives": undefined,
                               "kind": "Field",
                               "name": {
                                 "kind": "Name",
@@ -515,7 +515,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                       {
                         "alias": undefined,
                         "arguments": [],
-                        "directives": [],
+                        "directives": undefined,
                         "kind": "Field",
                         "name": {
                           "kind": "Name",
@@ -527,7 +527,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                             {
                               "alias": undefined,
                               "arguments": [],
-                              "directives": [],
+                              "directives": undefined,
                               "kind": "Field",
                               "name": {
                                 "kind": "Name",
@@ -549,7 +549,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
       "variableDefinitions": [
         {
           "defaultValue": undefined,
-          "directives": [],
+          "directives": undefined,
           "kind": "VariableDefinition",
           "type": {
             "kind": "NamedType",
@@ -652,7 +652,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                 },
               },
             ],
-            "directives": [],
+            "directives": undefined,
             "kind": "Field",
             "name": {
               "kind": "Name",
@@ -671,7 +671,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
       },
     },
     {
-      "directives": [],
+      "directives": undefined,
       "kind": "OperationDefinition",
       "name": {
         "kind": "Name",
@@ -717,7 +717,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                 },
               },
             ],
-            "directives": [],
+            "directives": undefined,
             "kind": "Field",
             "name": {
               "kind": "Name",
@@ -728,7 +728,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
           {
             "alias": undefined,
             "arguments": [],
-            "directives": [],
+            "directives": undefined,
             "kind": "Field",
             "name": {
               "kind": "Name",
@@ -741,7 +741,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
       "variableDefinitions": undefined,
     },
     {
-      "directives": [],
+      "directives": undefined,
       "kind": "OperationDefinition",
       "name": {
         "kind": "Name",
@@ -754,7 +754,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
           {
             "alias": undefined,
             "arguments": [],
-            "directives": [],
+            "directives": undefined,
             "kind": "Field",
             "name": {
               "kind": "Name",

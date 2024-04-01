@@ -113,7 +113,7 @@ describe('parse', () => {
       'selectionSet.selections.0',
       {
         kind: Kind.FIELD,
-        directives: [],
+        directives: undefined,
         arguments: [],
         alias: {
           kind: Kind.NAME,
@@ -128,7 +128,7 @@ describe('parse', () => {
           selections: [
             {
               kind: Kind.FIELD,
-              directives: [],
+              directives: undefined,
               arguments: [],
               name: {
                 kind: Kind.NAME,
@@ -213,7 +213,7 @@ describe('parse', () => {
       'definitions.0.selectionSet.selections.0',
       {
         kind: Kind.INLINE_FRAGMENT,
-        directives: [],
+        directives: undefined,
         typeCondition: {
           kind: Kind.NAMED_TYPE,
           name: {
@@ -227,7 +227,7 @@ describe('parse', () => {
 
     expect(parse('{ ... { field } }')).toHaveProperty('definitions.0.selectionSet.selections.0', {
       kind: Kind.INLINE_FRAGMENT,
-      directives: [],
+      directives: undefined,
       typeCondition: undefined,
       selectionSet: expect.any(Object),
     });
@@ -242,7 +242,7 @@ describe('parse', () => {
     expect(parse('query ($var: Int = 1) { test }').definitions[0]).toMatchObject({
       kind: Kind.OPERATION_DEFINITION,
       operation: 'query',
-      directives: [],
+      directives: undefined,
       selectionSet: expect.any(Object),
       variableDefinitions: [
         {
@@ -312,7 +312,7 @@ describe('parse', () => {
                     },
                   },
                 ],
-                directives: [],
+                directives: undefined,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   selections: [
@@ -324,7 +324,7 @@ describe('parse', () => {
                         value: 'id',
                       },
                       arguments: [],
-                      directives: [],
+                      directives: undefined,
                       selectionSet: undefined,
                     },
                     {
@@ -335,7 +335,7 @@ describe('parse', () => {
                         value: 'name',
                       },
                       arguments: [],
-                      directives: [],
+                      directives: undefined,
                       selectionSet: undefined,
                     },
                   ],
@@ -365,7 +365,7 @@ describe('parse', () => {
           operation: 'query',
           name: undefined,
           variableDefinitions: undefined,
-          directives: [],
+          directives: undefined,
           selectionSet: {
             kind: Kind.SELECTION_SET,
             selections: [
@@ -377,7 +377,7 @@ describe('parse', () => {
                   value: 'node',
                 },
                 arguments: [],
-                directives: [],
+                directives: undefined,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   selections: [
@@ -389,7 +389,7 @@ describe('parse', () => {
                         value: 'id',
                       },
                       arguments: [],
-                      directives: [],
+                      directives: undefined,
                       selectionSet: undefined,
                     },
                   ],
