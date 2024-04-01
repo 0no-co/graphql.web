@@ -305,11 +305,10 @@ function type(): ast.TypeNode {
   if (input.charCodeAt(idx) === 91 /*'['*/) {
     idx++;
     ignored();
-    const _type = type();
-    if (!_type || input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListType');
+    if ((match = type()) == null || input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListType');
     match = {
       kind: 'ListType' as Kind.LIST_TYPE,
-      type: _type,
+      type: match,
     };
   } else if ((match = name())) {
     match = {
