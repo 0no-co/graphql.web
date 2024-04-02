@@ -260,7 +260,7 @@ export type FloatValueNode = Or<
 >;
 
 export type StringValueNode = Or<
-  GraphQL.FloatValueNode,
+  GraphQL.StringValueNode,
   {
     readonly kind: Kind.STRING;
     readonly value: string;

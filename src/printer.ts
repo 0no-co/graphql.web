@@ -1,133 +1,183 @@
-import type { ASTNode } from './ast';
+import type {
+  ASTNode,
+  NameNode,
+  DocumentNode,
+  VariableNode,
+  SelectionSetNode,
+  FieldNode,
+  ArgumentNode,
+  FragmentSpreadNode,
+  InlineFragmentNode,
+  VariableDefinitionNode,
+  OperationDefinitionNode,
+  FragmentDefinitionNode,
+  IntValueNode,
+  FloatValueNode,
+  StringValueNode,
+  BooleanValueNode,
+  NullValueNode,
+  EnumValueNode,
+  ListValueNode,
+  ObjectValueNode,
+  ObjectFieldNode,
+  DirectiveNode,
+  NamedTypeNode,
+  ListTypeNode,
+  NonNullTypeNode,
+} from './ast';
 
-export function printString(string: string) {
+function mapJoin<T>(value: readonly T[], joiner: string, mapper: (value: T) => string): string {
+  let out = '';
+  for (let index = 0; index < value.length; index++) {
+    if (index) out += joiner;
+    out += mapper(value[index]);
+  }
+  return out;
+}
+
+function printString(string: string) {
   return JSON.stringify(string);
 }
 
-export function printBlockString(string: string) {
+function printBlockString(string: string) {
   return '"""\n' + string.replace(/"""/g, '\\"""') + '\n"""';
 }
 
-const hasItems = <T>(array: ReadonlyArray<T> | undefined | null): array is ReadonlyArray<T> =>
-  !!(array && array.length);
-
 const MAX_LINE_LENGTH = 80;
 
-const nodes: {
-  [NodeT in ASTNode as NodeT['kind']]?: (node: NodeT) => string;
-} = {
-  OperationDefinition(node) {
-    if (
-      node.operation === 'query' &&
-      !node.name &&
-      !hasItems(node.variableDefinitions) &&
-      !hasItems(node.directives)
-    ) {
-      return nodes.SelectionSet!(node.selectionSet);
-    }
+let LF = '\n';
+
+const nodes = {
+  OperationDefinition(node: OperationDefinitionNode): string {
     let out: string = node.operation;
     if (node.name) out += ' ' + node.name.value;
-    if (hasItems(node.variableDefinitions)) {
+    if (node.variableDefinitions && node.variableDefinitions.length) {
       if (!node.name) out += ' ';
-      out += '(' + node.variableDefinitions.map(nodes.VariableDefinition!).join(', ') + ')';
+      out += '(' + mapJoin(node.variableDefinitions, ', ', nodes.VariableDefinition) + ')';
     }
-    if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
-    return out + ' ' + nodes.SelectionSet!(node.selectionSet);
+    if (node.directives && node.directives.length)
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
+    return out !== 'query'
+      ? out + ' ' + nodes.SelectionSet(node.selectionSet)
+      : nodes.SelectionSet(node.selectionSet);
   },
-  VariableDefinition(node) {
-    let out = nodes.Variable!(node.variable) + ': ' + print(node.type);
-    if (node.defaultValue) out += ' = ' + print(node.defaultValue);
-    if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
+  VariableDefinition(node: VariableDefinitionNode): string {
+    let out = nodes.Variable!(node.variable) + ': ' + _print(node.type);
+    if (node.defaultValue) out += ' = ' + _print(node.defaultValue);
+    if (node.directives && node.directives.length)
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     return out;
   },
-  Field(node) {
-    let out = (node.alias ? node.alias.value + ': ' : '') + node.name.value;
-    if (hasItems(node.arguments)) {
-      const args = node.arguments.map(nodes.Argument!);
-      const argsLine = out + '(' + args.join(', ') + ')';
-      out =
-        argsLine.length > MAX_LINE_LENGTH
-          ? out + '(\n  ' + args.join('\n').replace(/\n/g, '\n  ') + '\n)'
-          : argsLine;
+  Field(node: FieldNode): string {
+    let out = node.alias ? node.alias.value + ': ' + node.name.value : node.name.value;
+    if (node.arguments && node.arguments.length) {
+      const args = mapJoin(node.arguments, ', ', nodes.Argument);
+      if (out.length + args.length + 2 > MAX_LINE_LENGTH) {
+        out +=
+          '(' +
+          (LF += '  ') +
+          mapJoin(node.arguments, LF, nodes.Argument) +
+          (LF = LF.slice(0, -2)) +
+          ')';
+      } else {
+        out += '(' + args + ')';
+      }
     }
-    if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
-    return node.selectionSet ? out + ' ' + nodes.SelectionSet!(node.selectionSet) : out;
+    if (node.directives && node.directives.length)
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
+    if (node.selectionSet) out += ' ' + nodes.SelectionSet(node.selectionSet);
+    return out;
   },
-  StringValue(node) {
-    return node.block ? printBlockString(node.value) : printString(node.value);
+  StringValue(node: StringValueNode): string {
+    if (node.block) {
+      return printBlockString(node.value).replace(/\n/g, LF);
+    } else {
+      return printString(node.value);
+    }
   },
-  BooleanValue(node) {
+  BooleanValue(node: BooleanValueNode): string {
     return '' + node.value;
   },
-  NullValue(_node) {
+  NullValue(_node: NullValueNode): string {
     return 'null';
   },
-  IntValue(node) {
+  IntValue(node: IntValueNode): string {
     return node.value;
   },
-  FloatValue(node) {
+  FloatValue(node: FloatValueNode): string {
     return node.value;
   },
-  EnumValue(node) {
+  EnumValue(node: EnumValueNode): string {
     return node.value;
   },
-  Name(node) {
+  Name(node: NameNode): string {
     return node.value;
   },
-  Variable(node) {
+  Variable(node: VariableNode): string {
     return '$' + node.name.value;
   },
-  ListValue(node) {
-    return '[' + node.values.map(print).join(', ') + ']';
+  ListValue(node: ListValueNode): string {
+    return '[' + mapJoin(node.values, ', ', _print) + ']';
   },
-  ObjectValue(node) {
-    return '{' + node.fields.map(nodes.ObjectField!).join(', ') + '}';
+  ObjectValue(node: ObjectValueNode): string {
+    return '{' + mapJoin(node.fields, ', ', nodes.ObjectField) + '}';
   },
-  ObjectField(node) {
-    return node.name.value + ': ' + print(node.value);
+  ObjectField(node: ObjectFieldNode): string {
+    return node.name.value + ': ' + _print(node.value);
   },
-  Document(node) {
-    return hasItems(node.definitions) ? node.definitions.map(print).join('\n\n') : '';
+  Document(node: DocumentNode): string {
+    if (!node.definitions || !node.definitions.length) return '';
+    return mapJoin(node.definitions, '\n\n', _print);
   },
-  SelectionSet(node) {
-    return '{\n  ' + node.selections.map(print).join('\n').replace(/\n/g, '\n  ') + '\n}';
+  SelectionSet(node: SelectionSetNode): string {
+    return '{' + (LF += '  ') + mapJoin(node.selections, LF, _print) + (LF = LF.slice(0, -2)) + '}';
   },
-  Argument(node) {
-    return node.name.value + ': ' + print(node.value);
+  Argument(node: ArgumentNode): string {
+    return node.name.value + ': ' + _print(node.value);
   },
-  FragmentSpread(node) {
+  FragmentSpread(node: FragmentSpreadNode): string {
     let out = '...' + node.name.value;
-    if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
+    if (node.directives && node.directives.length)
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     return out;
   },
-  InlineFragment(node) {
+  InlineFragment(node: InlineFragmentNode): string {
     let out = '...';
     if (node.typeCondition) out += ' on ' + node.typeCondition.name.value;
-    if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
-    return out + ' ' + print(node.selectionSet);
-  },
-  FragmentDefinition(node) {
-    let out = 'fragment ' + node.name.value;
-    out += ' on ' + node.typeCondition.name.value;
-    if (hasItems(node.directives)) out += ' ' + node.directives.map(nodes.Directive!).join(' ');
-    return out + ' ' + print(node.selectionSet);
-  },
-  Directive(node) {
-    let out = '@' + node.name.value;
-    if (hasItems(node.arguments)) out += '(' + node.arguments.map(nodes.Argument!).join(', ') + ')';
+    if (node.directives && node.directives.length)
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
+    out += ' ' + nodes.SelectionSet(node.selectionSet);
     return out;
   },
-  NamedType(node) {
+  FragmentDefinition(node: FragmentDefinitionNode): string {
+    let out = 'fragment ' + node.name.value;
+    out += ' on ' + node.typeCondition.name.value;
+    if (node.directives && node.directives.length)
+      out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
+    return out + ' ' + nodes.SelectionSet(node.selectionSet);
+  },
+  Directive(node: DirectiveNode): string {
+    let out = '@' + node.name.value;
+    if (node.arguments && node.arguments.length)
+      out += '(' + mapJoin(node.arguments, ', ', nodes.Argument) + ')';
+    return out;
+  },
+  NamedType(node: NamedTypeNode): string {
     return node.name.value;
   },
-  ListType(node) {
-    return '[' + print(node.type) + ']';
+  ListType(node: ListTypeNode): string {
+    return '[' + _print(node.type) + ']';
   },
-  NonNullType(node) {
-    return print(node.type) + '!';
+  NonNullType(node: NonNullTypeNode): string {
+    return _print(node.type) + '!';
   },
-};
+} as const;
 
-export function print(node: ASTNode): string {
-  return nodes[node.kind] ? (nodes as any)[node.kind]!(node) : '';
+const _print = (node: ASTNode): string => nodes[node.kind](node);
+
+function print(node: ASTNode): string {
+  LF = '\n';
+  return nodes[node.kind] ? nodes[node.kind](node) : '';
 }
+
+export { print, printString, printBlockString };

@@ -7,7 +7,7 @@ import * as graphql17 from 'graphql17';
 import kitchenSinkAST from './fixtures/kitchen_sink.json';
 import { visit } from '../visitor';
 
-describe('print (kitchen sink AST)', () => {
+describe('visit (kitchen sink AST)', () => {
   bench('@0no-co/graphql.web', () => {
     visit(kitchenSinkAST, {
       Field: formatNode,
