@@ -193,29 +193,44 @@ describe('parse', () => {
   });
 
   it('parses fragment spread arguments', () => {
-    expect(
-      parse('query x { ...x(var: 2) } fragment x($var: Int = 1) on Type { field }').definitions[0]
-    ).toHaveProperty('selectionSet.selections.0', {
-      kind: Kind.FRAGMENT_SPREAD,
-      directives: undefined,
-      name: {
-        kind: Kind.NAME,
-        value: 'x',
-      },
-      arguments: [
-        {
-          kind: 'Argument',
-          name: {
-            kind: 'Name',
-            value: 'var',
-          },
-          value: {
-            kind: 'IntValue',
-            value: '2',
-          },
+    expect(parse('query x { ...x(varA: 2, varB: $var) }').definitions[0]).toHaveProperty(
+      'selectionSet.selections.0',
+      {
+        kind: Kind.FRAGMENT_SPREAD,
+        directives: undefined,
+        name: {
+          kind: Kind.NAME,
+          value: 'x',
         },
-      ],
-    });
+        arguments: [
+          {
+            kind: 'Argument',
+            name: {
+              kind: 'Name',
+              value: 'varA',
+            },
+            value: {
+              kind: 'IntValue',
+              value: '2',
+            },
+          },
+          {
+            kind: 'Argument',
+            name: {
+              kind: 'Name',
+              value: 'varB',
+            },
+            value: {
+              kind: 'Variable',
+              name: {
+                kind: 'Name',
+                value: 'var',
+              },
+            },
+          },
+        ],
+      }
+    );
   });
 
   it('parses fields', () => {
