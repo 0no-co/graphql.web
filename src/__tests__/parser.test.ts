@@ -44,6 +44,23 @@ describe('parse', () => {
     }).toThrow();
   });
 
+  it('parses directives on fragment spread', () => {
+    expect(() => parse('{ ...Frag @ }')).toThrow();
+    expect(() => parse('{ ...Frag @() }')).toThrow();
+
+    expect(parse('{ ...Frag @test }')).toHaveProperty(
+      'definitions.0.selectionSet.selections.0.directives.0',
+      {
+        kind: Kind.DIRECTIVE,
+        name: {
+          kind: Kind.NAME,
+          value: 'test',
+        },
+        arguments: undefined,
+      }
+    );
+  });
+
   it('does not accept empty documents', () => {
     expect(() => {
       return parse('');
@@ -189,7 +206,7 @@ describe('parse', () => {
     });
   });
 
-  it('parses directives', () => {
+  it('parses directives on fields', () => {
     expect(() => parse('{ field @ }')).toThrow();
     expect(() => parse('{ field @(test: null) }')).toThrow();
 
@@ -246,6 +263,23 @@ describe('parse', () => {
     });
   });
 
+  it('parses directives on inline fragments', () => {
+    expect(() => parse('{ ... @ { field } }')).toThrow();
+    expect(() => parse('{ ... @() { field } }')).toThrow();
+
+    expect(parse('{ field @test { field } }')).toHaveProperty(
+      'definitions.0.selectionSet.selections.0.directives.0',
+      {
+        kind: Kind.DIRECTIVE,
+        name: {
+          kind: Kind.NAME,
+          value: 'test',
+        },
+        arguments: undefined,
+      }
+    );
+  });
+
   it('parses variable definitions', () => {
     expect(() => parse('query ( { test }')).toThrow();
     expect(() => parse('query ($) { test }')).toThrow();
@@ -282,6 +316,23 @@ describe('parse', () => {
         },
       ],
     });
+  });
+
+  it('parses directives on variable definitions', () => {
+    expect(() => parse('query ($var: Int @) { field }')).toThrow();
+    expect(() => parse('query ($var: Int @test()) { field }')).toThrow();
+
+    expect(parse('query ($var: Int @test) { field }')).toHaveProperty(
+      'definitions.0.variableDefinitions.0.directives.0',
+      {
+        kind: Kind.DIRECTIVE,
+        name: {
+          kind: Kind.NAME,
+          value: 'test',
+        },
+        arguments: undefined,
+      }
+    );
   });
 
   it('creates ast', () => {
