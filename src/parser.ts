@@ -330,7 +330,7 @@ function selectionSet(): ast.SelectionSetNode {
             name: { kind: 'Name' as Kind.NAME, value: match },
             arguments: arguments_(false),
             directives: directives(false),
-          });
+          } as ast.FragmentSpreadNode);
         } else {
           ignored();
           if (match === 'on') {
