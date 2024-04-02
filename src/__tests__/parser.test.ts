@@ -706,6 +706,9 @@ describe('parseType', () => {
     expect(() => parseType('!')).toThrow();
     expect(() => parseType('[String')).toThrow();
     expect(() => parseType('[String!')).toThrow();
+    expect(() => parseType('[[String!')).toThrow();
+    expect(() => parseType('[[String]!')).toThrow();
+    expect(() => parseType('[[String]')).toThrow();
   });
 
   it('parses well known types', () => {
@@ -759,7 +762,7 @@ describe('parseType', () => {
   });
 
   it('parses nested types', () => {
-    const result = parseType('[MyType!]');
+    let result = parseType('[MyType!]');
     expect(result).toEqual({
       kind: Kind.LIST_TYPE,
       type: {
@@ -769,6 +772,45 @@ describe('parseType', () => {
           name: {
             kind: Kind.NAME,
             value: 'MyType',
+          },
+        },
+      },
+    });
+
+    result = parseType('[[MyType!]]');
+    expect(result).toEqual({
+      kind: Kind.LIST_TYPE,
+      type: {
+        kind: Kind.LIST_TYPE,
+        type: {
+          kind: Kind.NON_NULL_TYPE,
+          type: {
+            kind: Kind.NAMED_TYPE,
+            name: {
+              kind: Kind.NAME,
+              value: 'MyType',
+            },
+          },
+        },
+      },
+    });
+
+    result = parseType('[[MyType!]]!');
+    expect(result).toEqual({
+      kind: Kind.NON_NULL_TYPE,
+      type: {
+        kind: Kind.LIST_TYPE,
+        type: {
+          kind: Kind.LIST_TYPE,
+          type: {
+            kind: Kind.NON_NULL_TYPE,
+            type: {
+              kind: Kind.NAMED_TYPE,
+              name: {
+                kind: Kind.NAME,
+                value: 'MyType',
+              },
+            },
           },
         },
       },

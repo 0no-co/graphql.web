@@ -254,35 +254,38 @@ function directives(constant: boolean): ast.DirectiveNode[] | undefined {
 }
 
 function type(): ast.TypeNode {
-  let match: string | ast.TypeNode | undefined;
-  if (input.charCodeAt(idx) === 91 /*'['*/) {
+  let match: string | undefined;
+  let lists = 0;
+  while (input.charCodeAt(idx) === 91 /*'['*/) {
+    lists++;
     idx++;
     ignored();
-    if ((match = type()) == null || input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListType');
-    match = {
-      kind: 'ListType' as Kind.LIST_TYPE,
-      type: match,
-    };
-  } else if ((match = advance(nameRe)) != null) {
-    match = {
-      kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: { kind: 'Name' as Kind.NAME, value: match },
-    };
-  } else {
-    throw error('NamedType');
   }
-
+  if ((match = advance(nameRe)) == null) throw error('NamedType');
   ignored();
-  if (input.charCodeAt(idx) === 33 /*'!'*/) {
-    idx++;
-    ignored();
-    return {
-      kind: 'NonNullType' as Kind.NON_NULL_TYPE,
-      type: match,
-    };
-  } else {
-    return match;
-  }
+  let type: ast.TypeNode = {
+    kind: 'NamedType' as Kind.NAMED_TYPE,
+    name: { kind: 'Name' as Kind.NAME, value: match },
+  };
+  do {
+    if (input.charCodeAt(idx) === 33 /*'!'*/) {
+      idx++;
+      ignored();
+      type = {
+        kind: 'NonNullType' as Kind.NON_NULL_TYPE,
+        type: type as ast.NamedTypeNode | ast.ListTypeNode,
+      } satisfies ast.NonNullTypeNode;
+    }
+    if (lists) {
+      if (input.charCodeAt(idx++) !== 93 /*']'*/) throw error('NamedType');
+      ignored();
+      type = {
+        kind: 'ListType' as Kind.LIST_TYPE,
+        type: type as ast.NamedTypeNode | ast.ListTypeNode,
+      } satisfies ast.ListTypeNode;
+    }
+  } while (lists--);
+  return type;
 }
 
 // NOTE: This should be compressed by our build step
