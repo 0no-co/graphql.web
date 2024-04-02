@@ -361,6 +361,7 @@ function selectionSet(): ast.SelectionSetNode {
           ignored();
           _alias = match;
           if ((match = advance(nameRe)) == null) throw error('Field');
+          ignored();
         }
         const _arguments = arguments_(false);
         ignored();

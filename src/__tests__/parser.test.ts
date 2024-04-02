@@ -177,7 +177,7 @@ describe('parse', () => {
     expect(() => parse('{ field(name: null }')).toThrow();
     expect(() => parse('{ field(name: % )')).toThrow();
 
-    expect(parse('{ field(name: null) }').definitions[0]).toMatchObject({
+    expect(parse('{ alias: field (name: null) }').definitions[0]).toMatchObject({
       kind: Kind.OPERATION_DEFINITION,
       selectionSet: {
         kind: Kind.SELECTION_SET,
