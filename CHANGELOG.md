@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.6
+
+### Patch Changes
+
+- ⚠️ Fix aliased field name followed by arguments causing parsing error
+  Submitted by [@kitten](https://github.com/kitten) (See [`65c73a0`](https://github.com/0no-co/graphql.web/commit/65c73a0b64a8e5c263683de667942089f143505d))
+
 ## 1.0.5
 
 ### Patch Changes
