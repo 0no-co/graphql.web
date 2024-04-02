@@ -50,11 +50,7 @@ let LF = '\n';
 function Arguments(length: number, node: readonly ArgumentNode[]): string {
   const args = mapJoin(node, ', ', nodes.Argument);
   if (length + args.length + 2 > MAX_LINE_LENGTH) {
-    return '(' +
-      (LF += '  ') +
-      mapJoin(node, LF, nodes.Argument) +
-      (LF = LF.slice(0, -2)) +
-      ')';
+    return '(' + (LF += '  ') + mapJoin(node, LF, nodes.Argument) + (LF = LF.slice(0, -2)) + ')';
   } else {
     return '(' + args + ')';
   }
@@ -90,8 +86,7 @@ const nodes = {
   },
   Field(node: FieldNode): string {
     let out = node.alias ? node.alias.value + ': ' + node.name.value : node.name.value;
-    if (node.arguments && node.arguments.length)
-      out += Arguments(out.length, node.arguments);
+    if (node.arguments && node.arguments.length) out += Arguments(out.length, node.arguments);
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     if (node.selectionSet && node.selectionSet.selections.length) {
@@ -148,8 +143,7 @@ const nodes = {
   },
   FragmentSpread(node: FragmentSpreadNode): string {
     let out = '...' + node.name.value;
-    if (node.arguments && node.arguments.length)
-      out += Arguments(out.length, node.arguments);
+    if (node.arguments && node.arguments.length) out += Arguments(out.length, node.arguments);
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     return out;
