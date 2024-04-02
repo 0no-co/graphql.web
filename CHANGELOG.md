@@ -1,5 +1,16 @@
 # @0no-co/graphql.web
 
+## 1.0.5
+
+### Patch Changes
+
+- Update build process to align with other `@0no-co` packages. Effectively, this will mean that the JS features range we support will now match `urql`, and in practice, this means that `for-of` is now used in our build output
+  Submitted by [@kitten](https://github.com/kitten) (See [#21](https://github.com/0no-co/graphql.web/pull/21))
+- Improve parser performance
+  Submitted by [@kitten](https://github.com/kitten) (See [#25](https://github.com/0no-co/graphql.web/pull/25))
+- Improve printer performance
+  Submitted by [@kitten](https://github.com/kitten) (See [#24](https://github.com/0no-co/graphql.web/pull/24))
+
 ## 1.0.4
 
 ### Patch Changes
