@@ -293,7 +293,7 @@ function type(): ast.TypeNode {
 const selectionRe = new RegExp(
   '(?:' +
     // fragment spreads (FragmentSpread or InlineFragment nodes)
-    '(\\.\\.\\.)|' +
+    '(\\.{3})|' +
     // field aliases or names (FieldNode)
     '(' +
     nameRe.source +
