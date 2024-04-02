@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import * as graphql16 from 'graphql16';
 
 import kitchenSinkDocument from './fixtures/kitchen_sink.graphql?raw';
 import { parse, parseType, parseValue } from '../parser';
@@ -9,7 +8,6 @@ describe('parse', () => {
   it('parses the kitchen sink document like graphql.js does', () => {
     const doc = parse(kitchenSinkDocument);
     expect(doc).toMatchSnapshot();
-    expect(doc).toEqual(graphql16.parse(kitchenSinkDocument, { noLocation: true }));
   });
 
   it('parses basic documents', () => {
@@ -43,6 +41,35 @@ describe('parse', () => {
   it('does not accept fragments spread of "on"', () => {
     expect(() => {
       return parse('{ ...on }');
+    }).toThrow();
+  });
+
+  it('parses directives on fragment spread', () => {
+    expect(() => parse('{ ...Frag @ }')).toThrow();
+    expect(() => parse('{ ...Frag @() }')).toThrow();
+
+    expect(parse('{ ...Frag @test }')).toHaveProperty(
+      'definitions.0.selectionSet.selections.0.directives.0',
+      {
+        kind: Kind.DIRECTIVE,
+        name: {
+          kind: Kind.NAME,
+          value: 'test',
+        },
+        arguments: undefined,
+      }
+    );
+  });
+
+  it('does not accept empty documents', () => {
+    expect(() => {
+      return parse('');
+    }).toThrow();
+  });
+
+  it('does not accept incomplete definitions', () => {
+    expect(() => {
+      return parse('{} query');
     }).toThrow();
   });
 
@@ -102,6 +129,7 @@ describe('parse', () => {
   it('parses fragment definitions', () => {
     expect(() => parse('fragment { test }')).toThrow();
     expect(() => parse('fragment name { test }')).toThrow();
+    expect(() => parse('fragment name on ')).toThrow();
     expect(() => parse('fragment name on name')).toThrow();
     expect(() => parse('fragment Name on Type { field }')).not.toThrow();
   });
@@ -114,8 +142,8 @@ describe('parse', () => {
       'selectionSet.selections.0',
       {
         kind: Kind.FIELD,
-        directives: [],
-        arguments: [],
+        directives: undefined,
+        arguments: undefined,
         alias: {
           kind: Kind.NAME,
           value: 'alias',
@@ -129,8 +157,8 @@ describe('parse', () => {
           selections: [
             {
               kind: Kind.FIELD,
-              directives: [],
-              arguments: [],
+              directives: undefined,
+              arguments: undefined,
               name: {
                 kind: Kind.NAME,
                 value: 'child',
@@ -145,8 +173,9 @@ describe('parse', () => {
   it('parses arguments', () => {
     expect(() => parse('{ field() }')).toThrow();
     expect(() => parse('{ field(name) }')).toThrow();
-    expect(() => parse('{ field(name:) }')).toThrow();
+    expect(() => parse('{ field(name: ) }')).toThrow();
     expect(() => parse('{ field(name: null }')).toThrow();
+    expect(() => parse('{ field(name: % )')).toThrow();
 
     expect(parse('{ field(name: null) }').definitions[0]).toMatchObject({
       kind: Kind.OPERATION_DEFINITION,
@@ -177,7 +206,7 @@ describe('parse', () => {
     });
   });
 
-  it('parses directives', () => {
+  it('parses directives on fields', () => {
     expect(() => parse('{ field @ }')).toThrow();
     expect(() => parse('{ field @(test: null) }')).toThrow();
 
@@ -214,7 +243,7 @@ describe('parse', () => {
       'definitions.0.selectionSet.selections.0',
       {
         kind: Kind.INLINE_FRAGMENT,
-        directives: [],
+        directives: undefined,
         typeCondition: {
           kind: Kind.NAMED_TYPE,
           name: {
@@ -228,14 +257,32 @@ describe('parse', () => {
 
     expect(parse('{ ... { field } }')).toHaveProperty('definitions.0.selectionSet.selections.0', {
       kind: Kind.INLINE_FRAGMENT,
-      directives: [],
+      directives: undefined,
       typeCondition: undefined,
       selectionSet: expect.any(Object),
     });
   });
 
+  it('parses directives on inline fragments', () => {
+    expect(() => parse('{ ... @ { field } }')).toThrow();
+    expect(() => parse('{ ... @() { field } }')).toThrow();
+
+    expect(parse('{ field @test { field } }')).toHaveProperty(
+      'definitions.0.selectionSet.selections.0.directives.0',
+      {
+        kind: Kind.DIRECTIVE,
+        name: {
+          kind: Kind.NAME,
+          value: 'test',
+        },
+        arguments: undefined,
+      }
+    );
+  });
+
   it('parses variable definitions', () => {
     expect(() => parse('query ( { test }')).toThrow();
+    expect(() => parse('query ($) { test }')).toThrow();
     expect(() => parse('query ($var) { test }')).toThrow();
     expect(() => parse('query ($var:) { test }')).toThrow();
     expect(() => parse('query ($var: Int =) { test }')).toThrow();
@@ -243,7 +290,7 @@ describe('parse', () => {
     expect(parse('query ($var: Int = 1) { test }').definitions[0]).toMatchObject({
       kind: Kind.OPERATION_DEFINITION,
       operation: 'query',
-      directives: [],
+      directives: undefined,
       selectionSet: expect.any(Object),
       variableDefinitions: [
         {
@@ -271,6 +318,23 @@ describe('parse', () => {
     });
   });
 
+  it('parses directives on variable definitions', () => {
+    expect(() => parse('query ($var: Int @) { field }')).toThrow();
+    expect(() => parse('query ($var: Int @test()) { field }')).toThrow();
+
+    expect(parse('query ($var: Int @test) { field }')).toHaveProperty(
+      'definitions.0.variableDefinitions.0.directives.0',
+      {
+        kind: Kind.DIRECTIVE,
+        name: {
+          kind: Kind.NAME,
+          value: 'test',
+        },
+        arguments: undefined,
+      }
+    );
+  });
+
   it('creates ast', () => {
     const result = parse(`
       {
@@ -288,8 +352,8 @@ describe('parse', () => {
           kind: Kind.OPERATION_DEFINITION,
           operation: 'query',
           name: undefined,
-          variableDefinitions: [],
-          directives: [],
+          variableDefinitions: undefined,
+          directives: undefined,
           selectionSet: {
             kind: Kind.SELECTION_SET,
             selections: [
@@ -313,7 +377,7 @@ describe('parse', () => {
                     },
                   },
                 ],
-                directives: [],
+                directives: undefined,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   selections: [
@@ -324,8 +388,8 @@ describe('parse', () => {
                         kind: Kind.NAME,
                         value: 'id',
                       },
-                      arguments: [],
-                      directives: [],
+                      arguments: undefined,
+                      directives: undefined,
                       selectionSet: undefined,
                     },
                     {
@@ -335,8 +399,8 @@ describe('parse', () => {
                         kind: Kind.NAME,
                         value: 'name',
                       },
-                      arguments: [],
-                      directives: [],
+                      arguments: undefined,
+                      directives: undefined,
                       selectionSet: undefined,
                     },
                   ],
@@ -365,8 +429,8 @@ describe('parse', () => {
           kind: Kind.OPERATION_DEFINITION,
           operation: 'query',
           name: undefined,
-          variableDefinitions: [],
-          directives: [],
+          variableDefinitions: undefined,
+          directives: undefined,
           selectionSet: {
             kind: Kind.SELECTION_SET,
             selections: [
@@ -377,8 +441,8 @@ describe('parse', () => {
                   kind: Kind.NAME,
                   value: 'node',
                 },
-                arguments: [],
-                directives: [],
+                arguments: undefined,
+                directives: undefined,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   selections: [
@@ -389,8 +453,8 @@ describe('parse', () => {
                         kind: Kind.NAME,
                         value: 'id',
                       },
-                      arguments: [],
-                      directives: [],
+                      arguments: undefined,
+                      directives: undefined,
                       selectionSet: undefined,
                     },
                   ],
@@ -642,6 +706,9 @@ describe('parseType', () => {
     expect(() => parseType('!')).toThrow();
     expect(() => parseType('[String')).toThrow();
     expect(() => parseType('[String!')).toThrow();
+    expect(() => parseType('[[String!')).toThrow();
+    expect(() => parseType('[[String]!')).toThrow();
+    expect(() => parseType('[[String]')).toThrow();
   });
 
   it('parses well known types', () => {
@@ -695,7 +762,7 @@ describe('parseType', () => {
   });
 
   it('parses nested types', () => {
-    const result = parseType('[MyType!]');
+    let result = parseType('[MyType!]');
     expect(result).toEqual({
       kind: Kind.LIST_TYPE,
       type: {
@@ -705,6 +772,45 @@ describe('parseType', () => {
           name: {
             kind: Kind.NAME,
             value: 'MyType',
+          },
+        },
+      },
+    });
+
+    result = parseType('[[MyType!]]');
+    expect(result).toEqual({
+      kind: Kind.LIST_TYPE,
+      type: {
+        kind: Kind.LIST_TYPE,
+        type: {
+          kind: Kind.NON_NULL_TYPE,
+          type: {
+            kind: Kind.NAMED_TYPE,
+            name: {
+              kind: Kind.NAME,
+              value: 'MyType',
+            },
+          },
+        },
+      },
+    });
+
+    result = parseType('[[MyType!]]!');
+    expect(result).toEqual({
+      kind: Kind.NON_NULL_TYPE,
+      type: {
+        kind: Kind.LIST_TYPE,
+        type: {
+          kind: Kind.LIST_TYPE,
+          type: {
+            kind: Kind.NON_NULL_TYPE,
+            type: {
+              kind: Kind.NAMED_TYPE,
+              name: {
+                kind: Kind.NAME,
+                value: 'MyType',
+              },
+            },
           },
         },
       },

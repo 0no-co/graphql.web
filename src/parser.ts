@@ -66,390 +66,437 @@ function ignored() {
 }
 
 const nameRe = /[_A-Za-z]\w*/y;
-function name(): ast.NameNode | undefined {
-  let match: string | undefined;
-  if ((match = advance(nameRe))) {
-    return {
-      kind: 'Name' as Kind.NAME,
-      value: match,
-    };
-  }
+
+// NOTE: This should be compressed by our build step
+// This merges all possible value parsing into one regular expression
+const valueRe = new RegExp(
+  '(?:' +
+    // `null`, `true`, and `false` literals (BooleanValue & NullValue)
+    '(null|true|false)|' +
+    // Variables starting with `$` then having a name (VariableNode)
+    '\\$(' +
+    nameRe.source +
+    ')|' +
+    // Numbers, starting with int then optionally following with a float part (IntValue and FloatValue)
+    '(-?\\d+)((?:\\.\\d+)?[eE][+-]?\\d+|\\.\\d+)?|' +
+    // Block strings starting with `"""` until the next unescaped `"""` (StringValue)
+    '("""(?:"""|(?:[\\s\\S]*?[^\\\\])"""))|' +
+    // Strings starting with `"` must be on one line (StringValue)
+    '("(?:"|[^\\r\\n]*?[^\\\\]"))|' + // string
+    // Enums are simply names except for our literals (EnumValue)
+    '(' +
+    nameRe.source +
+    '))',
+  'y'
+);
+
+// NOTE: Each of the groups above end up in the RegExpExecArray at the specified indices (starting with 1)
+const enum ValueGroup {
+  Const = 1,
+  Var,
+  Int,
+  Float,
+  BlockString,
+  String,
+  Enum,
 }
 
-// NOTE(Safari10 Quirk): This needs to be wrapped in a non-capturing group
-const constRe = /(?:null|true|false)/y;
-
-const variableRe = /\$[_A-Za-z]\w*/y;
-const intRe = /-?\d+/y;
-
-// NOTE(Safari10 Quirk): This cannot be further simplified
-const floatPartRe = /(?:\.\d+)?[eE][+-]?\d+|\.\d+/y;
+type ValueExec = RegExpExecArray & {
+  [Prop in ValueGroup]: string | undefined;
+};
 
 const complexStringRe = /\\/g;
-const blockStringRe = /"""(?:"""|(?:[\s\S]*?[^\\])""")/y;
-const stringRe = /"(?:"|[^\r\n]*?[^\\]")/y;
 
 function value(constant: true): ast.ConstValueNode;
 function value(constant: boolean): ast.ValueNode;
 
-function value(constant: boolean): ast.ValueNode | undefined {
-  let out: ast.ValueNode | undefined;
+function value(constant: boolean): ast.ValueNode {
   let match: string | undefined;
-  if ((match = advance(constRe))) {
-    out =
-      match === 'null'
-        ? {
-            kind: 'NullValue' as Kind.NULL,
-          }
-        : {
-            kind: 'BooleanValue' as Kind.BOOLEAN,
-            value: match === 'true',
-          };
-  } else if (!constant && (match = advance(variableRe))) {
-    out = {
-      kind: 'Variable' as Kind.VARIABLE,
-      name: {
-        kind: 'Name' as Kind.NAME,
-        value: match.slice(1),
-      },
-    };
-  } else if ((match = advance(intRe))) {
-    const intPart = match;
-    if ((match = advance(floatPartRe))) {
-      out = {
-        kind: 'FloatValue' as Kind.FLOAT,
-        value: intPart + match,
-      };
-    } else {
-      out = {
-        kind: 'IntValue' as Kind.INT,
-        value: intPart,
-      };
-    }
-  } else if ((match = advance(nameRe))) {
-    out = {
-      kind: 'EnumValue' as Kind.ENUM,
-      value: match,
-    };
-  } else if ((match = advance(blockStringRe))) {
-    out = {
-      kind: 'StringValue' as Kind.STRING,
-      value: blockString(match.slice(3, -3)),
-      block: true,
-    };
-  } else if ((match = advance(stringRe))) {
-    out = {
-      kind: 'StringValue' as Kind.STRING,
-      value: complexStringRe.test(match) ? (JSON.parse(match) as string) : match.slice(1, -1),
-      block: false,
-    };
-  } else if ((out = list(constant) || object(constant))) {
-    return out;
-  }
-
-  ignored();
-  return out;
-}
-
-function list(constant: boolean): ast.ListValueNode | undefined {
-  let match: ast.ValueNode | undefined;
+  let exec: ValueExec | null;
+  valueRe.lastIndex = idx;
   if (input.charCodeAt(idx) === 91 /*'['*/) {
+    // Lists are checked ahead of time with `[` chars
     idx++;
     ignored();
     const values: ast.ValueNode[] = [];
-    while ((match = value(constant))) values.push(match);
-    if (input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListValue');
+    while (input.charCodeAt(idx) !== 93 /*']'*/) values.push(value(constant));
+    idx++;
     ignored();
     return {
       kind: 'ListValue' as Kind.LIST,
       values,
     };
-  }
-}
-
-function object(constant: boolean): ast.ObjectValueNode | undefined {
-  if (input.charCodeAt(idx) === 123 /*'{'*/) {
+  } else if (input.charCodeAt(idx) === 123 /*'{'*/) {
+    // Objects are checked ahead of time with `{` chars
     idx++;
     ignored();
     const fields: ast.ObjectFieldNode[] = [];
-    let _name: ast.NameNode | undefined;
-    while ((_name = name())) {
+    while (input.charCodeAt(idx) !== 125 /*'}'*/) {
+      if ((match = advance(nameRe)) == null) throw error('ObjectField');
       ignored();
-      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField' as Kind.OBJECT_FIELD);
+      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
       ignored();
-      const _value = value(constant);
-      if (!_value) throw error('ObjectField');
       fields.push({
         kind: 'ObjectField' as Kind.OBJECT_FIELD,
-        name: _name,
-        value: _value,
+        name: { kind: 'Name' as Kind.NAME, value: match },
+        value: value(constant),
       });
     }
-    if (input.charCodeAt(idx++) !== 125 /*'}'*/) throw error('ObjectValue');
+    idx++;
     ignored();
     return {
       kind: 'ObjectValue' as Kind.OBJECT,
       fields,
     };
+  } else if ((exec = valueRe.exec(input) as ValueExec) != null) {
+    // Starting from here, the merged `valueRe` is used
+    idx = valueRe.lastIndex;
+    ignored();
+    if ((match = exec[ValueGroup.Const]) != null) {
+      return match === 'null'
+        ? { kind: 'NullValue' as Kind.NULL }
+        : {
+            kind: 'BooleanValue' as Kind.BOOLEAN,
+            value: match === 'true',
+          };
+    } else if ((match = exec[ValueGroup.Var]) != null) {
+      if (constant) {
+        throw error('Variable');
+      } else {
+        return {
+          kind: 'Variable' as Kind.VARIABLE,
+          name: {
+            kind: 'Name' as Kind.NAME,
+            value: match,
+          },
+        };
+      }
+    } else if ((match = exec[ValueGroup.Int]) != null) {
+      let floatPart: string | undefined;
+      if ((floatPart = exec[ValueGroup.Float]) != null) {
+        return {
+          kind: 'FloatValue' as Kind.FLOAT,
+          value: match + floatPart,
+        };
+      } else {
+        return {
+          kind: 'IntValue' as Kind.INT,
+          value: match,
+        };
+      }
+    } else if ((match = exec[ValueGroup.BlockString]) != null) {
+      return {
+        kind: 'StringValue' as Kind.STRING,
+        value: blockString(match.slice(3, -3)),
+        block: true,
+      };
+    } else if ((match = exec[ValueGroup.String]) != null) {
+      return {
+        kind: 'StringValue' as Kind.STRING,
+        // When strings don't contain escape codes, a simple slice will be enough, otherwise
+        // `JSON.parse` matches GraphQL's string parsing perfectly
+        value: complexStringRe.test(match) ? (JSON.parse(match) as string) : match.slice(1, -1),
+        block: false,
+      };
+    } else if ((match = exec[ValueGroup.Enum]) != null) {
+      return {
+        kind: 'EnumValue' as Kind.ENUM,
+        value: match,
+      };
+    }
   }
+
+  throw error('Value');
 }
 
-function arguments_(constant: boolean): ast.ArgumentNode[] {
-  const args: ast.ArgumentNode[] = [];
-  ignored();
+function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
   if (input.charCodeAt(idx) === 40 /*'('*/) {
+    const args: ast.ArgumentNode[] = [];
     idx++;
     ignored();
-    let _name: ast.NameNode | undefined;
-    while ((_name = name())) {
+    let _name: string | undefined;
+    do {
+      if ((_name = advance(nameRe)) == null) throw error('Argument');
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
-      const _value = value(constant);
-      if (!_value) throw error('Argument');
       args.push({
         kind: 'Argument' as Kind.ARGUMENT,
-        name: _name,
-        value: _value,
+        name: { kind: 'Name' as Kind.NAME, value: _name },
+        value: value(constant),
       });
-    }
-    if (!args.length || input.charCodeAt(idx++) !== 41 /*')'*/) throw error('Argument');
-    ignored();
-  }
-  return args;
-}
-
-function directives(constant: true): ast.ConstDirectiveNode[];
-function directives(constant: boolean): ast.DirectiveNode[];
-
-function directives(constant: boolean): ast.DirectiveNode[] {
-  const directives: ast.DirectiveNode[] = [];
-  ignored();
-  while (input.charCodeAt(idx) === 64 /*'@'*/) {
+    } while (input.charCodeAt(idx) !== 41 /*')'*/);
     idx++;
-    const _name = name();
-    if (!_name) throw error('Directive');
     ignored();
-    directives.push({
-      kind: 'Directive' as Kind.DIRECTIVE,
-      name: _name,
-      arguments: arguments_(constant),
-    });
+    return args;
   }
-  return directives;
 }
 
-function field(): ast.FieldNode | undefined {
-  let _name = name();
-  if (_name) {
-    ignored();
-    let _alias: ast.NameNode | undefined;
-    if (input.charCodeAt(idx) === 58 /*':'*/) {
+function directives(constant: true): ast.ConstDirectiveNode[] | undefined;
+function directives(constant: boolean): ast.DirectiveNode[] | undefined;
+
+function directives(constant: boolean): ast.DirectiveNode[] | undefined {
+  if (input.charCodeAt(idx) === 64 /*'@'*/) {
+    const directives: ast.DirectiveNode[] = [];
+    let _name: string | undefined;
+    do {
       idx++;
+      if ((_name = advance(nameRe)) == null) throw error('Directive');
       ignored();
-      _alias = _name;
-      _name = name();
-      if (!_name) throw error('Field');
-      ignored();
-    }
-    return {
-      kind: 'Field' as Kind.FIELD,
-      alias: _alias,
-      name: _name,
-      arguments: arguments_(false),
-      directives: directives(false),
-      selectionSet: selectionSet(),
-    };
+      directives.push({
+        kind: 'Directive' as Kind.DIRECTIVE,
+        name: { kind: 'Name' as Kind.NAME, value: _name },
+        arguments: arguments_(constant),
+      });
+    } while (input.charCodeAt(idx) === 64 /*'@'*/);
+    return directives;
   }
 }
 
 function type(): ast.TypeNode {
-  let match: ast.NameNode | ast.TypeNode | undefined;
-  ignored();
-  if (input.charCodeAt(idx) === 91 /*'['*/) {
-    idx++;
-    ignored();
-    const _type = type();
-    if (!_type || input.charCodeAt(idx++) !== 93 /*']'*/) throw error('ListType');
-    match = {
-      kind: 'ListType' as Kind.LIST_TYPE,
-      type: _type,
-    };
-  } else if ((match = name())) {
-    match = {
-      kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: match,
-    };
-  } else {
-    throw error('NamedType');
-  }
-
-  ignored();
-  if (input.charCodeAt(idx) === 33 /*'!'*/) {
-    idx++;
-    ignored();
-    return {
-      kind: 'NonNullType' as Kind.NON_NULL_TYPE,
-      type: match,
-    };
-  } else {
-    return match;
-  }
-}
-
-const typeConditionRe = /on/y;
-function typeCondition(): ast.NamedTypeNode | undefined {
-  if (advance(typeConditionRe)) {
-    ignored();
-    const _name = name();
-    if (!_name) throw error('NamedType');
-    ignored();
-    return {
-      kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: _name,
-    };
-  }
-}
-
-const fragmentSpreadRe = /\.\.\./y;
-
-function fragmentSpread(): ast.FragmentSpreadNode | ast.InlineFragmentNode | undefined {
-  if (advance(fragmentSpreadRe)) {
-    ignored();
-    const _idx = idx;
-    let _name: ast.NameNode | undefined;
-    if ((_name = name()) && _name.value !== 'on') {
-      return {
-        kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
-        name: _name,
-        directives: directives(false),
-      };
-    } else {
-      idx = _idx;
-      const _typeCondition = typeCondition();
-      const _directives = directives(false);
-      const _selectionSet = selectionSet();
-      if (!_selectionSet) throw error('InlineFragment');
-      return {
-        kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
-        typeCondition: _typeCondition,
-        directives: _directives,
-        selectionSet: _selectionSet,
-      };
-    }
-  }
-}
-
-function selectionSet(): ast.SelectionSetNode | undefined {
-  let match: ast.SelectionNode | undefined;
-  ignored();
-  if (input.charCodeAt(idx) === 123 /*'{'*/) {
-    idx++;
-    ignored();
-    const selections: ast.SelectionNode[] = [];
-    while ((match = fragmentSpread() || field())) selections.push(match);
-    if (!selections.length || input.charCodeAt(idx++) !== 125 /*'}'*/) throw error('SelectionSet');
-    ignored();
-    return {
-      kind: 'SelectionSet' as Kind.SELECTION_SET,
-      selections,
-    };
-  }
-}
-
-function variableDefinitions(): ast.VariableDefinitionNode[] {
   let match: string | undefined;
-  const vars: ast.VariableDefinitionNode[] = [];
+  let lists = 0;
+  while (input.charCodeAt(idx) === 91 /*'['*/) {
+    lists++;
+    idx++;
+    ignored();
+  }
+  if ((match = advance(nameRe)) == null) throw error('NamedType');
+  ignored();
+  let type: ast.TypeNode = {
+    kind: 'NamedType' as Kind.NAMED_TYPE,
+    name: { kind: 'Name' as Kind.NAME, value: match },
+  };
+  do {
+    if (input.charCodeAt(idx) === 33 /*'!'*/) {
+      idx++;
+      ignored();
+      type = {
+        kind: 'NonNullType' as Kind.NON_NULL_TYPE,
+        type: type as ast.NamedTypeNode | ast.ListTypeNode,
+      } satisfies ast.NonNullTypeNode;
+    }
+    if (lists) {
+      if (input.charCodeAt(idx++) !== 93 /*']'*/) throw error('NamedType');
+      ignored();
+      type = {
+        kind: 'ListType' as Kind.LIST_TYPE,
+        type: type as ast.NamedTypeNode | ast.ListTypeNode,
+      } satisfies ast.ListTypeNode;
+    }
+  } while (lists--);
+  return type;
+}
+
+// NOTE: This should be compressed by our build step
+// This merges the two possible selection parsing branches into one regular expression
+const selectionRe = new RegExp(
+  '(?:' +
+    // fragment spreads (FragmentSpread or InlineFragment nodes)
+    '(\\.\\.\\.)|' +
+    // field aliases or names (FieldNode)
+    '(' +
+    nameRe.source +
+    '))',
+  'y'
+);
+
+// NOTE: Each of the groups above end up in the RegExpExecArray at the indices 1&2
+const enum SelectionGroup {
+  Spread = 1,
+  Name,
+}
+
+type SelectionExec = RegExpExecArray & {
+  [Prop in SelectionGroup]: string | undefined;
+};
+
+function selectionSet(): ast.SelectionSetNode {
+  const selections: ast.SelectionNode[] = [];
+  let match: string | undefined;
+  let exec: SelectionExec | null;
+  do {
+    selectionRe.lastIndex = idx;
+    if ((exec = selectionRe.exec(input) as SelectionExec) != null) {
+      idx = selectionRe.lastIndex;
+      if (exec[SelectionGroup.Spread] != null) {
+        ignored();
+        let match = advance(nameRe);
+        if (match != null && match !== 'on') {
+          // A simple `...Name` spread with optional directives
+          ignored();
+          selections.push({
+            kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
+            name: { kind: 'Name' as Kind.NAME, value: match },
+            directives: directives(false),
+          });
+        } else {
+          ignored();
+          if (match === 'on') {
+            // An inline `... on Name` spread; if this doesn't match, the type condition has been omitted
+            if ((match = advance(nameRe)) == null) throw error('NamedType');
+            ignored();
+          }
+          const _directives = directives(false);
+          if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
+          ignored();
+          selections.push({
+            kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
+            typeCondition: match
+              ? {
+                  kind: 'NamedType' as Kind.NAMED_TYPE,
+                  name: { kind: 'Name' as Kind.NAME, value: match },
+                }
+              : undefined,
+            directives: _directives,
+            selectionSet: selectionSet(),
+          });
+        }
+      } else if ((match = exec[SelectionGroup.Name]) != null) {
+        let _alias: string | undefined;
+        ignored();
+        // Parse the optional alias, by reassigning and then getting the name
+        if (input.charCodeAt(idx) === 58 /*':'*/) {
+          idx++;
+          ignored();
+          _alias = match;
+          if ((match = advance(nameRe)) == null) throw error('Field');
+        }
+        const _arguments = arguments_(false);
+        ignored();
+        const _directives = directives(false);
+        let _selectionSet: ast.SelectionSetNode | undefined;
+        if (input.charCodeAt(idx) === 123 /*'{'*/) {
+          idx++;
+          ignored();
+          _selectionSet = selectionSet();
+        }
+        selections.push({
+          kind: 'Field' as Kind.FIELD,
+          alias: _alias ? { kind: 'Name' as Kind.NAME, value: _alias } : undefined,
+          name: { kind: 'Name' as Kind.NAME, value: match },
+          arguments: _arguments,
+          directives: _directives,
+          selectionSet: _selectionSet,
+        });
+      }
+    } else {
+      throw error('SelectionSet');
+    }
+  } while (input.charCodeAt(idx) !== 125 /*'}'*/);
+  idx++;
+  ignored();
+  return {
+    kind: 'SelectionSet' as Kind.SELECTION_SET,
+    selections,
+  };
+}
+
+function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
   ignored();
   if (input.charCodeAt(idx) === 40 /*'('*/) {
+    const vars: ast.VariableDefinitionNode[] = [];
     idx++;
     ignored();
-    while ((match = advance(variableRe))) {
+    let _name: string | undefined;
+    do {
+      if (input.charCodeAt(idx++) !== 36 /*'$'*/) throw error('Variable');
+      if ((_name = advance(nameRe)) == null) throw error('Variable');
       ignored();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
+      ignored();
       const _type = type();
-      let _defaultValue: ast.ValueNode | undefined;
+      let _defaultValue: ast.ConstValueNode | undefined;
       if (input.charCodeAt(idx) === 61 /*'='*/) {
         idx++;
         ignored();
         _defaultValue = value(true);
-        if (!_defaultValue) throw error('VariableDefinition');
       }
       ignored();
       vars.push({
         kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
         variable: {
           kind: 'Variable' as Kind.VARIABLE,
-          name: {
-            kind: 'Name' as Kind.NAME,
-            value: match.slice(1),
-          },
+          name: { kind: 'Name' as Kind.NAME, value: _name },
         },
         type: _type,
-        defaultValue: _defaultValue as ast.ConstValueNode,
+        defaultValue: _defaultValue,
         directives: directives(true),
       });
-    }
-    if (input.charCodeAt(idx++) !== 41 /*')'*/) throw error('VariableDefinition');
+    } while (input.charCodeAt(idx) !== 41 /*')'*/);
+    idx++;
     ignored();
-  }
-  return vars;
-}
-
-const fragmentDefinitionRe = /fragment/y;
-function fragmentDefinition(): ast.FragmentDefinitionNode | undefined {
-  if (advance(fragmentDefinitionRe)) {
-    ignored();
-    const _name = name();
-    if (!_name) throw error('FragmentDefinition');
-    ignored();
-    const _typeCondition = typeCondition();
-    if (!_typeCondition) throw error('FragmentDefinition');
-    const _directives = directives(false);
-    const _selectionSet = selectionSet();
-    if (!_selectionSet) throw error('FragmentDefinition');
-    return {
-      kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
-      name: _name,
-      typeCondition: _typeCondition,
-      directives: _directives,
-      selectionSet: _selectionSet,
-    };
+    return vars;
   }
 }
 
-// NOTE(Safari10 Quirk): This *might* need to be wrapped in a group, but worked without it too
-const operationDefinitionRe = /(?:query|mutation|subscription)/y;
+function fragmentDefinition(): ast.FragmentDefinitionNode {
+  let _name: string | undefined;
+  let _condition: string | undefined;
+  if ((_name = advance(nameRe)) == null) throw error('FragmentDefinition');
+  ignored();
+  if (advance(nameRe) !== 'on') throw error('FragmentDefinition');
+  ignored();
+  if ((_condition = advance(nameRe)) == null) throw error('FragmentDefinition');
+  ignored();
+  const _directives = directives(false);
+  if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
+  ignored();
+  return {
+    kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
+    name: { kind: 'Name' as Kind.NAME, value: _name },
+    typeCondition: {
+      kind: 'NamedType' as Kind.NAMED_TYPE,
+      name: { kind: 'Name' as Kind.NAME, value: _condition },
+    },
+    directives: _directives,
+    selectionSet: selectionSet(),
+  };
+}
 
-function operationDefinition(): ast.OperationDefinitionNode | undefined {
-  let _operation: string | undefined;
-  let _name: ast.NameNode | undefined;
-  let _variableDefinitions: ast.VariableDefinitionNode[] = [];
-  let _directives: ast.DirectiveNode[] = [];
-  if ((_operation = advance(operationDefinitionRe))) {
+const definitionRe = /(?:query|mutation|subscription|fragment)/y;
+
+function operationDefinition(
+  operation: OperationTypeNode | undefined
+): ast.OperationDefinitionNode | undefined {
+  let _name: string | undefined;
+  let _variableDefinitions: ast.VariableDefinitionNode[] | undefined;
+  let _directives: ast.DirectiveNode[] | undefined;
+  if (operation) {
     ignored();
-    _name = name();
+    _name = advance(nameRe);
     _variableDefinitions = variableDefinitions();
     _directives = directives(false);
   }
-  const _selectionSet = selectionSet();
-  if (_selectionSet) {
+  if (input.charCodeAt(idx) === 123 /*'{'*/) {
+    idx++;
+    ignored();
     return {
       kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
-      operation: (_operation || 'query') as OperationTypeNode,
-      name: _name,
+      operation: operation || ('query' as OperationTypeNode.QUERY),
+      name: _name ? { kind: 'Name' as Kind.NAME, value: _name } : undefined,
       variableDefinitions: _variableDefinitions,
       directives: _directives,
-      selectionSet: _selectionSet,
+      selectionSet: selectionSet(),
     };
   }
 }
 
 function document(): ast.DocumentNode {
-  let match: ast.ExecutableDefinitionNode | void;
+  let match: string | undefined;
+  let definition: ast.OperationDefinitionNode | undefined;
   ignored();
   const definitions: ast.ExecutableDefinitionNode[] = [];
-  while ((match = fragmentDefinition() || operationDefinition())) definitions.push(match);
+  do {
+    if ((match = advance(definitionRe)) === 'fragment') {
+      ignored();
+      definitions.push(fragmentDefinition());
+    } else if ((definition = operationDefinition(match as OperationTypeNode)) != null) {
+      definitions.push(definition);
+    } else {
+      throw error('Document');
+    }
+  } while (idx < input.length);
   return {
     kind: 'Document' as Kind.DOCUMENT,
     definitions,
@@ -476,9 +523,7 @@ export function parseValue(
   input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
   ignored();
-  const _value = value(false);
-  if (!_value) throw error('ValueNode');
-  return _value;
+  return value(false);
 }
 
 export function parseType(
