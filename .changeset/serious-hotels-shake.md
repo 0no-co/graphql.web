@@ -2,4 +2,4 @@
 "@0no-co/graphql.web": patch
 ---
 
-Fix the directive syntax for ignoring errors due to unavailable peer dependencies.
+Fix `@ts-ignore` on TypeScript peer dependency import in typings not being applied due to a leading `!` character.
