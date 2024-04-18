@@ -233,7 +233,7 @@ export default [
           renderChunk(code, chunk) {
             if (chunk.fileName.endsWith('d.ts')) {
               const gqlImportRe = /(import\s+(?:[*\s{}\w\d]+)\s*from\s*'graphql';?)/g;
-              code = code.replace(gqlImportRe, x => '/*!@ts-ignore*/\n' + x);
+              code = code.replace(gqlImportRe, x => '/*@ts-ignore*/\n' + x);
 
               code = prettier.format(code, {
                 filepath: chunk.fileName,
