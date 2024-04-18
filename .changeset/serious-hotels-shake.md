@@ -1,0 +1,5 @@
+---
+"@0no-co/graphql.web": patch
+---
+
+Fix `@ts-ignore` on TypeScript peer dependency import in typings not being applied due to a leading `!` character.
