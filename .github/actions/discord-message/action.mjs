@@ -11,7 +11,7 @@ const formatBody = (input) => {
   const updatedDepsRe = /\n-\s*Updated dependencies[\s\S]+\n(\n\s+-[\s\S]+)*/gi;
   const markdownLinkRe = /\[([^\]]+)\]\(([^\)]+)\)/g;
   const creditRe = new RegExp(`Submitted by (?:undefined|${markdownLinkRe.source})`, 'ig');
-  const repeatedNewlineRe = /(\n[ ]*)+/g;
+  const repeatedNewlineRe = /(?:\n[ ]*)*(\n[ ]*)/g;
   return input
     .replace(titleRe, '')
     .replace(updatedDepsRe, '')
@@ -19,20 +19,15 @@ const formatBody = (input) => {
       if (!text || /@kitten|@JoviDeCroock/i.test(text)) return '';
       return `Submitted by [${text}](${url})`;
     })
-    .replace(markdownLinkRe, (_match, text, url) => {
-      return `[${text}](<${url}>)`;
-    })
-    .replace(repeatedNewlineRe, '\n')
+    .replace(markdownLinkRe, (_match, text, url) => `[${text}](<${url}>)`)
+    .replace(repeatedNewlineRe, (_match, text) => text ? ` ${text}` : '\n')
     .trim();
 };
 
 async function getReleaseBody(name, version) {
   const tag = `${name}@${version}`;
-  const result = await octokit.rest.repos.getReleaseByTag({
-    owner: 'urql-graphql',
-    repo: 'urql',
-    tag,
-  });
+  const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+  const result = await octokit.rest.repos.getReleaseByTag({ owner, repo, tag });
 
   const release = result.status === 200 ? result.data : undefined;
   if (!release || !release.body) return;
@@ -66,7 +61,7 @@ async function main() {
     .join('\n\n');
 
   // Send message through a discord webhook or bot
-  const response = fetch(WEBHOOK_URL, {
+  const response = await fetch(WEBHOOK_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -75,11 +70,9 @@ async function main() {
   });
 
   if (!response.ok) {
-    console.log('Something went wrong while sending the discord webhook.');
-    return;
+    console.error('Something went wrong while sending the discord webhook.', response.status);
+    console.error(await response.text());
   }
-
-  return response;
 }
 
 main().then().catch(console.error);
