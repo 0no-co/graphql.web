@@ -35,11 +35,11 @@ function mapJoin<T>(value: readonly T[], joiner: string, mapper: (value: T) => s
   return out;
 }
 
-function printString(string: string) {
+function printString(string: string): string {
   return JSON.stringify(string);
 }
 
-function printBlockString(string: string) {
+function printBlockString(string: string): string {
   return '"""\n' + string.replace(/"""/g, '\\"""') + '\n"""';
 }
 
