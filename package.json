@@ -45,8 +45,8 @@
     "clean": "rimraf dist node_modules/.cache",
     "prepublishOnly": "run-s clean build check test",
     "prepare": "node ./scripts/prepare.js",
-    "changeset:version": "node ./scripts/jsr.js",
-    "changeset:publish": "jsr publish"
+    "changeset:version": "changeset version && pnpm install --lockfile-only && node ./scripts/jsr.js",
+    "changeset:publish": "changeset publish && jsr publish"
   },
   "repository": "https://github.com/0no-co/graphql.web",
   "bugs": {
