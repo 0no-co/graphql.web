@@ -45,11 +45,11 @@ export class GraphQLError extends Error {
     return { ...this, message: this.message };
   }
 
-  toString() {
+  toString(): string {
     return this.message;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLError';
   }
 }
