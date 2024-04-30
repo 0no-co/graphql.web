@@ -185,6 +185,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
                                     "selectionSet": undefined,
                                   },
                                   {
+                                    "arguments": undefined,
                                     "directives": [
                                       {
                                         "arguments": undefined,
@@ -669,6 +670,7 @@ exports[`parse > parses the kitchen sink document like graphql.js does 1`] = `
           "value": "Friend",
         },
       },
+      "variableDefinitions": undefined,
     },
     {
       "directives": undefined,
