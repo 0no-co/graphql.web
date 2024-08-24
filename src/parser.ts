@@ -105,7 +105,7 @@ type ValueExec = RegExpExecArray & {
   [Prop in ValueGroup]: string | undefined;
 };
 
-const complexStringRe = /\\/g;
+const complexStringRe = /\\/;
 
 function value(constant: true): ast.ConstValueNode;
 function value(constant: boolean): ast.ValueNode;
