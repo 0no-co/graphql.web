@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.8
+
+### Patch Changes
+
+- ⚠️ Fix typo causing complex string parsing to fail on subsequent runs
+  Submitted by [@kitten](https://github.com/kitten) (See [#31](https://github.com/0no-co/graphql.web/pull/31))
+
 ## 1.0.7
 
 ### Patch Changes
