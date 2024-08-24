@@ -73,6 +73,23 @@ describe('parse', () => {
     }).toThrow();
   });
 
+  it('parses escaped characters', () => {
+    let ast = parse(`
+      { field(arg: "Has another \\\\x sequence.") }
+    `);
+    expect(ast).toHaveProperty(
+      'definitions.0.selectionSet.selections.0.arguments.0.value.value',
+      'Has another \\x sequence.'
+    );
+    ast = parse(`
+      { field(arg: "Has a \\\\x sequence.") }
+    `);
+    expect(ast).toHaveProperty(
+      'definitions.0.selectionSet.selections.0.arguments.0.value.value',
+      'Has a \\x sequence.'
+    );
+  });
+
   it('parses multi-byte characters', () => {
     // Note: \u0A0A could be naively interpreted as two line-feed chars.
     const ast = parse(`
