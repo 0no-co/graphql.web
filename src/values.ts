@@ -18,13 +18,16 @@ export function valueFromASTUntyped(
       return node.value;
     case 'ListValue': {
       const values: unknown[] = [];
-      for (const value of node.values) values.push(valueFromASTUntyped(value, variables));
+      for (let i = 0, l = node.values.length; i < l; i++)
+        values.push(valueFromASTUntyped(node.values[i], variables));
       return values;
     }
     case 'ObjectValue': {
       const obj = Object.create(null);
-      for (const field of node.fields)
+      for (let i = 0, l = node.fields.length; i < l; i++) {
+        const field = node.fields[i];
         obj[field.name.value] = valueFromASTUntyped(field.value, variables);
+      }
       return obj;
     }
     case 'Variable':
@@ -47,7 +50,8 @@ export function valueFromTypeNode(
   } else if (type.kind === 'ListType') {
     if (node.kind === 'ListValue') {
       const values: unknown[] = [];
-      for (const value of node.values) {
+      for (let i = 0, l = node.values.length; i < l; i++) {
+        const value = node.values[i];
         const coerced = valueFromTypeNode(value, type.type, variables);
         if (coerced === undefined) {
           return undefined;
