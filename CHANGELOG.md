@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.9
+
+### Patch Changes
+
+- Remove `for-of` syntax from `valueFromTypeNode` and `valueFromASTUntyped` helpers for JSC memory reduction
+  Submitted by [@kitten](https://github.com/kitten) (See [#33](https://github.com/0no-co/graphql.web/pull/33))
+
 ## 1.0.8
 
 ### Patch Changes
