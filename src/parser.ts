@@ -6,7 +6,7 @@
  */
 import type { Kind, OperationTypeNode } from './kind';
 import { GraphQLError } from './error';
-import type { Source } from './types';
+import type { Location, Source } from './types';
 import type * as ast from './ast';
 
 let input: string;
@@ -483,7 +483,7 @@ function operationDefinition(
   }
 }
 
-function document(): ast.DocumentNode {
+function document(input: string, noLoc: boolean): ast.DocumentNode {
   let match: string | undefined;
   let definition: ast.OperationDefinitionNode | undefined;
   ignored();
@@ -498,6 +498,37 @@ function document(): ast.DocumentNode {
       throw error('Document');
     }
   } while (idx < input.length);
+
+  if (!noLoc) {
+    let loc: Location | undefined;
+    return {
+      kind: 'Document' as Kind.DOCUMENT,
+      definitions,
+      /* v8 ignore start */
+      set loc(_loc: Location) {
+        loc = _loc;
+      },
+      /* v8 ignore stop */
+      // @ts-ignore
+      get loc() {
+        if (!loc) {
+          loc = {
+            start: 0,
+            end: input.length,
+            startToken: undefined,
+            endToken: undefined,
+            source: {
+              body: input,
+              name: 'graphql.web',
+              locationOffset: { line: 1, column: 1 },
+            },
+          };
+        }
+        return loc;
+      },
+    };
+  }
+
   return {
     kind: 'Document' as Kind.DOCUMENT,
     definitions,
@@ -510,11 +541,11 @@ type ParseOptions = {
 
 export function parse(
   string: string | Source,
-  _options?: ParseOptions | undefined
+  options?: ParseOptions | undefined
 ): ast.DocumentNode {
   input = typeof string.body === 'string' ? string.body : string;
   idx = 0;
-  return document();
+  return document(input, options && options.noLocation);
 }
 
 export function parseValue(
