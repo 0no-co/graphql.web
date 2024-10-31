@@ -6,7 +6,7 @@ import { Kind } from '../kind';
 
 describe('parse', () => {
   it('parses the kitchen sink document like graphql.js does', () => {
-    const doc = parse(kitchenSinkDocument);
+    const doc = parse(kitchenSinkDocument, { noLocation: true });
     expect(doc).toMatchSnapshot();
   });
 
