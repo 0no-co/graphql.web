@@ -8,3 +8,4 @@ export * from './parser';
 export * from './visitor';
 export * from './printer';
 export * from './values';
+export * from './helpers';
