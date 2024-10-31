@@ -1,5 +1,14 @@
 # @0no-co/graphql.web
 
+## 1.0.10
+
+### Patch Changes
+
+- Add `loc` getter to parsed `DocumentNode` fragment outputs to ensure that using fragments created by `gql.tada`'s `graphql()` function with `graphql-tag` doesn't crash. `graphql-tag` does not treat the `DocumentNode.loc` property as optional on interpolations, which leads to intercompatibility issues
+  Submitted by [@JoviDeCroock](https://github.com/JoviDeCroock) (See [#38](https://github.com/0no-co/graphql.web/pull/38))
+- Add missing exports to make apollo-client functional with this library
+  Submitted by [@JoviDeCroock](https://github.com/JoviDeCroock) (See [#39](https://github.com/0no-co/graphql.web/pull/39))
+
 ## 1.0.9
 
 ### Patch Changes
