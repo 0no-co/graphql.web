@@ -328,8 +328,9 @@ function selectionSet(): ast.SelectionSetNode {
           selections.push({
             kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
             name: { kind: 'Name' as Kind.NAME, value: match },
+            arguments: arguments_(false),
             directives: directives(false),
-          });
+          } as ast.FragmentSpreadNode);
         } else {
           ignored();
           if (match === 'on') {
@@ -435,7 +436,7 @@ function fragmentDefinition(): ast.FragmentDefinitionNode {
   let _name: string | undefined;
   let _condition: string | undefined;
   if ((_name = advance(nameRe)) == null) throw error('FragmentDefinition');
-  ignored();
+  const _variableDefinitions = variableDefinitions();
   if (advance(nameRe) !== 'on') throw error('FragmentDefinition');
   ignored();
   if ((_condition = advance(nameRe)) == null) throw error('FragmentDefinition');
@@ -450,6 +451,7 @@ function fragmentDefinition(): ast.FragmentDefinitionNode {
       kind: 'NamedType' as Kind.NAMED_TYPE,
       name: { kind: 'Name' as Kind.NAME, value: _condition },
     },
+    variableDefinitions: _variableDefinitions,
     directives: _directives,
     selectionSet: selectionSet(),
   };

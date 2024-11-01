@@ -47,6 +47,15 @@ const MAX_LINE_LENGTH = 80;
 
 let LF = '\n';
 
+function Arguments(length: number, node: readonly ArgumentNode[]): string {
+  const args = mapJoin(node, ', ', nodes.Argument);
+  if (length + args.length + 2 > MAX_LINE_LENGTH) {
+    return '(' + (LF += '  ') + mapJoin(node, LF, nodes.Argument) + (LF = LF.slice(0, -2)) + ')';
+  } else {
+    return '(' + args + ')';
+  }
+}
+
 const nodes = {
   OperationDefinition(node: OperationDefinitionNode): string {
     let out: string = node.operation;
@@ -70,19 +79,7 @@ const nodes = {
   },
   Field(node: FieldNode): string {
     let out = node.alias ? node.alias.value + ': ' + node.name.value : node.name.value;
-    if (node.arguments && node.arguments.length) {
-      const args = mapJoin(node.arguments, ', ', nodes.Argument);
-      if (out.length + args.length + 2 > MAX_LINE_LENGTH) {
-        out +=
-          '(' +
-          (LF += '  ') +
-          mapJoin(node.arguments, LF, nodes.Argument) +
-          (LF = LF.slice(0, -2)) +
-          ')';
-      } else {
-        out += '(' + args + ')';
-      }
-    }
+    if (node.arguments && node.arguments.length) out += Arguments(out.length, node.arguments);
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     if (node.selectionSet) out += ' ' + nodes.SelectionSet(node.selectionSet);
@@ -137,6 +134,7 @@ const nodes = {
   },
   FragmentSpread(node: FragmentSpreadNode): string {
     let out = '...' + node.name.value;
+    if (node.arguments && node.arguments.length) out += Arguments(out.length, node.arguments);
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     return out;
@@ -151,6 +149,8 @@ const nodes = {
   },
   FragmentDefinition(node: FragmentDefinitionNode): string {
     let out = 'fragment ' + node.name.value;
+    if (node.variableDefinitions && node.variableDefinitions.length)
+      out += '(' + mapJoin(node.variableDefinitions, ', ', nodes.VariableDefinition) + ')';
     out += ' on ' + node.typeCondition.name.value;
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
