@@ -1,5 +1,5 @@
 {
   "name": "@0no-co/graphql-web",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "exports": "./src/index.ts"
 }

@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.11
+
+### Patch Changes
+
+- Export Extensions type
+  Submitted by [@jaulz](https://github.com/jaulz) (See [#36](https://github.com/0no-co/graphql.web/pull/36))
+
 ## 1.0.10
 
 ### Patch Changes
