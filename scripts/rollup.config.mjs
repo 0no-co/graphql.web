@@ -150,7 +150,7 @@ const outputPlugins = [
       join_vars: false,
     },
     mangle: {
-      module: true,
+      module: false,
       keep_fnames: true,
     },
     output: {
