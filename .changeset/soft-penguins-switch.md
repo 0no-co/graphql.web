@@ -2,4 +2,4 @@
 '@0no-co/graphql.web': patch
 ---
 
-Handle selection-sets with an empty selections array in a `documentNode`.
+Fix printing when a manually created AST node with an empty selection set array is passed to the printer
