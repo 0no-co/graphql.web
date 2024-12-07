@@ -132,7 +132,6 @@ const nodes = {
     return mapJoin(node.definitions, '\n\n', _print);
   },
   SelectionSet(node: SelectionSetNode): string {
-    if (!node.selections.length) return '';
     return '{' + (LF += '  ') + mapJoin(node.selections, LF, _print) + (LF = LF.slice(0, -2)) + '}';
   },
   Argument(node: ArgumentNode): string {
