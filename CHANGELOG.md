@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.12
+
+### Patch Changes
+
+- ⚠️ Fix printing when a manually created AST node with an empty selection set array is passed to the printer
+  Submitted by [@JoviDeCroock](https://github.com/JoviDeCroock) (See [#46](https://github.com/0no-co/graphql.web/pull/46))
+
 ## 1.0.11
 
 ### Patch Changes
