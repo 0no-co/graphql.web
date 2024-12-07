@@ -85,7 +85,9 @@ const nodes = {
     }
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
-    if (node.selectionSet) out += ' ' + nodes.SelectionSet(node.selectionSet);
+    if (node.selectionSet && node.selectionSet.selections.length) {
+      out += ' ' + nodes.SelectionSet(node.selectionSet);
+    }
     return out;
   },
   StringValue(node: StringValueNode): string {

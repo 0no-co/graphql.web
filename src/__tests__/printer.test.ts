@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import * as graphql16 from 'graphql16';
 
+import type { DocumentNode } from '../ast';
 import { parse } from '../parser';
 import { print, printString, printBlockString } from '../printer';
 import kitchenSinkAST from './fixtures/kitchen_sink.json';
+import { Kind, OperationTypeNode } from 'src/kind';
 
 function dedentString(string: string) {
   const trimmedStr = string
@@ -176,6 +178,41 @@ describe('print', () => {
           dateTime
         }
       }
+    `
+    );
+  });
+
+  it('Handles empty array selections', () => {
+    const document: DocumentNode = {
+      kind: Kind.DOCUMENT,
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          operation: OperationTypeNode.QUERY,
+          name: undefined,
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            selections: [
+              {
+                kind: Kind.FIELD,
+                name: { kind: Kind.NAME, value: 'id' },
+                alias: undefined,
+                arguments: [],
+                directives: [],
+                selectionSet: { kind: Kind.SELECTION_SET, selections: [] },
+              },
+            ],
+          },
+          variableDefinitions: [],
+        },
+      ],
+    };
+
+    expect(print(document)).toBe(
+      dedent`
+        {
+          id
+        }
     `
     );
   });
