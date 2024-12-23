@@ -4,7 +4,7 @@
  * in graphql.js it will only parse the query language, but not the schema
  * language.
  */
-import type { Kind, OperationTypeNode } from './kind';
+import { Kind, OperationTypeNode } from './kind';
 import { GraphQLError } from './error';
 import type { Location, Source } from './types';
 import type * as ast from './ast';
@@ -123,7 +123,7 @@ function value(constant: boolean): ast.ValueNode {
     idx++;
     ignored();
     return {
-      kind: 'ListValue' as Kind.LIST,
+      kind: Kind.LIST,
       values,
     };
   } else if (input.charCodeAt(idx) === 123 /*'{'*/) {
@@ -137,15 +137,15 @@ function value(constant: boolean): ast.ValueNode {
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
       ignored();
       fields.push({
-        kind: 'ObjectField' as Kind.OBJECT_FIELD,
-        name: { kind: 'Name' as Kind.NAME, value: match },
+        kind: Kind.OBJECT_FIELD,
+        name: { kind: Kind.NAME, value: match },
         value: value(constant),
       });
     }
     idx++;
     ignored();
     return {
-      kind: 'ObjectValue' as Kind.OBJECT,
+      kind: Kind.OBJECT,
       fields,
     };
   } else if ((exec = valueRe.exec(input) as ValueExec) != null) {
@@ -154,9 +154,9 @@ function value(constant: boolean): ast.ValueNode {
     ignored();
     if ((match = exec[ValueGroup.Const]) != null) {
       return match === 'null'
-        ? { kind: 'NullValue' as Kind.NULL }
+        ? { kind: Kind.NULL }
         : {
-            kind: 'BooleanValue' as Kind.BOOLEAN,
+            kind: Kind.BOOLEAN,
             value: match === 'true',
           };
     } else if ((match = exec[ValueGroup.Var]) != null) {
@@ -164,9 +164,9 @@ function value(constant: boolean): ast.ValueNode {
         throw error('Variable');
       } else {
         return {
-          kind: 'Variable' as Kind.VARIABLE,
+          kind: Kind.VARIABLE,
           name: {
-            kind: 'Name' as Kind.NAME,
+            kind: Kind.NAME,
             value: match,
           },
         };
@@ -175,24 +175,24 @@ function value(constant: boolean): ast.ValueNode {
       let floatPart: string | undefined;
       if ((floatPart = exec[ValueGroup.Float]) != null) {
         return {
-          kind: 'FloatValue' as Kind.FLOAT,
+          kind: Kind.FLOAT,
           value: match + floatPart,
         };
       } else {
         return {
-          kind: 'IntValue' as Kind.INT,
+          kind: Kind.INT,
           value: match,
         };
       }
     } else if ((match = exec[ValueGroup.BlockString]) != null) {
       return {
-        kind: 'StringValue' as Kind.STRING,
+        kind: Kind.STRING,
         value: blockString(match.slice(3, -3)),
         block: true,
       };
     } else if ((match = exec[ValueGroup.String]) != null) {
       return {
-        kind: 'StringValue' as Kind.STRING,
+        kind: Kind.STRING,
         // When strings don't contain escape codes, a simple slice will be enough, otherwise
         // `JSON.parse` matches GraphQL's string parsing perfectly
         value: complexStringRe.test(match) ? (JSON.parse(match) as string) : match.slice(1, -1),
@@ -200,7 +200,7 @@ function value(constant: boolean): ast.ValueNode {
       };
     } else if ((match = exec[ValueGroup.Enum]) != null) {
       return {
-        kind: 'EnumValue' as Kind.ENUM,
+        kind: Kind.ENUM,
         value: match,
       };
     }
@@ -221,8 +221,8 @@ function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
       args.push({
-        kind: 'Argument' as Kind.ARGUMENT,
-        name: { kind: 'Name' as Kind.NAME, value: _name },
+        kind: Kind.ARGUMENT,
+        name: { kind: Kind.NAME, value: _name },
         value: value(constant),
       });
     } while (input.charCodeAt(idx) !== 41 /*')'*/);
@@ -244,8 +244,8 @@ function directives(constant: boolean): ast.DirectiveNode[] | undefined {
       if ((_name = advance(nameRe)) == null) throw error('Directive');
       ignored();
       directives.push({
-        kind: 'Directive' as Kind.DIRECTIVE,
-        name: { kind: 'Name' as Kind.NAME, value: _name },
+        kind: Kind.DIRECTIVE,
+        name: { kind: Kind.NAME, value: _name },
         arguments: arguments_(constant),
       });
     } while (input.charCodeAt(idx) === 64 /*'@'*/);
@@ -264,15 +264,15 @@ function type(): ast.TypeNode {
   if ((match = advance(nameRe)) == null) throw error('NamedType');
   ignored();
   let type: ast.TypeNode = {
-    kind: 'NamedType' as Kind.NAMED_TYPE,
-    name: { kind: 'Name' as Kind.NAME, value: match },
+    kind: Kind.NAMED_TYPE,
+    name: { kind: Kind.NAME, value: match },
   };
   do {
     if (input.charCodeAt(idx) === 33 /*'!'*/) {
       idx++;
       ignored();
       type = {
-        kind: 'NonNullType' as Kind.NON_NULL_TYPE,
+        kind: Kind.NON_NULL_TYPE,
         type: type as ast.NamedTypeNode | ast.ListTypeNode,
       } satisfies ast.NonNullTypeNode;
     }
@@ -280,7 +280,7 @@ function type(): ast.TypeNode {
       if (input.charCodeAt(idx++) !== 93 /*']'*/) throw error('NamedType');
       ignored();
       type = {
-        kind: 'ListType' as Kind.LIST_TYPE,
+        kind: Kind.LIST_TYPE,
         type: type as ast.NamedTypeNode | ast.ListTypeNode,
       } satisfies ast.ListTypeNode;
     }
@@ -326,8 +326,8 @@ function selectionSet(): ast.SelectionSetNode {
           // A simple `...Name` spread with optional directives
           ignored();
           selections.push({
-            kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
-            name: { kind: 'Name' as Kind.NAME, value: match },
+            kind: Kind.FRAGMENT_SPREAD,
+            name: { kind: Kind.NAME, value: match },
             directives: directives(false),
           });
         } else {
@@ -341,11 +341,11 @@ function selectionSet(): ast.SelectionSetNode {
           if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
           ignored();
           selections.push({
-            kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
+            kind: Kind.INLINE_FRAGMENT,
             typeCondition: match
               ? {
-                  kind: 'NamedType' as Kind.NAMED_TYPE,
-                  name: { kind: 'Name' as Kind.NAME, value: match },
+                  kind: Kind.NAMED_TYPE,
+                  name: { kind: Kind.NAME, value: match },
                 }
               : undefined,
             directives: _directives,
@@ -373,9 +373,9 @@ function selectionSet(): ast.SelectionSetNode {
           _selectionSet = selectionSet();
         }
         selections.push({
-          kind: 'Field' as Kind.FIELD,
-          alias: _alias ? { kind: 'Name' as Kind.NAME, value: _alias } : undefined,
-          name: { kind: 'Name' as Kind.NAME, value: match },
+          kind: Kind.FIELD,
+          alias: _alias ? { kind: Kind.NAME, value: _alias } : undefined,
+          name: { kind: Kind.NAME, value: match },
           arguments: _arguments,
           directives: _directives,
           selectionSet: _selectionSet,
@@ -388,7 +388,7 @@ function selectionSet(): ast.SelectionSetNode {
   idx++;
   ignored();
   return {
-    kind: 'SelectionSet' as Kind.SELECTION_SET,
+    kind: Kind.SELECTION_SET,
     selections,
   };
 }
@@ -415,10 +415,10 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
       }
       ignored();
       vars.push({
-        kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
+        kind: Kind.VARIABLE_DEFINITION,
         variable: {
-          kind: 'Variable' as Kind.VARIABLE,
-          name: { kind: 'Name' as Kind.NAME, value: _name },
+          kind: Kind.VARIABLE,
+          name: { kind: Kind.NAME, value: _name },
         },
         type: _type,
         defaultValue: _defaultValue,
@@ -444,11 +444,11 @@ function fragmentDefinition(): ast.FragmentDefinitionNode {
   if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
   ignored();
   return {
-    kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
-    name: { kind: 'Name' as Kind.NAME, value: _name },
+    kind: Kind.FRAGMENT_DEFINITION,
+    name: { kind: Kind.NAME, value: _name },
     typeCondition: {
-      kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: { kind: 'Name' as Kind.NAME, value: _condition },
+      kind: Kind.NAMED_TYPE,
+      name: { kind: Kind.NAME, value: _condition },
     },
     directives: _directives,
     selectionSet: selectionSet(),
@@ -473,9 +473,9 @@ function operationDefinition(
     idx++;
     ignored();
     return {
-      kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
-      operation: operation || ('query' as OperationTypeNode.QUERY),
-      name: _name ? { kind: 'Name' as Kind.NAME, value: _name } : undefined,
+      kind: Kind.OPERATION_DEFINITION,
+      operation: operation || OperationTypeNode.QUERY,
+      name: _name ? { kind: Kind.NAME, value: _name } : undefined,
       variableDefinitions: _variableDefinitions,
       directives: _directives,
       selectionSet: selectionSet(),
@@ -502,7 +502,7 @@ function document(input: string, noLoc: boolean): ast.DocumentNode {
   if (!noLoc) {
     let loc: Location | undefined;
     return {
-      kind: 'Document' as Kind.DOCUMENT,
+      kind: Kind.DOCUMENT,
       definitions,
       /* v8 ignore start */
       set loc(_loc: Location) {
@@ -530,7 +530,7 @@ function document(input: string, noLoc: boolean): ast.DocumentNode {
   }
 
   return {
-    kind: 'Document' as Kind.DOCUMENT,
+    kind: Kind.DOCUMENT,
     definitions,
   };
 }
