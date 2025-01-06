@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.0.13
+
+### Patch Changes
+
+- ⚠️ Fix compatibility with typescript 5.5 and higher
+  Submitted by [@andreisergiu98](https://github.com/andreisergiu98) (See [#49](https://github.com/0no-co/graphql.web/pull/49))
+
 ## 1.0.12
 
 ### Patch Changes
