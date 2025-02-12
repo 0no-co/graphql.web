@@ -65,7 +65,7 @@ function ignored() {
   idx--;
 }
 
-function name(): ast.NameNode {
+function name(): string {
   const start = idx;
   for (
     let char = input.charCodeAt(idx++) | 0;
@@ -78,9 +78,13 @@ function name(): ast.NameNode {
   if (start === idx - 1) throw error('Name');
   const value = input.slice(start, --idx);
   ignored();
+  return value;
+}
+
+function nameNode(): ast.NameNode {
   return {
     kind: 'Name' as Kind.NAME,
-    value,
+    value: name(),
   };
 }
 
@@ -110,12 +114,12 @@ function value(constant: boolean): ast.ValueNode {
       ignored();
       const fields: ast.ObjectFieldNode[] = [];
       while (input.charCodeAt(idx) !== 125 /*'}'*/) {
-        const _name = name();
+        const name = nameNode();
         if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
         ignored();
         fields.push({
           kind: 'ObjectField' as Kind.OBJECT_FIELD,
-          name: _name,
+          name,
           value: value(constant),
         });
       }
@@ -131,7 +135,7 @@ function value(constant: boolean): ast.ValueNode {
       idx++;
       return {
         kind: 'Variable' as Kind.VARIABLE,
-        name: name(),
+        name: nameNode(),
       };
 
     case 34: // '"'
@@ -236,7 +240,7 @@ function value(constant: boolean): ast.ValueNode {
     default:
       return {
         kind: 'EnumValue' as Kind.ENUM,
-        value: name().value,
+        value: name(),
       };
   }
 }
@@ -246,14 +250,14 @@ function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
     const args: ast.ArgumentNode[] = [];
     idx++;
     ignored();
-    let _name: ast.NameNode;
+    let name: ast.NameNode;
     do {
-      _name = name();
+      name = nameNode();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
       args.push({
         kind: 'Argument' as Kind.ARGUMENT,
-        name: _name,
+        name,
         value: value(constant),
       });
     } while (input.charCodeAt(idx) !== 41 /*')'*/);
@@ -269,13 +273,11 @@ function directives(constant: boolean): ast.DirectiveNode[] | undefined;
 function directives(constant: boolean): ast.DirectiveNode[] | undefined {
   if (input.charCodeAt(idx) === 64 /*'@'*/) {
     const directives: ast.DirectiveNode[] = [];
-    let _name: ast.NameNode;
     do {
       idx++;
-      _name = name();
       directives.push({
         kind: 'Directive' as Kind.DIRECTIVE,
-        name: _name,
+        name: nameNode(),
         arguments: arguments_(constant),
       });
     } while (input.charCodeAt(idx) === 64 /*'@'*/);
@@ -292,7 +294,7 @@ function type(): ast.TypeNode {
   }
   let type: ast.TypeNode = {
     kind: 'NamedType' as Kind.NAMED_TYPE,
-    name: name(),
+    name: nameNode(),
   };
   do {
     if (input.charCodeAt(idx) === 33 /*'!'*/) {
@@ -347,7 +349,7 @@ function selectionSet(): ast.SelectionSetNode {
               kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
               typeCondition: {
                 kind: 'NamedType' as Kind.NAMED_TYPE,
-                name: name(),
+                name: nameNode(),
               },
               directives: directives(false),
               selectionSet: selectionSetStart(),
@@ -355,7 +357,7 @@ function selectionSet(): ast.SelectionSetNode {
           } else {
             selections.push({
               kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
-              name: name(),
+              name: nameNode(),
               directives: directives(false),
             });
           }
@@ -375,18 +377,18 @@ function selectionSet(): ast.SelectionSetNode {
         default:
           selections.push({
             kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
-            name: name(),
+            name: nameNode(),
             directives: directives(false),
           });
       }
     } else {
-      let _name = name();
-      let _alias: ast.NameNode | undefined;
+      let name = nameNode();
+      let alias: ast.NameNode | undefined;
       if (input.charCodeAt(idx) === 58 /*':'*/) {
         idx++;
         ignored();
-        _alias = _name;
-        _name = name();
+        alias = name;
+        name = nameNode();
       }
       const _arguments = arguments_(false);
       const _directives = directives(false);
@@ -398,8 +400,8 @@ function selectionSet(): ast.SelectionSetNode {
       }
       selections.push({
         kind: 'Field' as Kind.FIELD,
-        alias: _alias,
-        name: _name,
+        alias,
+        name,
         arguments: _arguments,
         directives: _directives,
         selectionSet: _selectionSet,
@@ -420,10 +422,10 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
     const vars: ast.VariableDefinitionNode[] = [];
     idx++;
     ignored();
-    let _name: ast.NameNode;
+    let name: ast.NameNode;
     do {
       if (input.charCodeAt(idx++) !== 36 /*'$'*/) throw error('Variable');
-      _name = name();
+      name = nameNode();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
       ignored();
       const _type = type();
@@ -438,7 +440,7 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
         kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
         variable: {
           kind: 'Variable' as Kind.VARIABLE,
-          name: _name,
+          name,
         },
         type: _type,
         defaultValue: _defaultValue,
@@ -452,16 +454,16 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
 }
 
 function fragmentDefinition(): ast.FragmentDefinitionNode {
-  const _name = name();
+  const name = nameNode();
   if (input.charCodeAt(idx++) !== 111 /*'o'*/ || input.charCodeAt(idx++) !== 110 /*'n'*/)
     throw error('FragmentDefinition');
   ignored();
   return {
     kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
-    name: _name,
+    name,
     typeCondition: {
       kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: name(),
+      name: nameNode(),
     },
     directives: directives(false),
     selectionSet: selectionSetStart(),
@@ -482,7 +484,7 @@ function document(input: string, noLoc: boolean): ast.DocumentNode {
         selectionSet: selectionSetStart(),
       });
     } else {
-      const definition = name().value;
+      const definition = name();
       switch (definition) {
         case 'fragment':
           definitions.push(fragmentDefinition());
@@ -491,18 +493,18 @@ function document(input: string, noLoc: boolean): ast.DocumentNode {
         case 'mutation':
         case 'subscription':
           let char: number;
-          let _name: ast.NameNode | undefined;
+          let name: ast.NameNode | undefined;
           if (
             (char = input.charCodeAt(idx)) !== 40 /*'('*/ &&
             char !== 64 /*'@'*/ &&
             char !== 123 /*'{'*/
           ) {
-            _name = name();
+            name = nameNode();
           }
           definitions.push({
             kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
             operation: definition as OperationTypeNode,
-            name: _name,
+            name,
             variableDefinitions: variableDefinitions(),
             directives: directives(false),
             selectionSet: selectionSetStart(),
