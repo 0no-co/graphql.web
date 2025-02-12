@@ -575,7 +575,7 @@ export function parse(
   string: string | Source,
   options?: ParseOptions | undefined
 ): ast.DocumentNode {
-  input = typeof string.body === 'string' ? string.body : string;
+  input = typeof string === 'string' ? string : string.body;
   idx = 0;
   return document(input, options && options.noLocation);
 }
@@ -584,7 +584,7 @@ export function parseValue(
   string: string | Source,
   _options?: ParseOptions | undefined
 ): ast.ValueNode {
-  input = typeof string.body === 'string' ? string.body : string;
+  input = typeof string === 'string' ? string : string.body;
   idx = 0;
   ignored();
   return value(false);
@@ -594,7 +594,7 @@ export function parseType(
   string: string | Source,
   _options?: ParseOptions | undefined
 ): ast.TypeNode {
-  input = typeof string.body === 'string' ? string.body : string;
+  input = typeof string === 'string' ? string : string.body;
   idx = 0;
   return type();
 }
