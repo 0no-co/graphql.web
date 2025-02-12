@@ -127,6 +127,7 @@ function value(constant: boolean): ast.ValueNode {
       };
 
     case 36: // '$'
+      if (constant) throw error('Variable');
       idx++;
       return {
         kind: 'Variable' as Kind.VARIABLE,
