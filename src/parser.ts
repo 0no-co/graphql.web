@@ -343,11 +343,12 @@ function selectionSet(): ast.SelectionSetNode {
             ignored();
             const _condition = name();
             const _directives = directives(false);
-            if (input.charCodeAt(idx) !== 123 /*'{'*/) throw error('InlineFragment');
+            if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
+            ignored();
             selections.push({
               kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
               typeCondition: {
-                kind: 'NAMED_TYPE' as Kind.NAMED_TYPE,
+                kind: 'NamedType' as Kind.NAMED_TYPE,
                 name: _condition,
               },
               directives: _directives,
