@@ -315,26 +315,27 @@ function type(): ast.TypeNode {
   return type;
 }
 
+function selectionSetStart(): ast.SelectionSetNode {
+  if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('SelectionSet');
+  ignored();
+  return selectionSet();
+}
+
 function selectionSet(): ast.SelectionSetNode {
   const selections: ast.SelectionNode[] = [];
   do {
-    if (
-      input.charCodeAt(idx) === 46 /*'.'*/ &&
-      input.charCodeAt(idx + 1) === 46 /*'.'*/ &&
-      input.charCodeAt(idx + 2) === 46 /*'.'*/
-    ) {
-      idx += 3;
+    if (input.charCodeAt(idx) === 46 /*'.'*/) {
+      if (input.charCodeAt(++idx) !== 46 /*'.'*/ || input.charCodeAt(++idx) !== 46 /*'.'*/)
+        throw error('SelectionSet');
+      idx++;
       ignored();
       switch (input.charCodeAt(idx)) {
         case 64 /*'@'*/:
-          const _directives = directives(false);
-          if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
-          ignored();
           selections.push({
             kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
             typeCondition: undefined,
-            directives: _directives,
-            selectionSet: selectionSet(),
+            directives: directives(false),
+            selectionSet: selectionSetStart(),
           });
           break;
 
@@ -342,18 +343,14 @@ function selectionSet(): ast.SelectionSetNode {
           if (input.charCodeAt(idx + 1) === 110 /*'n'*/) {
             idx += 2;
             ignored();
-            const _condition = name();
-            const _directives = directives(false);
-            if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
-            ignored();
             selections.push({
               kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
               typeCondition: {
                 kind: 'NamedType' as Kind.NAMED_TYPE,
-                name: _condition,
+                name: name(),
               },
-              directives: _directives,
-              selectionSet: selectionSet(),
+              directives: directives(false),
+              selectionSet: selectionSetStart(),
             });
           } else {
             selections.push({
@@ -459,19 +456,15 @@ function fragmentDefinition(): ast.FragmentDefinitionNode {
   if (input.charCodeAt(idx++) !== 111 /*'o'*/ || input.charCodeAt(idx++) !== 110 /*'n'*/)
     throw error('FragmentDefinition');
   ignored();
-  const _condition = name();
-  const _directives = directives(false);
-  if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
-  ignored();
   return {
     kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
     name: _name,
     typeCondition: {
       kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: _condition,
+      name: name(),
     },
-    directives: _directives,
-    selectionSet: selectionSet(),
+    directives: directives(false),
+    selectionSet: selectionSetStart(),
   };
 }
 
@@ -480,15 +473,13 @@ function document(input: string, noLoc: boolean): ast.DocumentNode {
   const definitions: ast.ExecutableDefinitionNode[] = [];
   do {
     if (input.charCodeAt(idx) === 123 /*'{'*/) {
-      idx++;
-      ignored();
       definitions.push({
         kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
         operation: 'query' as OperationTypeNode.QUERY,
         name: undefined,
         variableDefinitions: undefined,
         directives: undefined,
-        selectionSet: selectionSet(),
+        selectionSet: selectionSetStart(),
       });
     } else {
       const definition = name().value;
@@ -508,17 +499,13 @@ function document(input: string, noLoc: boolean): ast.DocumentNode {
           ) {
             _name = name();
           }
-          const _variableDefinitions = variableDefinitions();
-          const _directives = directives(false);
-          if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('OperationDefinition');
-          ignored();
           definitions.push({
             kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
             operation: definition as OperationTypeNode,
             name: _name,
-            variableDefinitions: _variableDefinitions,
-            directives: _directives,
-            selectionSet: selectionSet(),
+            variableDefinitions: variableDefinitions(),
+            directives: directives(false),
+            selectionSet: selectionSetStart(),
           });
           break;
         default:
