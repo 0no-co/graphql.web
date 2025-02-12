@@ -328,7 +328,8 @@ function selectionSet(): ast.SelectionSetNode {
       switch (input.charCodeAt(idx)) {
         case 64 /*'@'*/:
           const _directives = directives(false);
-          if (input.charCodeAt(idx) !== 123 /*'{'*/) throw error('InlineFragment');
+          if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
+          ignored();
           selections.push({
             kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
             typeCondition: undefined,
@@ -375,8 +376,6 @@ function selectionSet(): ast.SelectionSetNode {
           break;
 
         default:
-          idx++;
-          ignored();
           selections.push({
             kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
             name: name(),
