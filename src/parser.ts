@@ -179,8 +179,12 @@ function value(constant: boolean): ast.ValueNode {
       let char: number;
       while ((char = input.charCodeAt(idx++) | 0) >= 48 /*'0'*/ && char <= 57 /*'9'*/);
       const intPart = input.slice(start, --idx);
-      if (char === 46 /*'.'*/ || char === 69 /*'E'*/ || char === 101 /*'e'*/) {
-        if ((match = advance(floatPartRe)) != null) throw error('FloatValue');
+      if (
+        (char = input.charCodeAt(idx)) === 46 /*'.'*/ ||
+        char === 69 /*'E'*/ ||
+        char === 101 /*'e'*/
+      ) {
+        if ((match = advance(floatPartRe)) == null) throw error('FloatValue');
         ignored();
         return {
           kind: 'FloatValue' as Kind.FLOAT,
