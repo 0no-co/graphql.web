@@ -65,7 +65,25 @@ function ignored() {
   idx--;
 }
 
-const nameRe = /[_A-Za-z]\w*/y;
+function name(): ast.NameNode {
+  const start = idx;
+  for (
+    let char = input.charCodeAt(idx++) | 0;
+    (char >= 48 /*'0'*/ && char <= 57) /*'9'*/ ||
+    (char >= 65 /*'A'*/ && char <= 90) /*'Z'*/ ||
+    char === 95 /*'_'*/ ||
+    (char >= 97 /*'a'*/ && char <= 122) /*'z'*/;
+    char = input.charCodeAt(idx++) | 0
+  );
+  if (start === idx - 1) throw error('Name');
+  const value = input.slice(start, --idx);
+  ignored();
+  return {
+    kind: 'Name' as Kind.NAME,
+    value,
+  };
+}
+
 const restBlockStringRe = /(?:"""|(?:[\s\S]*?[^\\])""")/y;
 const floatPartRe = /(?:(?:\.\d+)?[eE][+-]?\d+|\.\d+)/y;
 
@@ -92,13 +110,12 @@ function value(constant: boolean): ast.ValueNode {
       ignored();
       const fields: ast.ObjectFieldNode[] = [];
       while (input.charCodeAt(idx) !== 125 /*'}'*/) {
-        if ((match = advance(nameRe)) == null) throw error('ObjectField');
-        ignored();
+        const _name = name();
         if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
         ignored();
         fields.push({
           kind: 'ObjectField' as Kind.OBJECT_FIELD,
-          name: { kind: 'Name' as Kind.NAME, value: match },
+          name: _name,
           value: value(constant),
         });
       }
@@ -111,14 +128,9 @@ function value(constant: boolean): ast.ValueNode {
 
     case 36: // '$'
       idx++;
-      if ((match = advance(nameRe)) == null) throw error('Variable');
-      ignored();
       return {
         kind: 'Variable' as Kind.VARIABLE,
-        name: {
-          kind: 'Name' as Kind.NAME,
-          value: match,
-        },
+        name: name(),
       };
 
     case 34: // '"'
@@ -217,15 +229,10 @@ function value(constant: boolean): ast.ValueNode {
       }
 
     default:
-      if ((match = advance(nameRe)) == null) {
-        throw error('Value');
-      } else {
-        ignored();
-        return {
-          kind: 'EnumValue' as Kind.ENUM,
-          value: match,
-        };
-      }
+      return {
+        kind: 'EnumValue' as Kind.ENUM,
+        value: name().value,
+      };
   }
 }
 
@@ -234,15 +241,14 @@ function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
     const args: ast.ArgumentNode[] = [];
     idx++;
     ignored();
-    let _name: string | undefined;
+    let _name: ast.NameNode;
     do {
-      if ((_name = advance(nameRe)) == null) throw error('Argument');
-      ignored();
+      _name = name();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
       args.push({
         kind: 'Argument' as Kind.ARGUMENT,
-        name: { kind: 'Name' as Kind.NAME, value: _name },
+        name: _name,
         value: value(constant),
       });
     } while (input.charCodeAt(idx) !== 41 /*')'*/);
@@ -258,14 +264,13 @@ function directives(constant: boolean): ast.DirectiveNode[] | undefined;
 function directives(constant: boolean): ast.DirectiveNode[] | undefined {
   if (input.charCodeAt(idx) === 64 /*'@'*/) {
     const directives: ast.DirectiveNode[] = [];
-    let _name: string | undefined;
+    let _name: ast.NameNode;
     do {
       idx++;
-      if ((_name = advance(nameRe)) == null) throw error('Directive');
-      ignored();
+      _name = name();
       directives.push({
         kind: 'Directive' as Kind.DIRECTIVE,
-        name: { kind: 'Name' as Kind.NAME, value: _name },
+        name: _name,
         arguments: arguments_(constant),
       });
     } while (input.charCodeAt(idx) === 64 /*'@'*/);
@@ -274,18 +279,15 @@ function directives(constant: boolean): ast.DirectiveNode[] | undefined {
 }
 
 function type(): ast.TypeNode {
-  let match: string | undefined;
   let lists = 0;
   while (input.charCodeAt(idx) === 91 /*'['*/) {
     lists++;
     idx++;
     ignored();
   }
-  if ((match = advance(nameRe)) == null) throw error('NamedType');
-  ignored();
   let type: ast.TypeNode = {
     kind: 'NamedType' as Kind.NAMED_TYPE,
-    name: { kind: 'Name' as Kind.NAME, value: match },
+    name: name(),
   };
   do {
     if (input.charCodeAt(idx) === 33 /*'!'*/) {
@@ -308,101 +310,98 @@ function type(): ast.TypeNode {
   return type;
 }
 
-// NOTE: This should be compressed by our build step
-// This merges the two possible selection parsing branches into one regular expression
-const selectionRe = new RegExp(
-  '(?:' +
-    // fragment spreads (FragmentSpread or InlineFragment nodes)
-    '(\\.{3})|' +
-    // field aliases or names (FieldNode)
-    '(' +
-    nameRe.source +
-    '))',
-  'y'
-);
-
-// NOTE: Each of the groups above end up in the RegExpExecArray at the indices 1&2
-const enum SelectionGroup {
-  Spread = 1,
-  Name,
-}
-
-type SelectionExec = RegExpExecArray & {
-  [Prop in SelectionGroup]: string | undefined;
-};
-
 function selectionSet(): ast.SelectionSetNode {
   const selections: ast.SelectionNode[] = [];
-  let match: string | undefined;
-  let exec: SelectionExec | null;
   do {
-    selectionRe.lastIndex = idx;
-    if ((exec = selectionRe.exec(input) as SelectionExec) != null) {
-      idx = selectionRe.lastIndex;
-      if (exec[SelectionGroup.Spread] != null) {
-        ignored();
-        let match = advance(nameRe);
-        if (match != null && match !== 'on') {
-          // A simple `...Name` spread with optional directives
-          ignored();
-          selections.push({
-            kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
-            name: { kind: 'Name' as Kind.NAME, value: match },
-            directives: directives(false),
-          });
-        } else {
-          ignored();
-          if (match === 'on') {
-            // An inline `... on Name` spread; if this doesn't match, the type condition has been omitted
-            if ((match = advance(nameRe)) == null) throw error('NamedType');
-            ignored();
-          }
+    if (
+      input.charCodeAt(idx) === 46 /*'.'*/ &&
+      input.charCodeAt(idx + 1) === 46 /*'.'*/ &&
+      input.charCodeAt(idx + 2) === 46 /*'.'*/
+    ) {
+      idx += 3;
+      ignored();
+      switch (input.charCodeAt(idx)) {
+        case 64 /*'@'*/:
           const _directives = directives(false);
-          if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('InlineFragment');
-          ignored();
+          if (input.charCodeAt(idx) !== 123 /*'{'*/) throw error('InlineFragment');
           selections.push({
             kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
-            typeCondition: match
-              ? {
-                  kind: 'NamedType' as Kind.NAMED_TYPE,
-                  name: { kind: 'Name' as Kind.NAME, value: match },
-                }
-              : undefined,
+            typeCondition: undefined,
             directives: _directives,
             selectionSet: selectionSet(),
           });
-        }
-      } else if ((match = exec[SelectionGroup.Name]) != null) {
-        let _alias: string | undefined;
-        ignored();
-        // Parse the optional alias, by reassigning and then getting the name
-        if (input.charCodeAt(idx) === 58 /*':'*/) {
+          break;
+
+        case 111 /*'o'*/:
+          if (input.charCodeAt(idx + 1) === 110 /*'n'*/) {
+            idx += 2;
+            ignored();
+            const _condition = name();
+            const _directives = directives(false);
+            if (input.charCodeAt(idx) !== 123 /*'{'*/) throw error('InlineFragment');
+            selections.push({
+              kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
+              typeCondition: {
+                kind: 'NAMED_TYPE' as Kind.NAMED_TYPE,
+                name: _condition,
+              },
+              directives: _directives,
+              selectionSet: selectionSet(),
+            });
+          } else {
+            selections.push({
+              kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
+              name: name(),
+              directives: directives(false),
+            });
+          }
+          break;
+
+        case 123 /*'{'*/:
           idx++;
           ignored();
-          _alias = match;
-          if ((match = advance(nameRe)) == null) throw error('Field');
-          ignored();
-        }
-        const _arguments = arguments_(false);
-        ignored();
-        const _directives = directives(false);
-        let _selectionSet: ast.SelectionSetNode | undefined;
-        if (input.charCodeAt(idx) === 123 /*'{'*/) {
+          selections.push({
+            kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
+            typeCondition: undefined,
+            directives: undefined,
+            selectionSet: selectionSet(),
+          });
+          break;
+
+        default:
           idx++;
           ignored();
-          _selectionSet = selectionSet();
-        }
-        selections.push({
-          kind: 'Field' as Kind.FIELD,
-          alias: _alias ? { kind: 'Name' as Kind.NAME, value: _alias } : undefined,
-          name: { kind: 'Name' as Kind.NAME, value: match },
-          arguments: _arguments,
-          directives: _directives,
-          selectionSet: _selectionSet,
-        });
+          selections.push({
+            kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
+            name: name(),
+            directives: directives(false),
+          });
       }
     } else {
-      throw error('SelectionSet');
+      let _name = name();
+      let _alias: ast.NameNode | undefined;
+      if (input.charCodeAt(idx) === 58 /*':'*/) {
+        idx++;
+        ignored();
+        _alias = _name;
+        _name = name();
+      }
+      const _arguments = arguments_(false);
+      const _directives = directives(false);
+      let _selectionSet: ast.SelectionSetNode | undefined;
+      if (input.charCodeAt(idx) === 123 /*'{'*/) {
+        idx++;
+        ignored();
+        _selectionSet = selectionSet();
+      }
+      selections.push({
+        kind: 'Field' as Kind.FIELD,
+        alias: _alias,
+        name: _name,
+        arguments: _arguments,
+        directives: _directives,
+        selectionSet: _selectionSet,
+      });
     }
   } while (input.charCodeAt(idx) !== 125 /*'}'*/);
   idx++;
@@ -419,11 +418,10 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
     const vars: ast.VariableDefinitionNode[] = [];
     idx++;
     ignored();
-    let _name: string | undefined;
+    let _name: ast.NameNode;
     do {
       if (input.charCodeAt(idx++) !== 36 /*'$'*/) throw error('Variable');
-      if ((_name = advance(nameRe)) == null) throw error('Variable');
-      ignored();
+      _name = name();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
       ignored();
       const _type = type();
@@ -438,7 +436,7 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
         kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
         variable: {
           kind: 'Variable' as Kind.VARIABLE,
-          name: { kind: 'Name' as Kind.NAME, value: _name },
+          name: _name,
         },
         type: _type,
         defaultValue: _defaultValue,
@@ -452,70 +450,79 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
 }
 
 function fragmentDefinition(): ast.FragmentDefinitionNode {
-  let _name: string | undefined;
-  let _condition: string | undefined;
-  if ((_name = advance(nameRe)) == null) throw error('FragmentDefinition');
+  const _name = name();
+  if (input.charCodeAt(idx++) !== 111 /*'o'*/ || input.charCodeAt(idx++) !== 110 /*'n'*/)
+    throw error('FragmentDefinition');
   ignored();
-  if (advance(nameRe) !== 'on') throw error('FragmentDefinition');
-  ignored();
-  if ((_condition = advance(nameRe)) == null) throw error('FragmentDefinition');
-  ignored();
+  const _condition = name();
   const _directives = directives(false);
   if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
   ignored();
   return {
     kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
-    name: { kind: 'Name' as Kind.NAME, value: _name },
+    name: _name,
     typeCondition: {
       kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: { kind: 'Name' as Kind.NAME, value: _condition },
+      name: _condition,
     },
     directives: _directives,
     selectionSet: selectionSet(),
   };
 }
 
-const definitionRe = /(?:query|mutation|subscription|fragment)/y;
-
-function operationDefinition(
-  operation: OperationTypeNode | undefined
-): ast.OperationDefinitionNode | undefined {
-  let _name: string | undefined;
-  let _variableDefinitions: ast.VariableDefinitionNode[] | undefined;
-  let _directives: ast.DirectiveNode[] | undefined;
-  if (operation) {
-    ignored();
-    _name = advance(nameRe);
-    _variableDefinitions = variableDefinitions();
-    _directives = directives(false);
+function operationDefinition(operation: OperationTypeNode): ast.OperationDefinitionNode {
+  let char: number;
+  let _name: ast.NameNode | undefined;
+  if (
+    (char = input.charCodeAt(idx)) !== 40 /*'('*/ &&
+    char !== 64 /*'@'*/ &&
+    char !== 123 /*'{'*/
+  ) {
+    _name = name();
   }
-  if (input.charCodeAt(idx) === 123 /*'{'*/) {
-    idx++;
-    ignored();
-    return {
-      kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
-      operation: operation || ('query' as OperationTypeNode.QUERY),
-      name: _name ? { kind: 'Name' as Kind.NAME, value: _name } : undefined,
-      variableDefinitions: _variableDefinitions,
-      directives: _directives,
-      selectionSet: selectionSet(),
-    };
-  }
+  const _variableDefinitions = variableDefinitions();
+  const _directives = directives(false);
+  if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('OperationDefinition');
+  ignored();
+  return {
+    kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
+    operation,
+    name: _name,
+    variableDefinitions: _variableDefinitions,
+    directives: _directives,
+    selectionSet: selectionSet(),
+  };
 }
 
 function document(input: string, noLoc: boolean): ast.DocumentNode {
-  let match: string | undefined;
-  let definition: ast.OperationDefinitionNode | undefined;
   ignored();
   const definitions: ast.ExecutableDefinitionNode[] = [];
   do {
-    if ((match = advance(definitionRe)) === 'fragment') {
+    if (input.charCodeAt(idx) === 123 /*'{'*/) {
+      idx++;
       ignored();
-      definitions.push(fragmentDefinition());
-    } else if ((definition = operationDefinition(match as OperationTypeNode)) != null) {
-      definitions.push(definition);
+      definitions.push({
+        kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
+        operation: 'query' as OperationTypeNode.QUERY,
+        name: undefined,
+        variableDefinitions: undefined,
+        directives: undefined,
+        selectionSet: selectionSet(),
+      });
     } else {
-      throw error('Document');
+      const definition = name().value;
+      switch (definition) {
+        case 'fragment':
+          definitions.push(fragmentDefinition());
+          break;
+        case 'query':
+        case 'mutation':
+        case 'subscription':
+          definitions.push(operationDefinition(definition as OperationTypeNode));
+          break;
+        default:
+          throw error('Document');
+      }
     }
   } while (idx < input.length);
 
