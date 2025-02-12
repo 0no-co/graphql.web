@@ -250,9 +250,8 @@ function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
     const args: ast.ArgumentNode[] = [];
     idx++;
     ignored();
-    let name: ast.NameNode;
     do {
-      name = nameNode();
+      const name = nameNode();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
       args.push({
@@ -422,10 +421,9 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
     const vars: ast.VariableDefinitionNode[] = [];
     idx++;
     ignored();
-    let name: ast.NameNode;
     do {
       if (input.charCodeAt(idx++) !== 36 /*'$'*/) throw error('Variable');
-      name = nameNode();
+      const name = nameNode();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
       ignored();
       const _type = type();
