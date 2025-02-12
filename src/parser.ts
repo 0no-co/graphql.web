@@ -142,7 +142,7 @@ function value(constant: boolean): ast.ValueNode {
           (char === 92 /*'\\'*/ && (idx++, (isComplex = true))) ||
           (char !== 10 /*'\n'*/ && char !== 13 /*'\r'*/ && char !== 34) /*'"'*/;
           char = input.charCodeAt(idx++) | 0
-        ) {}
+        );
         if (char !== 34) throw error('StringValue');
         match = input.slice(start, idx);
         ignored();
