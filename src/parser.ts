@@ -475,30 +475,6 @@ function fragmentDefinition(): ast.FragmentDefinitionNode {
   };
 }
 
-function operationDefinition(operation: OperationTypeNode): ast.OperationDefinitionNode {
-  let char: number;
-  let _name: ast.NameNode | undefined;
-  if (
-    (char = input.charCodeAt(idx)) !== 40 /*'('*/ &&
-    char !== 64 /*'@'*/ &&
-    char !== 123 /*'{'*/
-  ) {
-    _name = name();
-  }
-  const _variableDefinitions = variableDefinitions();
-  const _directives = directives(false);
-  if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('OperationDefinition');
-  ignored();
-  return {
-    kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
-    operation,
-    name: _name,
-    variableDefinitions: _variableDefinitions,
-    directives: _directives,
-    selectionSet: selectionSet(),
-  };
-}
-
 function document(input: string, noLoc: boolean): ast.DocumentNode {
   ignored();
   const definitions: ast.ExecutableDefinitionNode[] = [];
@@ -523,7 +499,27 @@ function document(input: string, noLoc: boolean): ast.DocumentNode {
         case 'query':
         case 'mutation':
         case 'subscription':
-          definitions.push(operationDefinition(definition as OperationTypeNode));
+          let char: number;
+          let _name: ast.NameNode | undefined;
+          if (
+            (char = input.charCodeAt(idx)) !== 40 /*'('*/ &&
+            char !== 64 /*'@'*/ &&
+            char !== 123 /*'{'*/
+          ) {
+            _name = name();
+          }
+          const _variableDefinitions = variableDefinitions();
+          const _directives = directives(false);
+          if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('OperationDefinition');
+          ignored();
+          definitions.push({
+            kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
+            operation: definition as OperationTypeNode,
+            name: _name,
+            variableDefinitions: _variableDefinitions,
+            directives: _directives,
+            selectionSet: selectionSet(),
+          });
           break;
         default:
           throw error('Document');
@@ -575,7 +571,7 @@ export function parse(
   string: string | Source,
   options?: ParseOptions | undefined
 ): ast.DocumentNode {
-  input = typeof string === 'string' ? string : string.body;
+  input = string.body ? string.body : string;
   idx = 0;
   return document(input, options && options.noLocation);
 }
@@ -584,7 +580,7 @@ export function parseValue(
   string: string | Source,
   _options?: ParseOptions | undefined
 ): ast.ValueNode {
-  input = typeof string === 'string' ? string : string.body;
+  input = string.body ? string.body : string;
   idx = 0;
   ignored();
   return value(false);
@@ -594,7 +590,7 @@ export function parseType(
   string: string | Source,
   _options?: ParseOptions | undefined
 ): ast.TypeNode {
-  input = typeof string === 'string' ? string : string.body;
+  input = string.body ? string.body : string;
   idx = 0;
   return type();
 }
