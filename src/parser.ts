@@ -66,147 +66,165 @@ function ignored() {
 }
 
 const nameRe = /[_A-Za-z]\w*/y;
-
-// NOTE: This should be compressed by our build step
-// This merges all possible value parsing into one regular expression
-const valueRe = new RegExp(
-  '(?:' +
-    // `null`, `true`, and `false` literals (BooleanValue & NullValue)
-    '(null|true|false)|' +
-    // Variables starting with `$` then having a name (VariableNode)
-    '\\$(' +
-    nameRe.source +
-    ')|' +
-    // Numbers, starting with int then optionally following with a float part (IntValue and FloatValue)
-    '(-?\\d+)((?:\\.\\d+)?[eE][+-]?\\d+|\\.\\d+)?|' +
-    // Block strings starting with `"""` until the next unescaped `"""` (StringValue)
-    '("""(?:"""|(?:[\\s\\S]*?[^\\\\])"""))|' +
-    // Strings starting with `"` must be on one line (StringValue)
-    '("(?:"|[^\\r\\n]*?[^\\\\]"))|' + // string
-    // Enums are simply names except for our literals (EnumValue)
-    '(' +
-    nameRe.source +
-    '))',
-  'y'
-);
-
-// NOTE: Each of the groups above end up in the RegExpExecArray at the specified indices (starting with 1)
-const enum ValueGroup {
-  Const = 1,
-  Var,
-  Int,
-  Float,
-  BlockString,
-  String,
-  Enum,
-}
-
-type ValueExec = RegExpExecArray & {
-  [Prop in ValueGroup]: string | undefined;
-};
-
-const complexStringRe = /\\/;
+const restBlockStringRe = /(?:"""|(?:[\s\S]*?[^\\])""")/y;
+const intRe = /-?\d+/y;
+const floatPartRe = /(?:(?:\.\d+)?[eE][+-]?\d+|\.\d+)/y;
 
 function value(constant: true): ast.ConstValueNode;
 function value(constant: boolean): ast.ValueNode;
 
 function value(constant: boolean): ast.ValueNode {
   let match: string | undefined;
-  let exec: ValueExec | null;
-  valueRe.lastIndex = idx;
-  if (input.charCodeAt(idx) === 91 /*'['*/) {
-    // Lists are checked ahead of time with `[` chars
-    idx++;
-    ignored();
-    const values: ast.ValueNode[] = [];
-    while (input.charCodeAt(idx) !== 93 /*']'*/) values.push(value(constant));
-    idx++;
-    ignored();
-    return {
-      kind: 'ListValue' as Kind.LIST,
-      values,
-    };
-  } else if (input.charCodeAt(idx) === 123 /*'{'*/) {
-    // Objects are checked ahead of time with `{` chars
-    idx++;
-    ignored();
-    const fields: ast.ObjectFieldNode[] = [];
-    while (input.charCodeAt(idx) !== 125 /*'}'*/) {
-      if ((match = advance(nameRe)) == null) throw error('ObjectField');
+  switch (input.charCodeAt(idx)) {
+    case 91: // '['
+      idx++;
       ignored();
-      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
+      const values: ast.ValueNode[] = [];
+      while (input.charCodeAt(idx) !== 93 /*']'*/) values.push(value(constant));
+      idx++;
       ignored();
-      fields.push({
-        kind: 'ObjectField' as Kind.OBJECT_FIELD,
-        name: { kind: 'Name' as Kind.NAME, value: match },
-        value: value(constant),
-      });
-    }
-    idx++;
-    ignored();
-    return {
-      kind: 'ObjectValue' as Kind.OBJECT,
-      fields,
-    };
-  } else if ((exec = valueRe.exec(input) as ValueExec) != null) {
-    // Starting from here, the merged `valueRe` is used
-    idx = valueRe.lastIndex;
-    ignored();
-    if ((match = exec[ValueGroup.Const]) != null) {
-      return match === 'null'
-        ? { kind: 'NullValue' as Kind.NULL }
-        : {
-            kind: 'BooleanValue' as Kind.BOOLEAN,
-            value: match === 'true',
-          };
-    } else if ((match = exec[ValueGroup.Var]) != null) {
-      if (constant) {
-        throw error('Variable');
-      } else {
+      return {
+        kind: 'ListValue' as Kind.LIST,
+        values,
+      };
+
+    case 123: // '{'
+      idx++;
+      ignored();
+      const fields: ast.ObjectFieldNode[] = [];
+      while (input.charCodeAt(idx) !== 125 /*'}'*/) {
+        if ((match = advance(nameRe)) == null) throw error('ObjectField');
+        ignored();
+        if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
+        ignored();
+        fields.push({
+          kind: 'ObjectField' as Kind.OBJECT_FIELD,
+          name: { kind: 'Name' as Kind.NAME, value: match },
+          value: value(constant),
+        });
+      }
+      idx++;
+      ignored();
+      return {
+        kind: 'ObjectValue' as Kind.OBJECT,
+        fields,
+      };
+
+    case 36: // '$'
+      idx++;
+      if ((match = advance(nameRe)) == null) throw error('Variable');
+      ignored();
+      return {
+        kind: 'Variable' as Kind.VARIABLE,
+        name: {
+          kind: 'Name' as Kind.NAME,
+          value: match,
+        },
+      };
+
+    case 34: // '"'
+      if (input.charCodeAt(idx + 1) === 34 && input.charCodeAt(idx + 2) === 34) {
+        idx += 3;
+        if ((match = advance(restBlockStringRe)) == null) throw error('StringValue');
+        ignored();
         return {
-          kind: 'Variable' as Kind.VARIABLE,
-          name: {
-            kind: 'Name' as Kind.NAME,
-            value: match,
-          },
+          kind: 'StringValue' as Kind.STRING,
+          value: blockString(match.slice(0, -3)),
+          block: true,
+        };
+      } else {
+        const start = idx;
+        idx++;
+        let char: number;
+        let isComplex = false;
+        for (
+          char = input.charCodeAt(idx++) | 0;
+          (char === 92 /*'\\'*/ && (idx++, (isComplex = true))) ||
+          (char !== 10 /*'\n'*/ && char !== 13 /*'\r'*/ && char !== 34) /*'"'*/;
+          char = input.charCodeAt(idx++) | 0
+        ) {}
+        if (char !== 34) throw error('StringValue');
+        match = input.slice(start, idx);
+        ignored();
+        return {
+          kind: 'StringValue' as Kind.STRING,
+          value: isComplex ? (JSON.parse(match) as string) : match.slice(1, -1),
+          block: false,
         };
       }
-    } else if ((match = exec[ValueGroup.Int]) != null) {
+
+    case 45: // '-'
+    case 48: // '0'
+    case 49: // '1'
+    case 50: // '2'
+    case 51: // '3'
+    case 52: // '4'
+    case 53: // '5'
+    case 54: // '6'
+    case 55: // '7'
+    case 56: // '8'
+    case 57: // '9'
+      if ((match = advance(intRe)) == null) throw error('IntValue');
       let floatPart: string | undefined;
-      if ((floatPart = exec[ValueGroup.Float]) != null) {
+      if ((floatPart = advance(floatPartRe)) != null) {
+        ignored();
         return {
           kind: 'FloatValue' as Kind.FLOAT,
           value: match + floatPart,
         };
       } else {
+        ignored();
         return {
           kind: 'IntValue' as Kind.INT,
           value: match,
         };
       }
-    } else if ((match = exec[ValueGroup.BlockString]) != null) {
-      return {
-        kind: 'StringValue' as Kind.STRING,
-        value: blockString(match.slice(3, -3)),
-        block: true,
-      };
-    } else if ((match = exec[ValueGroup.String]) != null) {
-      return {
-        kind: 'StringValue' as Kind.STRING,
-        // When strings don't contain escape codes, a simple slice will be enough, otherwise
-        // `JSON.parse` matches GraphQL's string parsing perfectly
-        value: complexStringRe.test(match) ? (JSON.parse(match) as string) : match.slice(1, -1),
-        block: false,
-      };
-    } else if ((match = exec[ValueGroup.Enum]) != null) {
-      return {
-        kind: 'EnumValue' as Kind.ENUM,
-        value: match,
-      };
-    }
-  }
 
-  throw error('Value');
+    case 110: // 'n'
+      if (
+        input.charCodeAt(idx + 1) === 117 &&
+        input.charCodeAt(idx + 2) === 108 &&
+        input.charCodeAt(idx + 3) === 108
+      ) {
+        idx += 4;
+        ignored();
+        return { kind: 'NullValue' as Kind.NULL };
+      }
+
+    case 116: // 't'
+      if (
+        input.charCodeAt(idx + 1) === 114 &&
+        input.charCodeAt(idx + 2) === 117 &&
+        input.charCodeAt(idx + 3) === 101
+      ) {
+        idx += 4;
+        ignored();
+        return { kind: 'BooleanValue' as Kind.BOOLEAN, value: true };
+      }
+
+    case 102: // 'f'
+      if (
+        input.charCodeAt(idx + 1) === 97 &&
+        input.charCodeAt(idx + 2) === 108 &&
+        input.charCodeAt(idx + 3) === 115 &&
+        input.charCodeAt(idx + 4) === 101
+      ) {
+        idx += 5;
+        ignored();
+        return { kind: 'BooleanValue' as Kind.BOOLEAN, value: false };
+      }
+
+    default:
+      if ((match = advance(nameRe)) == null) {
+        throw error('Value');
+      } else {
+        ignored();
+        return {
+          kind: 'EnumValue' as Kind.ENUM,
+          value: match,
+        };
+      }
+  }
 }
 
 function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
