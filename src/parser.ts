@@ -67,7 +67,6 @@ function ignored() {
 
 const nameRe = /[_A-Za-z]\w*/y;
 const restBlockStringRe = /(?:"""|(?:[\s\S]*?[^\\])""")/y;
-const intRe = /-?\d+/y;
 const floatPartRe = /(?:(?:\.\d+)?[eE][+-]?\d+|\.\d+)/y;
 
 function value(constant: true): ast.ConstValueNode;
@@ -164,19 +163,21 @@ function value(constant: boolean): ast.ValueNode {
     case 55: // '7'
     case 56: // '8'
     case 57: // '9'
-      if ((match = advance(intRe)) == null) throw error('IntValue');
-      let floatPart: string | undefined;
-      if ((floatPart = advance(floatPartRe)) != null) {
+      const start = idx++;
+      let char: number;
+      while ((char = input.charCodeAt(idx++) | 0) >= 48 /*'0'*/ && char <= 57 /*'9'*/);
+      const intPart = input.slice(start, --idx);
+      if ((match = advance(floatPartRe)) != null) {
         ignored();
         return {
           kind: 'FloatValue' as Kind.FLOAT,
-          value: match + floatPart,
+          value: intPart + match,
         };
       } else {
         ignored();
         return {
           kind: 'IntValue' as Kind.INT,
-          value: match,
+          value: intPart,
         };
       }
 
