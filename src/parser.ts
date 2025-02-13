@@ -212,7 +212,7 @@ function value(constant: boolean): ast.ValueNode {
         idx += 4;
         ignored();
         return { kind: 'NullValue' as Kind.NULL };
-      }
+      } else break;
 
     case 116: // 't'
       if (
@@ -223,7 +223,7 @@ function value(constant: boolean): ast.ValueNode {
         idx += 4;
         ignored();
         return { kind: 'BooleanValue' as Kind.BOOLEAN, value: true };
-      }
+      } else break;
 
     case 102: // 'f'
       if (
@@ -235,14 +235,13 @@ function value(constant: boolean): ast.ValueNode {
         idx += 5;
         ignored();
         return { kind: 'BooleanValue' as Kind.BOOLEAN, value: false };
-      }
-
-    default:
-      return {
-        kind: 'EnumValue' as Kind.ENUM,
-        value: name(),
-      };
+      } else break;
   }
+
+  return {
+    kind: 'EnumValue' as Kind.ENUM,
+    value: name(),
+  };
 }
 
 function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
