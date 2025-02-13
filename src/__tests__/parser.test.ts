@@ -270,6 +270,7 @@ describe('parse', () => {
     expect(() => parse('{ ... on Test }')).toThrow();
     expect(() => parse('{ ... {} }')).toThrow();
     expect(() => parse('{ ... }')).toThrow();
+    expect(() => parse('{ . }')).toThrow();
 
     expect(parse('{ ... on Test { field } }')).toHaveProperty(
       'definitions.0.selectionSet.selections.0',
@@ -512,6 +513,19 @@ describe('parseValue', () => {
     expect(parseValue({ body: 'null' })).toEqual({ kind: Kind.NULL });
   });
 
+  it('parses scalars', () => {
+    expect(parseValue('null')).toEqual({ kind: Kind.NULL });
+    expect(parseValue('true')).toEqual({ kind: Kind.BOOLEAN, value: true });
+    expect(parseValue('false')).toEqual({ kind: Kind.BOOLEAN, value: false });
+  });
+
+  it('parses scalars without optimistic failures', () => {
+    // for *n*ull, *f*alse, *t*rue
+    expect(parseValue('n')).toEqual({ kind: Kind.ENUM, value: 'n' });
+    expect(parseValue('f')).toEqual({ kind: Kind.ENUM, value: 'f' });
+    expect(parseValue('t')).toEqual({ kind: Kind.ENUM, value: 't' });
+  });
+
   it('parses list values', () => {
     const result = parseValue('[123 "abc"]');
     expect(result).toEqual({
@@ -557,6 +571,8 @@ describe('parseValue', () => {
       kind: Kind.FLOAT,
       value: '-1.2e+3',
     });
+
+    expect(() => parseValue('12e')).toThrow();
   });
 
   it('parses strings', () => {
@@ -595,6 +611,10 @@ describe('parseValue', () => {
       value: ' " ',
       block: false,
     });
+
+    expect(() => parseValue('"')).toThrow();
+    expect(() => parseValue('"\n')).toThrow();
+    expect(() => parseValue('"\r')).toThrow();
   });
 
   it('parses objects', () => {
@@ -689,6 +709,8 @@ describe('parseValue', () => {
       value: ' """ ',
       block: true,
     });
+
+    expect(() => parseValue('"""')).toThrow();
   });
 
   it('allows variables', () => {
