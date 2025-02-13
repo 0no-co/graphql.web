@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.1.1
+
+### Patch Changes
+
+- Remove redundant loc setter/getter in favour of value to improve pre-warmup times
+  Submitted by [@kitten](https://github.com/kitten) (See [#54](https://github.com/0no-co/graphql.web/pull/54))
+
 ## 1.1.0
 
 ### Minor Changes
