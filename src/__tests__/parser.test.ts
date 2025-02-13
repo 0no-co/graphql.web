@@ -42,6 +42,11 @@ describe('parse', () => {
     expect(() => {
       return parse('{ ...on }');
     }).toThrow();
+    // But does accept "oN"
+    expect(parse('{ ...oN }')).toHaveProperty(
+      'definitions.0.selectionSet.selections.0.name.value',
+      'oN'
+    );
   });
 
   it('parses directives on fragment spread', () => {
@@ -121,6 +126,16 @@ describe('parse', () => {
         }
       `);
     }).not.toThrow();
+  });
+
+  it('throws on invalid operations', () => {
+    expect(() => {
+      return parse(`
+        invalid {
+          field
+        }
+      `);
+    }).toThrow();
   });
 
   it('parses named mutation operations', () => {
