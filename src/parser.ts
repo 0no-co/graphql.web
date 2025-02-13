@@ -156,7 +156,7 @@ function value(constant: boolean): ast.ValueNode {
         for (
           char = input.charCodeAt(idx++) | 0;
           (char === 92 /*'\\'*/ && (idx++, (isComplex = true))) ||
-          (char !== 10 /*'\n'*/ && char !== 13 /*'\r'*/ && char !== 34) /*'"'*/;
+          (char !== 10 /*'\n'*/ && char !== 13 /*'\r'*/ && char !== 34 /*'"'*/ && char);
           char = input.charCodeAt(idx++) | 0
         );
         if (char !== 34) throw error('StringValue');
