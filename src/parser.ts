@@ -471,13 +471,15 @@ function definitions(): ast.DefinitionNode[] {
   const _definitions: ast.ExecutableDefinitionNode[] = [];
   do {
     if (input.charCodeAt(idx) === 123 /*'{'*/) {
+      idx++;
+      ignored();
       _definitions.push({
         kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
         operation: 'query' as OperationTypeNode.QUERY,
         name: undefined,
         variableDefinitions: undefined,
         directives: undefined,
-        selectionSet: selectionSetStart(),
+        selectionSet: selectionSet(),
       });
     } else {
       const definition = name();
