@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.1.0
+
+### Minor Changes
+
+- Improve parser performance (up to ~25% higher ops/s) by rewriting part of the parsing that runs in tight loops. Previously, the purer parser combinators w/o regexs wouldn't have been as significant of an improvement, but they now clearly are
+  Submitted by [@kitten](https://github.com/kitten) (See [#52](https://github.com/0no-co/graphql.web/pull/52))
+
 ## 1.0.13
 
 ### Patch Changes
