@@ -467,24 +467,25 @@ function fragmentDefinition(): ast.FragmentDefinitionNode {
   };
 }
 
-function document(input: string, noLoc: boolean): ast.DocumentNode {
-  ignored();
-  const definitions: ast.ExecutableDefinitionNode[] = [];
+function definitions(): ast.DefinitionNode[] {
+  const _definitions: ast.ExecutableDefinitionNode[] = [];
   do {
     if (input.charCodeAt(idx) === 123 /*'{'*/) {
-      definitions.push({
+      idx++;
+      ignored();
+      _definitions.push({
         kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
         operation: 'query' as OperationTypeNode.QUERY,
         name: undefined,
         variableDefinitions: undefined,
         directives: undefined,
-        selectionSet: selectionSetStart(),
+        selectionSet: selectionSet(),
       });
     } else {
       const definition = name();
       switch (definition) {
         case 'fragment':
-          definitions.push(fragmentDefinition());
+          _definitions.push(fragmentDefinition());
           break;
         case 'query':
         case 'mutation':
@@ -498,7 +499,7 @@ function document(input: string, noLoc: boolean): ast.DocumentNode {
           ) {
             name = nameNode();
           }
-          definitions.push({
+          _definitions.push({
             kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
             operation: definition as OperationTypeNode,
             name,
@@ -512,41 +513,7 @@ function document(input: string, noLoc: boolean): ast.DocumentNode {
       }
     }
   } while (idx < input.length);
-
-  if (!noLoc) {
-    let loc: Location | undefined;
-    return {
-      kind: 'Document' as Kind.DOCUMENT,
-      definitions,
-      /* v8 ignore start */
-      set loc(_loc: Location) {
-        loc = _loc;
-      },
-      /* v8 ignore stop */
-      // @ts-ignore
-      get loc() {
-        if (!loc) {
-          loc = {
-            start: 0,
-            end: input.length,
-            startToken: undefined,
-            endToken: undefined,
-            source: {
-              body: input,
-              name: 'graphql.web',
-              locationOffset: { line: 1, column: 1 },
-            },
-          };
-        }
-        return loc;
-      },
-    };
-  }
-
-  return {
-    kind: 'Document' as Kind.DOCUMENT,
-    definitions,
-  };
+  return _definitions;
 }
 
 type ParseOptions = {
@@ -559,7 +526,29 @@ export function parse(
 ): ast.DocumentNode {
   input = string.body ? string.body : string;
   idx = 0;
-  return document(input, options && options.noLocation);
+  ignored();
+  if (options && options.noLocation) {
+    return {
+      kind: 'Document' as Kind.DOCUMENT,
+      definitions: definitions(),
+    };
+  } else {
+    return {
+      kind: 'Document' as Kind.DOCUMENT,
+      definitions: definitions(),
+      loc: {
+        start: 0,
+        end: input.length,
+        startToken: undefined,
+        endToken: undefined,
+        source: {
+          body: input,
+          name: 'graphql.web',
+          locationOffset: { line: 1, column: 1 },
+        },
+      },
+    } as Location;
+  }
 }
 
 export function parseValue(
