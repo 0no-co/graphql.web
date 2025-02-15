@@ -18,7 +18,8 @@ function error(kind: string) {
 
 function advance(pattern: RegExp): number {
   pattern.lastIndex = idx;
-  return pattern.test(input) ? (idx = pattern.lastIndex) : 0;
+  pattern.test(input);
+  return (idx = pattern.lastIndex);
 }
 
 const leadingRe = / +(?=[^\s])/y;
