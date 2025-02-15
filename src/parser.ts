@@ -98,47 +98,6 @@ function value(constant: boolean): ast.ValueNode {
   let match: string | undefined;
   const start = idx;
   switch (input.charCodeAt(idx)) {
-    case 91: // '['
-      idx++;
-      ignored();
-      const values: ast.ValueNode[] = [];
-      while (input.charCodeAt(idx) !== 93 /*']'*/) values.push(value(constant));
-      idx++;
-      ignored();
-      return {
-        kind: 'ListValue' as Kind.LIST,
-        values,
-      };
-
-    case 123: // '{'
-      idx++;
-      ignored();
-      const fields: ast.ObjectFieldNode[] = [];
-      while (input.charCodeAt(idx) !== 125 /*'}'*/) {
-        const name = nameNode();
-        if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
-        ignored();
-        fields.push({
-          kind: 'ObjectField' as Kind.OBJECT_FIELD,
-          name,
-          value: value(constant),
-        });
-      }
-      idx++;
-      ignored();
-      return {
-        kind: 'ObjectValue' as Kind.OBJECT,
-        fields,
-      };
-
-    case 36: // '$'
-      if (constant) throw error('Variable');
-      idx++;
-      return {
-        kind: 'Variable' as Kind.VARIABLE,
-        name: nameNode(),
-      };
-
     case 34: // '"'
       if (input.charCodeAt(idx + 1) === 34 && input.charCodeAt(idx + 2) === 34) {
         idx += 3;
@@ -173,6 +132,11 @@ function value(constant: boolean): ast.ValueNode {
         };
       }
 
+    case 36: // '$'
+      if (constant) throw error('Variable');
+      idx++;
+      return { kind: 'Variable' as Kind.VARIABLE, name: nameNode() };
+
     case 45: // '-'
     case 48: // '0'
     case 49: // '1'
@@ -200,6 +164,39 @@ function value(constant: boolean): ast.ValueNode {
           ignored();
           return { kind: 'IntValue' as Kind.INT, value: match };
       }
+
+    case 91: // '['
+      idx++;
+      ignored();
+      const values: ast.ValueNode[] = [];
+      while (input.charCodeAt(idx) !== 93 /*']'*/) values.push(value(constant));
+      idx++;
+      ignored();
+      return {
+        kind: 'ListValue' as Kind.LIST,
+        values,
+      };
+
+    case 123: // '{'
+      idx++;
+      ignored();
+      const fields: ast.ObjectFieldNode[] = [];
+      while (input.charCodeAt(idx) !== 125 /*'}'*/) {
+        const name = nameNode();
+        if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
+        ignored();
+        fields.push({
+          kind: 'ObjectField' as Kind.OBJECT_FIELD,
+          name,
+          value: value(constant),
+        });
+      }
+      idx++;
+      ignored();
+      return {
+        kind: 'ObjectValue' as Kind.OBJECT,
+        fields,
+      };
 
     default:
       switch ((match = name())) {
