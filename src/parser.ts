@@ -49,36 +49,38 @@ function blockString(string: string) {
 
 // Note: This is equivalent to: /(?:[\s,]*|#[^\n\r]*)*/y
 function ignored() {
-  for (
-    let char = input.charCodeAt(idx++) | 0;
-    char === 9 /*'\t'*/ ||
+  let char: number;
+  while (
+    (char = input.charCodeAt(idx) >>> 0) === 9 /*'\t'*/ ||
     char === 10 /*'\n'*/ ||
     char === 13 /*'\r'*/ ||
     char === 32 /*' '*/ ||
     char === 35 /*'#'*/ ||
     char === 44 /*','*/ ||
-    char === 65279 /*'\ufeff'*/;
-    char = input.charCodeAt(idx++) | 0
+    char === 65279 /*'\ufeff'*/
   ) {
-    if (char === 35 /*'#'*/) while ((char = input.charCodeAt(idx++)) !== 10 && char !== 13);
+    idx++;
+    if (char === 35 /*'#'*/) while ((char = input.charCodeAt(idx)) !== 10 && char !== 13) idx++;
   }
-  idx--;
 }
 
 function name(): string {
   const start = idx;
-  for (
-    let char = input.charCodeAt(idx) | 0;
-    (char >= 48 /*'0'*/ && char <= 57) /*'9'*/ ||
-    char === 95 /*'_'*/ ||
-    ((char | 32) >= 97 /*'a'*/ && (char | 32) <= 122) /*'z'*/;
-    char = input.charCodeAt(idx) | 0
-  )
+  let char = input.charCodeAt(idx) >>> 0;
+  if (char == 95 /*'_'*/ || ((char | 0x20) - 97) >>> 0 < 26 /*a-z, A-Z*/) {
     idx++;
-  if (start === idx) throw error('Name');
-  const value = input.slice(start, idx);
-  ignored();
-  return value;
+    while (
+      (char = input.charCodeAt(idx) >>> 0) == 95 /*_*/ ||
+      (char - 48) >>> 0 < 10 /*0-9*/ ||
+      ((char | 0x20) - 97) >>> 0 < 26 /*a-z, A-Z*/
+    )
+      idx++;
+    const value = input.slice(start, idx);
+    ignored();
+    return value;
+  } else {
+    throw error('Name');
+  }
 }
 
 function nameNode(): ast.NameNode {
