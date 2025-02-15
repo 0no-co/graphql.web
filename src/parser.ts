@@ -382,42 +382,6 @@ function selectionSet(): ast.SelectionSetNode {
   };
 }
 
-function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
-  ignored();
-  if (input.charCodeAt(idx) === 40 /*'('*/) {
-    const vars: ast.VariableDefinitionNode[] = [];
-    idx++;
-    ignored();
-    do {
-      if (input.charCodeAt(idx++) !== 36 /*'$'*/) throw error('Variable');
-      const name = nameNode();
-      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
-      ignored();
-      const _type = type();
-      let _defaultValue: ast.ConstValueNode | undefined;
-      if (input.charCodeAt(idx) === 61 /*'='*/) {
-        idx++;
-        ignored();
-        _defaultValue = value(true);
-      }
-      ignored();
-      vars.push({
-        kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
-        variable: {
-          kind: 'Variable' as Kind.VARIABLE,
-          name,
-        },
-        type: _type,
-        defaultValue: _defaultValue,
-        directives: directives(true),
-      });
-    } while (input.charCodeAt(idx) !== 41 /*')'*/);
-    idx++;
-    ignored();
-    return vars;
-  }
-}
-
 function fragmentDefinition(): ast.FragmentDefinitionNode {
   const name = nameNode();
   if (input.charCodeAt(idx++) !== 111 /*'o'*/ || input.charCodeAt(idx++) !== 110 /*'n'*/)
@@ -460,6 +424,7 @@ function definitions(): ast.DefinitionNode[] {
         case 'subscription':
           let char: number;
           let name: ast.NameNode | undefined;
+          let variableDefinitions: ast.VariableDefinitionNode[] | undefined;
           if (
             (char = input.charCodeAt(idx)) !== 40 /*'('*/ &&
             char !== 64 /*'@'*/ &&
@@ -467,11 +432,41 @@ function definitions(): ast.DefinitionNode[] {
           ) {
             name = nameNode();
           }
+          if (input.charCodeAt(idx) === 40 /*'('*/) {
+            variableDefinitions = [];
+            idx++;
+            ignored();
+            do {
+              if (input.charCodeAt(idx++) !== 36 /*'$'*/) throw error('Variable');
+              const name = nameNode();
+              if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
+              ignored();
+              const _type = type();
+              let _defaultValue: ast.ConstValueNode | undefined;
+              if (input.charCodeAt(idx) === 61 /*'='*/) {
+                idx++;
+                ignored();
+                _defaultValue = value(true);
+              }
+              variableDefinitions.push({
+                kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
+                variable: {
+                  kind: 'Variable' as Kind.VARIABLE,
+                  name,
+                },
+                type: _type,
+                defaultValue: _defaultValue,
+                directives: directives(true),
+              });
+            } while (input.charCodeAt(idx) !== 41 /*')'*/);
+            idx++;
+            ignored();
+          }
           _definitions.push({
             kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
             operation: definition as OperationTypeNode,
             name,
-            variableDefinitions: variableDefinitions(),
+            variableDefinitions: variableDefinitions,
             directives: directives(false),
             selectionSet: selectionSetStart(),
           });
