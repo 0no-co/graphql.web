@@ -49,7 +49,7 @@ function blockString(string: string) {
 function ignored() {
   let char: number;
   while (
-    (char = input.charCodeAt(idx) >>> 0) === 9 /*'\t'*/ ||
+    (char = input.charCodeAt(idx)) === 9 /*'\t'*/ ||
     char === 10 /*'\n'*/ ||
     char === 13 /*'\r'*/ ||
     char === 32 /*' '*/ ||
@@ -64,7 +64,7 @@ function ignored() {
 
 function name(): string {
   const start = idx;
-  let char = input.charCodeAt(idx) >>> 0;
+  let char = input.charCodeAt(idx);
   if (char == 95 /*'_'*/ || ((char | 0x20) - 97) >>> 0 < 26 /*a-z, A-Z*/) {
     idx++;
     while (
@@ -150,7 +150,7 @@ function value(constant: boolean): ast.ValueNode {
     case 57: // '9'
       idx++;
       let char: number;
-      while ((char = input.charCodeAt(idx) | 0) >= 48 /*'0'*/ && char <= 57 /*'9'*/) idx++;
+      while ((char = input.charCodeAt(idx)) >= 48 /*'0'*/ && char <= 57 /*'9'*/) idx++;
       switch (char) {
         case 46: // '.'
         case 69: // 'E'
