@@ -152,17 +152,20 @@ function value(constant: boolean): ast.ValueNode {
         };
       } else {
         const start = idx;
-        idx++;
         let char: number;
         let isComplex = false;
-        for (
-          char = input.charCodeAt(idx++) | 0;
-          (char === 92 /*'\\'*/ && (idx++, (isComplex = true))) ||
-          (char !== 10 /*'\n'*/ && char !== 13 /*'\r'*/ && char !== 34 /*'"'*/ && char);
-          char = input.charCodeAt(idx++) | 0
-        );
-        if (char !== 34) throw error('StringValue');
-        match = input.slice(start, idx);
+        while ((char = input.charCodeAt(++idx) >>> 0) !== 34 /*'"'*/) {
+          switch (char) {
+            case 0: // EOF
+            case 10: // '\n'
+            case 13: // '\r'
+              throw error('StringValue');
+            case 92: // '\\'
+              isComplex = true;
+              idx++;
+          }
+        }
+        match = input.slice(start, ++idx);
         ignored();
         return {
           kind: 'StringValue' as Kind.STRING,
