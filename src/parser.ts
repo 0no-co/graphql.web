@@ -68,14 +68,15 @@ function ignored() {
 function name(): string {
   const start = idx;
   for (
-    let char = input.charCodeAt(idx++) | 0;
+    let char = input.charCodeAt(idx) | 0;
     (char >= 48 /*'0'*/ && char <= 57) /*'9'*/ ||
     char === 95 /*'_'*/ ||
     ((char | 32) >= 97 /*'a'*/ && (char | 32) <= 122) /*'z'*/;
-    char = input.charCodeAt(idx++) | 0
-  );
-  if (start === idx - 1) throw error('Name');
-  const value = input.slice(start, --idx);
+    char = input.charCodeAt(idx) | 0
+  )
+    idx++;
+  if (start === idx) throw error('Name');
+  const value = input.slice(start, idx);
   ignored();
   return value;
 }
