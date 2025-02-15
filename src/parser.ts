@@ -426,9 +426,8 @@ function definitions(): ast.DefinitionNode[] {
           let name: ast.NameNode | undefined;
           let variableDefinitions: ast.VariableDefinitionNode[] | undefined;
           if (
-            (char = input.charCodeAt(idx)) !== 40 /*'('*/ &&
-            char !== 64 /*'@'*/ &&
-            char !== 123 /*'{'*/
+            (char = input.charCodeAt(idx)) == 95 /*'_'*/ ||
+            ((char | 0x20) - 97) >>> 0 < 26 /*a-z, A-Z*/
           ) {
             name = nameNode();
           }
