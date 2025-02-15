@@ -16,12 +16,9 @@ function error(kind: string) {
   return new GraphQLError(`Syntax Error: Unexpected token at ${idx} in ${kind}`);
 }
 
-function advance(pattern: RegExp) {
+function advance(pattern: RegExp): number {
   pattern.lastIndex = idx;
-  if (pattern.test(input)) {
-    const match = input.slice(idx, (idx = pattern.lastIndex));
-    return match;
-  }
+  return pattern.test(input) ? (idx = pattern.lastIndex) : 0;
 }
 
 const leadingRe = / +(?=[^\s])/y;
@@ -98,6 +95,7 @@ function value(constant: boolean): ast.ValueNode;
 
 function value(constant: boolean): ast.ValueNode {
   let match: string | undefined;
+  const start = idx;
   switch (input.charCodeAt(idx)) {
     case 91: // '['
       idx++;
@@ -143,15 +141,15 @@ function value(constant: boolean): ast.ValueNode {
     case 34: // '"'
       if (input.charCodeAt(idx + 1) === 34 && input.charCodeAt(idx + 2) === 34) {
         idx += 3;
-        if ((match = advance(restBlockStringRe)) == null) throw error('StringValue');
+        if (!advance(restBlockStringRe)) throw error('StringValue');
+        match = blockString(input.slice(start + 3, idx - 3));
         ignored();
         return {
           kind: 'StringValue' as Kind.STRING,
-          value: blockString(match.slice(0, -3)),
+          value: match,
           block: true,
         };
       } else {
-        const start = idx;
         let char: number;
         let isComplex = false;
         while ((char = input.charCodeAt(++idx) >>> 0) !== 34 /*'"'*/) {
@@ -185,22 +183,21 @@ function value(constant: boolean): ast.ValueNode {
     case 55: // '7'
     case 56: // '8'
     case 57: // '9'
-      const start = idx++;
+      idx++;
       let char: number;
       while ((char = input.charCodeAt(idx) | 0) >= 48 /*'0'*/ && char <= 57 /*'9'*/) idx++;
       switch (char) {
         case 46: // '.'
         case 69: // 'E'
         case 101: // 'e'
-          if ((match = advance(floatPartRe)) == null) throw error('FloatValue');
+          if (!advance(floatPartRe)) throw error('FloatValue');
+          match = input.slice(start, idx);
           ignored();
-          return {
-            kind: 'FloatValue' as Kind.FLOAT,
-            value: input.slice(start, idx - 1),
-          };
+          return { kind: 'FloatValue' as Kind.FLOAT, value: match };
         default:
+          match = input.slice(start, idx);
           ignored();
-          return { kind: 'IntValue' as Kind.INT, value: input.slice(start, idx) };
+          return { kind: 'IntValue' as Kind.INT, value: match };
       }
 
     case 110: // 'n'
