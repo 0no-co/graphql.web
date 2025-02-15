@@ -187,25 +187,20 @@ function value(constant: boolean): ast.ValueNode {
     case 57: // '9'
       const start = idx++;
       let char: number;
-      while (((char = input.charCodeAt(idx++)) - 48) >>> 0 < 10 /*0-9*/);
-      const intPart = input.slice(start, --idx);
-      if (
-        (char = input.charCodeAt(idx)) === 46 /*'.'*/ ||
-        char === 69 /*'E'*/ ||
-        char === 101 /*'e'*/
-      ) {
-        if ((match = advance(floatPartRe)) == null) throw error('FloatValue');
-        ignored();
-        return {
-          kind: 'FloatValue' as Kind.FLOAT,
-          value: intPart + match,
-        };
-      } else {
-        ignored();
-        return {
-          kind: 'IntValue' as Kind.INT,
-          value: intPart,
-        };
+      while ((char = input.charCodeAt(idx) | 0) >= 48 /*'0'*/ && char <= 57 /*'9'*/) idx++;
+      switch (char) {
+        case 46: // '.'
+        case 69: // 'E'
+        case 101: // 'e'
+          if ((match = advance(floatPartRe)) == null) throw error('FloatValue');
+          ignored();
+          return {
+            kind: 'FloatValue' as Kind.FLOAT,
+            value: input.slice(start, idx - 1),
+          };
+        default:
+          ignored();
+          return { kind: 'IntValue' as Kind.INT, value: input.slice(start, idx) };
       }
 
     case 110: // 'n'
