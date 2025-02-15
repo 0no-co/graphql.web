@@ -201,45 +201,18 @@ function value(constant: boolean): ast.ValueNode {
           return { kind: 'IntValue' as Kind.INT, value: match };
       }
 
-    case 110: // 'n'
-      if (
-        input.charCodeAt(idx + 1) === 117 &&
-        input.charCodeAt(idx + 2) === 108 &&
-        input.charCodeAt(idx + 3) === 108
-      ) {
-        idx += 4;
-        ignored();
-        return { kind: 'NullValue' as Kind.NULL };
-      } else break;
-
-    case 116: // 't'
-      if (
-        input.charCodeAt(idx + 1) === 114 &&
-        input.charCodeAt(idx + 2) === 117 &&
-        input.charCodeAt(idx + 3) === 101
-      ) {
-        idx += 4;
-        ignored();
-        return { kind: 'BooleanValue' as Kind.BOOLEAN, value: true };
-      } else break;
-
-    case 102: // 'f'
-      if (
-        input.charCodeAt(idx + 1) === 97 &&
-        input.charCodeAt(idx + 2) === 108 &&
-        input.charCodeAt(idx + 3) === 115 &&
-        input.charCodeAt(idx + 4) === 101
-      ) {
-        idx += 5;
-        ignored();
-        return { kind: 'BooleanValue' as Kind.BOOLEAN, value: false };
-      } else break;
+    default:
+      switch ((match = name())) {
+        case 'null':
+          return { kind: 'NullValue' as Kind.NULL };
+        case 'true':
+          return { kind: 'BooleanValue' as Kind.BOOLEAN, value: true };
+        case 'false':
+          return { kind: 'BooleanValue' as Kind.BOOLEAN, value: false };
+        default:
+          return { kind: 'EnumValue' as Kind.ENUM, value: match };
+      }
   }
-
-  return {
-    kind: 'EnumValue' as Kind.ENUM,
-    value: name(),
-  };
 }
 
 function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
