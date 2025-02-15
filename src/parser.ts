@@ -70,9 +70,8 @@ function name(): string {
   for (
     let char = input.charCodeAt(idx++) | 0;
     (char >= 48 /*'0'*/ && char <= 57) /*'9'*/ ||
-    (char >= 65 /*'A'*/ && char <= 90) /*'Z'*/ ||
     char === 95 /*'_'*/ ||
-    (char >= 97 /*'a'*/ && char <= 122) /*'z'*/;
+    ((char | 32) >= 97 /*'a'*/ && (char | 32) <= 122) /*'z'*/;
     char = input.charCodeAt(idx++) | 0
   );
   if (start === idx - 1) throw error('Name');
