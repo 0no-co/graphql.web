@@ -187,7 +187,7 @@ function value(constant: boolean): ast.ValueNode {
     case 57: // '9'
       const start = idx++;
       let char: number;
-      while ((char = input.charCodeAt(idx++) | 0) >= 48 /*'0'*/ && char <= 57 /*'9'*/);
+      while (((char = input.charCodeAt(idx++)) - 48) >>> 0 < 10 /*0-9*/);
       const intPart = input.slice(start, --idx);
       if (
         (char = input.charCodeAt(idx)) === 46 /*'.'*/ ||
