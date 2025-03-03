@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.1.2
+
+### Patch Changes
+
+- Remove sourcemaps' `sourcesContent` from published package
+  Submitted by [@kitten](https://github.com/kitten) (See [#56](https://github.com/0no-co/graphql.web/pull/56))
+
 ## 1.1.1
 
 ### Patch Changes
