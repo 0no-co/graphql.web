@@ -421,6 +421,10 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
     idx++;
     ignored();
     do {
+      let _description: ast.StringValueNode | undefined;
+      if (input.charCodeAt(idx) === 34 /*'"'*/) {
+        _description = value(true) as ast.StringValueNode;
+      }
       if (input.charCodeAt(idx++) !== 36 /*'$'*/) throw error('Variable');
       const name = nameNode();
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('VariableDefinition');
@@ -433,7 +437,7 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
         _defaultValue = value(true);
       }
       ignored();
-      vars.push({
+      const varDef: any = {
         kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
         variable: {
           kind: 'Variable' as Kind.VARIABLE,
@@ -442,7 +446,11 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
         type: _type,
         defaultValue: _defaultValue,
         directives: directives(true),
-      });
+      };
+      if (_description) {
+        varDef.description = _description;
+      }
+      vars.push(varDef);
     } while (input.charCodeAt(idx) !== 41 /*')'*/);
     idx++;
     ignored();
@@ -450,12 +458,12 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
   }
 }
 
-function fragmentDefinition(): ast.FragmentDefinitionNode {
+function fragmentDefinition(description?: ast.StringValueNode): ast.FragmentDefinitionNode {
   const name = nameNode();
   if (input.charCodeAt(idx++) !== 111 /*'o'*/ || input.charCodeAt(idx++) !== 110 /*'n'*/)
     throw error('FragmentDefinition');
   ignored();
-  return {
+  const fragDef: any = {
     kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
     name,
     typeCondition: {
@@ -465,12 +473,22 @@ function fragmentDefinition(): ast.FragmentDefinitionNode {
     directives: directives(false),
     selectionSet: selectionSetStart(),
   };
+  if (description) {
+    fragDef.description = description;
+  }
+  return fragDef;
 }
 
 function definitions(): ast.DefinitionNode[] {
   const _definitions: ast.ExecutableDefinitionNode[] = [];
   do {
+    let _description: ast.StringValueNode | undefined;
+    if (input.charCodeAt(idx) === 34 /*'"'*/) {
+      _description = value(true) as ast.StringValueNode;
+    }
     if (input.charCodeAt(idx) === 123 /*'{'*/) {
+      // Anonymous operations can't have descriptions
+      if (_description) throw error('Document');
       idx++;
       ignored();
       _definitions.push({
@@ -485,7 +503,7 @@ function definitions(): ast.DefinitionNode[] {
       const definition = name();
       switch (definition) {
         case 'fragment':
-          _definitions.push(fragmentDefinition());
+          _definitions.push(fragmentDefinition(_description));
           break;
         case 'query':
         case 'mutation':
@@ -499,14 +517,18 @@ function definitions(): ast.DefinitionNode[] {
           ) {
             name = nameNode();
           }
-          _definitions.push({
+          const opDef: ast.OperationDefinitionNode = {
             kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
             operation: definition as OperationTypeNode,
             name,
             variableDefinitions: variableDefinitions(),
             directives: directives(false),
             selectionSet: selectionSetStart(),
-          });
+          };
+          if (_description) {
+            opDef.description = _description;
+          }
+          _definitions.push(opDef);
           break;
         default:
           throw error('Document');
