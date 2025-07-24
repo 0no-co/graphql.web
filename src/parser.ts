@@ -437,7 +437,7 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
         _defaultValue = value(true);
       }
       ignored();
-      const varDef: any = {
+      const varDef: ast.VariableDefinitionNode = {
         kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
         variable: {
           kind: 'Variable' as Kind.VARIABLE,
@@ -463,7 +463,7 @@ function fragmentDefinition(description?: ast.StringValueNode): ast.FragmentDefi
   if (input.charCodeAt(idx++) !== 111 /*'o'*/ || input.charCodeAt(idx++) !== 110 /*'n'*/)
     throw error('FragmentDefinition');
   ignored();
-  const fragDef: any = {
+  const fragDef: ast.FragmentDefinitionNode = {
     kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
     name,
     typeCondition: {

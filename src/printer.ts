@@ -50,8 +50,8 @@ let LF = '\n';
 const nodes = {
   OperationDefinition(node: OperationDefinitionNode): string {
     let out: string = '';
-    if ((node as any).description) {
-      out += nodes.StringValue((node as any).description) + '\n';
+    if (node.description) {
+      out += nodes.StringValue(node.description) + '\n';
     }
     out += node.operation;
     if (node.name) out += ' ' + node.name.value;
@@ -66,8 +66,8 @@ const nodes = {
   },
   VariableDefinition(node: VariableDefinitionNode): string {
     let out = '';
-    if ((node as any).description) {
-      out += nodes.StringValue((node as any).description) + ' ';
+    if (node.description) {
+      out += nodes.StringValue(node.description) + ' ';
     }
     out += nodes.Variable!(node.variable) + ': ' + _print(node.type);
     if (node.defaultValue) out += ' = ' + _print(node.defaultValue);
@@ -160,8 +160,8 @@ const nodes = {
   },
   FragmentDefinition(node: FragmentDefinitionNode): string {
     let out = '';
-    if ((node as any).description) {
-      out += nodes.StringValue((node as any).description) + '\n';
+    if (node.description) {
+      out += nodes.StringValue(node.description) + '\n';
     }
     out += 'fragment ' + node.name.value;
     out += ' on ' + node.typeCondition.name.value;
