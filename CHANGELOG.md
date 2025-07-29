@@ -1,5 +1,17 @@
 # @0no-co/graphql.web
 
+## 1.2.0
+
+### Minor Changes
+
+- Add support for executable definitions as defined in https://github.com/graphql/graphql-spec/pull/1170
+  Submitted by [@JoviDeCroock](https://github.com/JoviDeCroock) (See [#59](https://github.com/0no-co/graphql.web/pull/59))
+
+### Patch Changes
+
+- Handle trailing comment ending in EOF (end of input)
+  Submitted by [@kitten](https://github.com/kitten) (See [#62](https://github.com/0no-co/graphql.web/pull/62))
+
 ## 1.1.2
 
 ### Patch Changes
