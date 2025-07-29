@@ -1,7 +1,7 @@
 {
   "name": "@0no-co/graphql.web",
   "description": "A spec-compliant client-side GraphQL implementation",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "author": "0no.co <hi@0no.co>",
   "source": "./src/index.ts",
   "main": "./dist/graphql.web",
