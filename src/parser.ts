@@ -60,7 +60,7 @@ function ignored() {
     char === 65279 /*'\ufeff'*/;
     char = input.charCodeAt(idx++) | 0
   ) {
-    if (char === 35 /*'#'*/) while ((char = input.charCodeAt(idx++)) !== 10 && char !== 13);
+    if (char === 35 /*'#'*/) while ((char = input.charCodeAt(idx++) | 0) && char !== 10 && char !== 13);
   }
   idx--;
 }
