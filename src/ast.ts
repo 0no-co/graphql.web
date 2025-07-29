@@ -103,11 +103,12 @@ export type ExecutableDefinitionNode = Or<
 >;
 
 export type OperationDefinitionNode = Or<
-  GraphQL.OperationDefinitionNode,
+  GraphQL.OperationDefinitionNode & { description?: StringValueNode },
   {
     readonly kind: Kind.OPERATION_DEFINITION;
     readonly operation: OperationTypeNode;
     readonly name?: NameNode;
+    readonly description?: StringValueNode;
     readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly selectionSet: SelectionSetNode;
@@ -116,12 +117,13 @@ export type OperationDefinitionNode = Or<
 >;
 
 export type VariableDefinitionNode = Or<
-  GraphQL.VariableDefinitionNode,
+  GraphQL.VariableDefinitionNode & { description?: StringValueNode },
   {
     readonly kind: Kind.VARIABLE_DEFINITION;
     readonly variable: VariableNode;
     readonly type: TypeNode;
     readonly defaultValue?: ConstValueNode;
+    readonly description?: StringValueNode;
     readonly directives?: ReadonlyArray<ConstDirectiveNode>;
     readonly loc?: Location;
   }
@@ -205,10 +207,11 @@ export type InlineFragmentNode = Or<
 >;
 
 export type FragmentDefinitionNode = Or<
-  GraphQL.FragmentDefinitionNode,
+  GraphQL.FragmentDefinitionNode & { description?: StringValueNode },
   {
     readonly kind: Kind.FRAGMENT_DEFINITION;
     readonly name: NameNode;
+    readonly description?: StringValueNode;
     readonly typeCondition: NamedTypeNode;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly selectionSet: SelectionSetNode;

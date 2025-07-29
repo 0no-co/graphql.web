@@ -49,7 +49,11 @@ let LF = '\n';
 
 const nodes = {
   OperationDefinition(node: OperationDefinitionNode): string {
-    let out: string = node.operation;
+    let out: string = '';
+    if (node.description) {
+      out += nodes.StringValue(node.description) + '\n';
+    }
+    out += node.operation;
     if (node.name) out += ' ' + node.name.value;
     if (node.variableDefinitions && node.variableDefinitions.length) {
       if (!node.name) out += ' ';
@@ -57,12 +61,15 @@ const nodes = {
     }
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
-    return out !== 'query'
-      ? out + ' ' + nodes.SelectionSet(node.selectionSet)
-      : nodes.SelectionSet(node.selectionSet);
+    const selectionSet = nodes.SelectionSet(node.selectionSet);
+    return out !== 'query' ? out + ' ' + selectionSet : selectionSet;
   },
   VariableDefinition(node: VariableDefinitionNode): string {
-    let out = nodes.Variable!(node.variable) + ': ' + _print(node.type);
+    let out = '';
+    if (node.description) {
+      out += nodes.StringValue(node.description) + ' ';
+    }
+    out += nodes.Variable!(node.variable) + ': ' + _print(node.type);
     if (node.defaultValue) out += ' = ' + _print(node.defaultValue);
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
@@ -152,7 +159,11 @@ const nodes = {
     return out;
   },
   FragmentDefinition(node: FragmentDefinitionNode): string {
-    let out = 'fragment ' + node.name.value;
+    let out = '';
+    if (node.description) {
+      out += nodes.StringValue(node.description) + '\n';
+    }
+    out += 'fragment ' + node.name.value;
     out += ' on ' + node.typeCondition.name.value;
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
