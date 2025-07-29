@@ -10,6 +10,14 @@ describe('parse', () => {
     expect(doc).toMatchSnapshot();
   });
 
+  it('parses unexpected EOF', () => {
+    expect(() => parse('#')).toThrow();
+    expect(() => parse(' ')).toThrow();
+    expect(() => parse('q($')).toThrow();
+    expect(() => parse('{x{')).toThrow();
+    expect(() => parse('#\n')).toThrow();
+  });
+
   it('parses basic documents', () => {
     expect(() => parse('{')).toThrow();
     expect(() => parse('{}x  ')).toThrow();
