@@ -8,7 +8,6 @@ export declare enum Kind {
   SELECTION_SET = 'SelectionSet',
   FIELD = 'Field',
   ARGUMENT = 'Argument',
-  FRAGMENT_ARGUMENT = 'FragmentArgument',
   /** Fragments */
   FRAGMENT_SPREAD = 'FragmentSpread',
   INLINE_FRAGMENT = 'InlineFragment',

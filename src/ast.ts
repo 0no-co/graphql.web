@@ -27,53 +27,54 @@ import type {
   InputObjectTypeExtensionNode,
 } from './schemaAst';
 
-export type ASTNode = Or<
-  GraphQL.ASTNode,
-  | NameNode
-  | DocumentNode
-  | OperationDefinitionNode
-  | VariableDefinitionNode
-  | VariableNode
-  | SelectionSetNode
-  | FieldNode
-  | ArgumentNode
-  | FragmentSpreadNode
-  | FragmentArgumentNode
-  | InlineFragmentNode
-  | FragmentDefinitionNode
-  | IntValueNode
-  | FloatValueNode
-  | StringValueNode
-  | BooleanValueNode
-  | NullValueNode
-  | EnumValueNode
-  | ListValueNode
-  | ObjectValueNode
-  | ObjectFieldNode
-  | DirectiveNode
-  | NamedTypeNode
-  | ListTypeNode
-  | NonNullTypeNode
-  | SchemaDefinitionNode
-  | OperationTypeDefinitionNode
-  | ScalarTypeDefinitionNode
-  | ObjectTypeDefinitionNode
-  | FieldDefinitionNode
-  | InputValueDefinitionNode
-  | InterfaceTypeDefinitionNode
-  | UnionTypeDefinitionNode
-  | EnumTypeDefinitionNode
-  | EnumValueDefinitionNode
-  | InputObjectTypeDefinitionNode
-  | DirectiveDefinitionNode
-  | SchemaExtensionNode
-  | ScalarTypeExtensionNode
-  | ObjectTypeExtensionNode
-  | InterfaceTypeExtensionNode
-  | UnionTypeExtensionNode
-  | EnumTypeExtensionNode
-  | InputObjectTypeExtensionNode
->;
+export type ASTNode =
+  | Or<
+      GraphQL.ASTNode,
+      | NameNode
+      | DocumentNode
+      | OperationDefinitionNode
+      | VariableDefinitionNode
+      | VariableNode
+      | SelectionSetNode
+      | FieldNode
+      | ArgumentNode
+      | FragmentSpreadNode
+      | InlineFragmentNode
+      | FragmentDefinitionNode
+      | IntValueNode
+      | FloatValueNode
+      | StringValueNode
+      | BooleanValueNode
+      | NullValueNode
+      | EnumValueNode
+      | ListValueNode
+      | ObjectValueNode
+      | ObjectFieldNode
+      | DirectiveNode
+      | NamedTypeNode
+      | ListTypeNode
+      | NonNullTypeNode
+      | SchemaDefinitionNode
+      | OperationTypeDefinitionNode
+      | ScalarTypeDefinitionNode
+      | ObjectTypeDefinitionNode
+      | FieldDefinitionNode
+      | InputValueDefinitionNode
+      | InterfaceTypeDefinitionNode
+      | UnionTypeDefinitionNode
+      | EnumTypeDefinitionNode
+      | EnumValueDefinitionNode
+      | InputObjectTypeDefinitionNode
+      | DirectiveDefinitionNode
+      | SchemaExtensionNode
+      | ScalarTypeExtensionNode
+      | ObjectTypeExtensionNode
+      | InterfaceTypeExtensionNode
+      | UnionTypeExtensionNode
+      | EnumTypeExtensionNode
+      | InputObjectTypeExtensionNode
+    >
+  | FragmentArgumentNode;
 
 export type NameNode = Or<
   GraphQL.NameNode,
@@ -148,10 +149,7 @@ export type SelectionSetNode = Or<
   }
 >;
 
-export declare type SelectionNode = Or<
-  GraphQL.SelectionNode,
-  FieldNode | FragmentSpreadNode | InlineFragmentNode
->;
+export declare type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
 export type FieldNode = Or<
   GraphQL.FieldNode,
@@ -187,7 +185,7 @@ export type ConstArgumentNode = Or<
 >;
 
 export type FragmentArgumentNode = {
-  readonly kind: Kind.FRAGMENT_ARGUMENT;
+  readonly kind: 'FragmentArgument';
   readonly name: NameNode;
   readonly value: ValueNode;
   readonly loc?: Location;
@@ -222,13 +220,14 @@ export type FragmentDefinitionNode = Or<
     readonly kind: Kind.FRAGMENT_DEFINITION;
     readonly name: NameNode;
     readonly description?: StringValueNode;
-    readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
     readonly typeCondition: NamedTypeNode;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly selectionSet: SelectionSetNode;
     readonly loc?: Location;
   }
->;
+> & {
+  readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
+};
 
 export type ValueNode = Or<
   GraphQL.ValueNode,
