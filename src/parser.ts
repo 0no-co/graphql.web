@@ -25,7 +25,6 @@ function advance(pattern: RegExp) {
 }
 
 const leadingRe = / +(?=[^\s])/y;
-const nameRe = /[A-Za-z_][0-9A-Za-z_]*/y;
 function blockString(string: string) {
   const lines = string.split('\n');
   let out = '';
@@ -471,27 +470,21 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
 }
 
 function fragmentDefinition(description?: ast.StringValueNode): ast.FragmentDefinitionNode {
-  let _name: string | undefined;
-  let _condition: string | undefined;
-  if ((_name = advance(nameRe)) == null) throw error('FragmentDefinition');
+  const name = nameNode();
   const _variableDefinitions = variableDefinitions();
-  if (advance(nameRe) !== 'on') throw error('FragmentDefinition');
-  ignored();
-  if ((_condition = advance(nameRe)) == null) throw error('FragmentDefinition');
-  ignored();
-  const _directives = directives(false);
-  if (input.charCodeAt(idx++) !== 123 /*'{'*/) throw error('FragmentDefinition');
+  if (input.charCodeAt(idx++) !== 111 /*'o'*/ || input.charCodeAt(idx++) !== 110 /*'n'*/)
+    throw error('FragmentDefinition');
   ignored();
   const fragDef: ast.FragmentDefinitionNode = {
     kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
-    name: { kind: 'Name' as Kind.NAME, value: _name },
+    name,
     typeCondition: {
       kind: 'NamedType' as Kind.NAMED_TYPE,
-      name: { kind: 'Name' as Kind.NAME, value: _condition },
+      name: nameNode(),
     },
     variableDefinitions: _variableDefinitions,
-    directives: _directives,
-    selectionSet: selectionSet(),
+    directives: directives(false),
+    selectionSet: selectionSetStart(),
   };
   if (description) {
     fragDef.description = description;
