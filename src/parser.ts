@@ -246,9 +246,12 @@ function value(constant: boolean): ast.ValueNode {
   };
 }
 
-function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
+function arguments_(
+  constant: boolean,
+  fragmentArgument?: boolean
+): ast.ArgumentNode[] | ast.FragmentArgumentNode[] | undefined {
   if (input.charCodeAt(idx) === 40 /*'('*/) {
-    const args: ast.ArgumentNode[] = [];
+    const args: ast.ArgumentNode[] | ast.FragmentArgumentNode[] = [];
     idx++;
     ignored();
     do {
@@ -256,7 +259,9 @@ function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
       args.push({
-        kind: 'Argument' as Kind.ARGUMENT,
+        kind: fragmentArgument
+          ? ('FragmentArgument' as Kind.FRAGMENT_ARGUMENT)
+          : ('Argument' as Kind.ARGUMENT),
         name,
         value: value(constant),
       });
@@ -358,7 +363,8 @@ function selectionSet(): ast.SelectionSetNode {
             selections.push({
               kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
               name: nameNode(),
-              arguments: arguments_(false),
+              // @ts-expect-error
+              arguments: arguments_(false, true) as readonly ast.FragmentArgumentNode[],
               directives: directives(false),
             });
           }
@@ -379,7 +385,8 @@ function selectionSet(): ast.SelectionSetNode {
           selections.push({
             kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
             name: nameNode(),
-            arguments: arguments_(false),
+            // @ts-expect-error
+            arguments: arguments_(false, true) as readonly ast.FragmentArgumentNode[],
             directives: directives(false),
           });
       }

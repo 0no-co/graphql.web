@@ -244,7 +244,7 @@ describe('parse', () => {
         },
         arguments: [
           {
-            kind: 'Argument',
+            kind: 'FragmentArgument',
             name: {
               kind: 'Name',
               value: 'varA',
@@ -255,7 +255,7 @@ describe('parse', () => {
             },
           },
           {
-            kind: 'Argument',
+            kind: 'FragmentArgument',
             name: {
               kind: 'Name',
               value: 'varB',

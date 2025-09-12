@@ -38,6 +38,7 @@ export type ASTNode = Or<
   | FieldNode
   | ArgumentNode
   | FragmentSpreadNode
+  | FragmentArgumentNode
   | InlineFragmentNode
   | FragmentDefinitionNode
   | IntValueNode
@@ -185,6 +186,13 @@ export type ConstArgumentNode = Or<
   }
 >;
 
+export type FragmentArgumentNode = {
+  readonly kind: Kind.FRAGMENT_ARGUMENT;
+  readonly name: NameNode;
+  readonly value: ValueNode;
+  readonly loc?: Location;
+};
+
 export type FragmentSpreadNode = Or<
   GraphQL.FragmentSpreadNode,
   {
@@ -194,7 +202,7 @@ export type FragmentSpreadNode = Or<
     readonly loc?: Location;
   }
 > & {
-  readonly arguments?: ReadonlyArray<ArgumentNode>;
+  readonly arguments?: ReadonlyArray<FragmentArgumentNode>;
 };
 
 export type InlineFragmentNode = Or<
