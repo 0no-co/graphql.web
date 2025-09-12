@@ -190,7 +190,7 @@ describe('print', () => {
         },
         arguments: [
           {
-            kind: 'Argument',
+            kind: 'FragmentArgument',
             name: {
               kind: 'Name',
               value: 'var',

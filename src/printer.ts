@@ -24,6 +24,7 @@ import type {
   NamedTypeNode,
   ListTypeNode,
   NonNullTypeNode,
+  FragmentArgumentNode,
 } from './ast';
 
 function mapJoin<T>(value: readonly T[], joiner: string, mapper: (value: T) => string): string {
@@ -47,7 +48,10 @@ const MAX_LINE_LENGTH = 80;
 
 let LF = '\n';
 
-function Arguments(length: number, node: readonly ArgumentNode[]): string {
+function Arguments(
+  length: number,
+  node: readonly ArgumentNode[] | readonly FragmentArgumentNode[]
+): string {
   const args = mapJoin(node, ', ', nodes.Argument);
   if (length + args.length + 2 > MAX_LINE_LENGTH) {
     return '(' + (LF += '  ') + mapJoin(node, LF, nodes.Argument) + (LF = LF.slice(0, -2)) + ')';
@@ -138,7 +142,7 @@ const nodes = {
   SelectionSet(node: SelectionSetNode): string {
     return '{' + (LF += '  ') + mapJoin(node.selections, LF, _print) + (LF = LF.slice(0, -2)) + '}';
   },
-  Argument(node: ArgumentNode): string {
+  Argument(node: ArgumentNode | FragmentArgumentNode): string {
     return node.name.value + ': ' + _print(node.value);
   },
   FragmentSpread(node: FragmentSpreadNode): string {
