@@ -70,8 +70,8 @@ importers:
         specifier: npm:graphql@^15.8.0
         version: graphql@15.8.0
       graphql16:
-        specifier: npm:graphql@^16.8.1
-        version: graphql@16.8.1
+        specifier: npm:graphql@^16.12.0
+        version: graphql@16.12.0
       graphql17:
         specifier: npm:graphql@^17.0.0-alpha.3
         version: graphql@17.0.0-alpha.3
@@ -1435,6 +1435,10 @@ packages:
   graphql@15.8.0:
     resolution: {integrity: sha512-5gghUc24tP9HRznNpV2+FIoq3xKkj5dTQqf4v0CpdPbFVwFkWoxOM+o+2OC9ZSvjEMTjfmG9QT+gcvggTwW1zw==}
     engines: {node: '>= 10.x'}
+
+  graphql@16.12.0:
+    resolution: {integrity: sha512-DKKrynuQRne0PNpEbzuEdHlYOMksHSUI8Zc9Unei5gTsMNA2/vMpoMz/yKba50pejK56qj98qM0SjYxAKi13gQ==}
+    engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
   graphql@16.8.1:
     resolution: {integrity: sha512-59LZHPdGZVh695Ud9lRzPBVTtlX9ZCV150Er2W43ro37wVof0ctenSaskPPjN7lVTIN8mSZt8PHUNKZuNQUuxw==}
@@ -4131,6 +4135,8 @@ snapshots:
   graphemer@1.4.0: {}
 
   graphql@15.8.0: {}
+
+  graphql@16.12.0: {}
 
   graphql@16.8.1: {}
 

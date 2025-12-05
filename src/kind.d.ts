@@ -58,7 +58,7 @@ export declare enum Kind {
   MEMBER_COORDINATE = 'MemberCoordinate',
   ARGUMENT_COORDINATE = 'ArgumentCoordinate',
   DIRECTIVE_COORDINATE = 'DirectiveCoordinate',
-  DIRECTIVE_ARGUMENT_COORDINATE = 'DirectiveArgumentCoordinate', 
+  DIRECTIVE_ARGUMENT_COORDINATE = 'DirectiveArgumentCoordinate',
 }
 
 export declare enum OperationTypeNode {
