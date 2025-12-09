@@ -2,7 +2,7 @@ import type * as GraphQL from 'graphql';
 
 import type { Or } from './types';
 
-export declare enum _Kind {
+export declare enum Kind {
   /** Name */
   NAME = 'Name',
   /** Document */
@@ -59,7 +59,9 @@ export declare enum _Kind {
   INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension',
 }
 
-export type Kind = Or<GraphQL.Kind, _Kind>;
+type NativeKind = Or<GraphQL.Kind, Kind>;
+import Kind = NativeKind;
+export { Kind };
 
 export declare enum OperationTypeNode {
   QUERY = 'query',
