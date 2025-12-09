@@ -65,10 +65,6 @@ export declare enum Kind {
   DIRECTIVE_ARGUMENT_COORDINATE = 'DirectiveArgumentCoordinate',
 }
 
-type NativeKind = Or<GraphQL.Kind, Kind>;
-import Kind = NativeKind;
-export { Kind };
-
 export declare enum OperationTypeNode {
   QUERY = 'query',
   MUTATION = 'mutation',
