@@ -97,6 +97,7 @@
     "graphql15": "npm:graphql@^15.8.0",
     "graphql16": "npm:graphql@^16.12.0",
     "graphql17": "npm:graphql@^17.0.0-alpha.9",
+    "graphql": "^16.12.0",
     "husky-v4": "^4.3.8",
     "jsr": "^0.12.1",
     "lint-staged": "^15.2.0",
