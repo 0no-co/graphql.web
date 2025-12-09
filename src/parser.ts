@@ -9,7 +9,7 @@ import type * as GraphQL from 'graphql';
 
 import type { Kind, OperationTypeNode } from './kind';
 import { GraphQLError } from './error';
-import type { Or, Location, Source } from './types';
+import type { Or, Location, Source, StringValueNode } from './types';
 import type * as ast from './ast';
 
 let input: string;
@@ -530,7 +530,7 @@ function definitions(): ast.DefinitionNode[] {
             selectionSet: selectionSetStart(),
           };
           if (_description) {
-            opDef.description = _description;
+            (opDef as { description?: StringValueNode }).description = _description;
           }
           _definitions.push(opDef);
           break;

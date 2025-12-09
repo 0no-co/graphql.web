@@ -99,11 +99,12 @@ export type NameNode = Or<
 >;
 
 export type DocumentNode = Or<
-  GraphQL.DocumentNode,
+  GraphQL.DocumentNode & { readonly tokenCount?: number },
   {
     readonly kind: Kind.DOCUMENT;
     readonly definitions: ReadonlyArray<DefinitionNode>;
     readonly loc?: Location;
+    readonly tokenCount?: number;
   }
 >;
 
@@ -118,7 +119,7 @@ export type ExecutableDefinitionNode = Or<
 >;
 
 export type OperationDefinitionNode = Or<
-  GraphQL.OperationDefinitionNode & { description?: StringValueNode },
+  GraphQL.OperationDefinitionNode & { readonly description?: StringValueNode },
   {
     readonly kind: Kind.OPERATION_DEFINITION;
     readonly operation: OperationTypeNode;
