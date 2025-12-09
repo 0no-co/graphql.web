@@ -4,9 +4,12 @@
  * in graphql.js it will only parse the query language, but not the schema
  * language.
  */
+
+import type * as GraphQL from 'graphql';
+
 import type { Kind, OperationTypeNode } from './kind';
 import { GraphQLError } from './error';
-import type { Location, Source } from './types';
+import type { Or, Location, Source } from './types';
 import type * as ast from './ast';
 
 let input: string;
@@ -84,7 +87,7 @@ function name(): string {
 
 function nameNode(): ast.NameNode {
   return {
-    kind: 'Name' as Kind.NAME,
+    kind: 'Name' as Or<GraphQL.Kind.NAME, Kind.NAME>,
     value: name(),
   };
 }
@@ -106,7 +109,7 @@ function value(constant: boolean): ast.ValueNode {
       idx++;
       ignored();
       return {
-        kind: 'ListValue' as Kind.LIST,
+        kind: 'ListValue' as Or<GraphQL.Kind.LIST, Kind.LIST>,
         values,
       };
 
@@ -119,7 +122,7 @@ function value(constant: boolean): ast.ValueNode {
         if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('ObjectField');
         ignored();
         fields.push({
-          kind: 'ObjectField' as Kind.OBJECT_FIELD,
+          kind: 'ObjectField' as Or<GraphQL.Kind.OBJECT_FIELD, Kind.OBJECT_FIELD>,
           name,
           value: value(constant),
         });
@@ -127,7 +130,7 @@ function value(constant: boolean): ast.ValueNode {
       idx++;
       ignored();
       return {
-        kind: 'ObjectValue' as Kind.OBJECT,
+        kind: 'ObjectValue' as Or<GraphQL.Kind.OBJECT, Kind.OBJECT>,
         fields,
       };
 
@@ -135,7 +138,7 @@ function value(constant: boolean): ast.ValueNode {
       if (constant) throw error('Variable');
       idx++;
       return {
-        kind: 'Variable' as Kind.VARIABLE,
+        kind: 'Variable' as Or<GraphQL.Kind.VARIABLE, Kind.VARIABLE>,
         name: nameNode(),
       };
 
@@ -145,7 +148,7 @@ function value(constant: boolean): ast.ValueNode {
         if ((match = advance(restBlockStringRe)) == null) throw error('StringValue');
         ignored();
         return {
-          kind: 'StringValue' as Kind.STRING,
+          kind: 'StringValue' as Or<GraphQL.Kind.STRING, Kind.STRING>,
           value: blockString(match.slice(0, -3)),
           block: true,
         };
@@ -164,7 +167,7 @@ function value(constant: boolean): ast.ValueNode {
         match = input.slice(start, idx);
         ignored();
         return {
-          kind: 'StringValue' as Kind.STRING,
+          kind: 'StringValue' as Or<GraphQL.Kind.STRING, Kind.STRING>,
           value: isComplex ? (JSON.parse(match) as string) : match.slice(1, -1),
           block: false,
         };
@@ -193,13 +196,13 @@ function value(constant: boolean): ast.ValueNode {
         if ((match = advance(floatPartRe)) == null) throw error('FloatValue');
         ignored();
         return {
-          kind: 'FloatValue' as Kind.FLOAT,
+          kind: 'FloatValue' as Or<GraphQL.Kind.FLOAT, Kind.FLOAT>,
           value: intPart + match,
         };
       } else {
         ignored();
         return {
-          kind: 'IntValue' as Kind.INT,
+          kind: 'IntValue' as Or<GraphQL.Kind.INT, Kind.INT>,
           value: intPart,
         };
       }
@@ -212,7 +215,7 @@ function value(constant: boolean): ast.ValueNode {
       ) {
         idx += 4;
         ignored();
-        return { kind: 'NullValue' as Kind.NULL };
+        return { kind: 'NullValue' as Or<GraphQL.Kind.NULL, Kind.NULL> };
       } else break;
 
     case 116: // 't'
@@ -223,7 +226,7 @@ function value(constant: boolean): ast.ValueNode {
       ) {
         idx += 4;
         ignored();
-        return { kind: 'BooleanValue' as Kind.BOOLEAN, value: true };
+        return { kind: 'BooleanValue' as Or<GraphQL.Kind.BOOLEAN, Kind.BOOLEAN>, value: true };
       } else break;
 
     case 102: // 'f'
@@ -235,12 +238,12 @@ function value(constant: boolean): ast.ValueNode {
       ) {
         idx += 5;
         ignored();
-        return { kind: 'BooleanValue' as Kind.BOOLEAN, value: false };
+        return { kind: 'BooleanValue' as Or<GraphQL.Kind.BOOLEAN, Kind.BOOLEAN>, value: false };
       } else break;
   }
 
   return {
-    kind: 'EnumValue' as Kind.ENUM,
+    kind: 'EnumValue' as Or<GraphQL.Kind.ENUM, Kind.ENUM>,
     value: name(),
   };
 }
@@ -255,7 +258,7 @@ function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
       if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('Argument');
       ignored();
       args.push({
-        kind: 'Argument' as Kind.ARGUMENT,
+        kind: 'Argument' as Or<GraphQL.Kind.ARGUMENT, Kind.ARGUMENT>,
         name,
         value: value(constant),
       });
@@ -275,7 +278,7 @@ function directives(constant: boolean): ast.DirectiveNode[] | undefined {
     do {
       idx++;
       directives.push({
-        kind: 'Directive' as Kind.DIRECTIVE,
+        kind: 'Directive' as Or<GraphQL.Kind.DIRECTIVE, Kind.DIRECTIVE>,
         name: nameNode(),
         arguments: arguments_(constant),
       });
@@ -292,7 +295,7 @@ function type(): ast.TypeNode {
     ignored();
   }
   let type: ast.TypeNode = {
-    kind: 'NamedType' as Kind.NAMED_TYPE,
+    kind: 'NamedType' as Or<GraphQL.Kind.NAMED_TYPE, Kind.NAMED_TYPE>,
     name: nameNode(),
   };
   do {
@@ -300,7 +303,7 @@ function type(): ast.TypeNode {
       idx++;
       ignored();
       type = {
-        kind: 'NonNullType' as Kind.NON_NULL_TYPE,
+        kind: 'NonNullType' as Or<GraphQL.Kind.NON_NULL_TYPE, Kind.NON_NULL_TYPE>,
         type: type as ast.NamedTypeNode | ast.ListTypeNode,
       } satisfies ast.NonNullTypeNode;
     }
@@ -308,7 +311,7 @@ function type(): ast.TypeNode {
       if (input.charCodeAt(idx++) !== 93 /*']'*/) throw error('NamedType');
       ignored();
       type = {
-        kind: 'ListType' as Kind.LIST_TYPE,
+        kind: 'ListType' as Or<GraphQL.Kind.LIST_TYPE, Kind.LIST_TYPE>,
         type: type as ast.NamedTypeNode | ast.ListTypeNode,
       } satisfies ast.ListTypeNode;
     }
@@ -333,7 +336,7 @@ function selectionSet(): ast.SelectionSetNode {
       switch (input.charCodeAt(idx)) {
         case 64 /*'@'*/:
           selections.push({
-            kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
+            kind: 'InlineFragment' as Or<GraphQL.Kind.INLINE_FRAGMENT, Kind.INLINE_FRAGMENT>,
             typeCondition: undefined,
             directives: directives(false),
             selectionSet: selectionSetStart(),
@@ -345,9 +348,9 @@ function selectionSet(): ast.SelectionSetNode {
             idx += 2;
             ignored();
             selections.push({
-              kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
+              kind: 'InlineFragment' as Or<GraphQL.Kind.INLINE_FRAGMENT, Kind.INLINE_FRAGMENT>,
               typeCondition: {
-                kind: 'NamedType' as Kind.NAMED_TYPE,
+                kind: 'NamedType' as Or<GraphQL.Kind.NAMED_TYPE, Kind.NAMED_TYPE>,
                 name: nameNode(),
               },
               directives: directives(false),
@@ -355,7 +358,7 @@ function selectionSet(): ast.SelectionSetNode {
             });
           } else {
             selections.push({
-              kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
+              kind: 'FragmentSpread' as Or<GraphQL.Kind.FRAGMENT_SPREAD, Kind.FRAGMENT_SPREAD>,
               name: nameNode(),
               directives: directives(false),
             });
@@ -366,7 +369,7 @@ function selectionSet(): ast.SelectionSetNode {
           idx++;
           ignored();
           selections.push({
-            kind: 'InlineFragment' as Kind.INLINE_FRAGMENT,
+            kind: 'InlineFragment' as Or<GraphQL.Kind.INLINE_FRAGMENT, Kind.INLINE_FRAGMENT>,
             typeCondition: undefined,
             directives: undefined,
             selectionSet: selectionSet(),
@@ -375,7 +378,7 @@ function selectionSet(): ast.SelectionSetNode {
 
         default:
           selections.push({
-            kind: 'FragmentSpread' as Kind.FRAGMENT_SPREAD,
+            kind: 'FragmentSpread' as Or<GraphQL.Kind.FRAGMENT_SPREAD, Kind.FRAGMENT_SPREAD>,
             name: nameNode(),
             directives: directives(false),
           });
@@ -398,7 +401,7 @@ function selectionSet(): ast.SelectionSetNode {
         _selectionSet = selectionSet();
       }
       selections.push({
-        kind: 'Field' as Kind.FIELD,
+        kind: 'Field' as Or<GraphQL.Kind.FIELD, Kind.FIELD>,
         alias,
         name,
         arguments: _arguments,
@@ -410,7 +413,7 @@ function selectionSet(): ast.SelectionSetNode {
   idx++;
   ignored();
   return {
-    kind: 'SelectionSet' as Kind.SELECTION_SET,
+    kind: 'SelectionSet' as Or<GraphQL.Kind.SELECTION_SET, Kind.SELECTION_SET>,
     selections,
   };
 }
@@ -439,9 +442,9 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
       }
       ignored();
       const varDef: ast.VariableDefinitionNode = {
-        kind: 'VariableDefinition' as Kind.VARIABLE_DEFINITION,
+        kind: 'VariableDefinition' as Or<GraphQL.Kind.VARIABLE_DEFINITION, Kind.VARIABLE_DEFINITION>,
         variable: {
-          kind: 'Variable' as Kind.VARIABLE,
+          kind: 'Variable' as Or<GraphQL.Kind.VARIABLE, Kind.VARIABLE>,
           name,
         },
         type: _type,
@@ -465,10 +468,10 @@ function fragmentDefinition(description?: ast.StringValueNode): ast.FragmentDefi
     throw error('FragmentDefinition');
   ignored();
   const fragDef: ast.FragmentDefinitionNode = {
-    kind: 'FragmentDefinition' as Kind.FRAGMENT_DEFINITION,
+    kind: 'FragmentDefinition' as Or<GraphQL.Kind.FRAGMENT_DEFINITION, Kind.FRAGMENT_DEFINITION>,
     name,
     typeCondition: {
-      kind: 'NamedType' as Kind.NAMED_TYPE,
+      kind: 'NamedType' as Or<GraphQL.Kind.NAMED_TYPE, Kind.NAMED_TYPE>,
       name: nameNode(),
     },
     directives: directives(false),
@@ -493,7 +496,7 @@ function definitions(): ast.DefinitionNode[] {
       idx++;
       ignored();
       _definitions.push({
-        kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
+        kind: 'OperationDefinition' as Or<GraphQL.Kind.OPERATION_DEFINITION, Kind.OPERATION_DEFINITION>,
         operation: 'query' as OperationTypeNode.QUERY,
         name: undefined,
         variableDefinitions: undefined,
@@ -519,7 +522,7 @@ function definitions(): ast.DefinitionNode[] {
             name = nameNode();
           }
           const opDef: ast.OperationDefinitionNode = {
-            kind: 'OperationDefinition' as Kind.OPERATION_DEFINITION,
+            kind: 'OperationDefinition' as Or<GraphQL.Kind.OPERATION_DEFINITION, Kind.OPERATION_DEFINITION>,
             operation: definition as OperationTypeNode,
             name,
             variableDefinitions: variableDefinitions(),
@@ -552,12 +555,12 @@ export function parse(
   ignored();
   if (options && options.noLocation) {
     return {
-      kind: 'Document' as Kind.DOCUMENT,
+      kind: 'Document' as Or<GraphQL.Kind.DOCUMENT, Kind.DOCUMENT>,
       definitions: definitions(),
     };
   } else {
     return {
-      kind: 'Document' as Kind.DOCUMENT,
+      kind: 'Document' as Or<GraphQL.Kind.DOCUMENT, Kind.DOCUMENT>,
       definitions: definitions(),
       loc: {
         start: 0,
