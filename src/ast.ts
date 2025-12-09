@@ -27,6 +27,15 @@ import type {
   InputObjectTypeExtensionNode,
 } from './schemaAst';
 
+import type {
+  SchemaCoordinateNode,
+  TypeCoordinateNode,
+  MemberCoordinateNode,
+  ArgumentCoordinateNode,
+  DirectiveCoordinateNode,
+  DirectiveArgumentCoordinateNode,
+} from './coordinateAst';
+
 export type ASTNode = Or<
   GraphQL.ASTNode,
   | NameNode
@@ -72,6 +81,12 @@ export type ASTNode = Or<
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
+  | SchemaCoordinateNode
+  | TypeCoordinateNode
+  | MemberCoordinateNode
+  | ArgumentCoordinateNode
+  | DirectiveCoordinateNode
+  | DirectiveArgumentCoordinateNode
 >;
 
 export type NameNode = Or<
