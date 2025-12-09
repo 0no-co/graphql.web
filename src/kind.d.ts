@@ -1,4 +1,8 @@
-export declare enum Kind {
+import type * as GraphQL from 'graphql';
+
+import type { Or } from './types';
+
+export declare enum _Kind {
   /** Name */
   NAME = 'Name',
   /** Document */
@@ -54,6 +58,8 @@ export declare enum Kind {
   ENUM_TYPE_EXTENSION = 'EnumTypeExtension',
   INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension',
 }
+
+export type Kind = Or<GraphQL.Kind, _Kind>;
 
 export declare enum OperationTypeNode {
   QUERY = 'query',
