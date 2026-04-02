@@ -9,7 +9,8 @@ import type * as GraphQL from 'graphql';
 
 import type { Kind, OperationTypeNode } from './kind';
 import { GraphQLError } from './error';
-import type { Or, Location, Source, StringValueNode } from './types';
+import type { Or, Location, Source } from './types';
+import type { StringValueNode } from './ast';
 import type * as ast from './ast';
 
 let input: string;
