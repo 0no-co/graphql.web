@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.3.2
+
+### Patch Changes
+
+- ⚠️ Fix regression on using `Kind` without `graphql` types resolving
+  Submitted by [@kitten](https://github.com/kitten) (See [#73](https://github.com/0no-co/graphql.web/pull/73))
+
 ## 1.3.1
 
 ### Patch Changes
