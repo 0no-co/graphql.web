@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.3.1
+
+### Patch Changes
+
+- Update typescript (and rollup-plugin-dts) to fix bundled `d.ts` output's `kind` types
+  Submitted by [@kitten](https://github.com/kitten) (See [#71](https://github.com/0no-co/graphql.web/pull/71))
+
 ## 1.3.0
 
 ### Minor Changes
