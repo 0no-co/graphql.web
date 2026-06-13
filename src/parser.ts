@@ -443,7 +443,10 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
       }
       ignored();
       const varDef: ast.VariableDefinitionNode = {
-        kind: 'VariableDefinition' as Or<GraphQL.Kind.VARIABLE_DEFINITION, Kind.VARIABLE_DEFINITION>,
+        kind: 'VariableDefinition' as Or<
+          GraphQL.Kind.VARIABLE_DEFINITION,
+          Kind.VARIABLE_DEFINITION
+        >,
         variable: {
           kind: 'Variable' as Or<GraphQL.Kind.VARIABLE, Kind.VARIABLE>,
           name,
@@ -497,7 +500,10 @@ function definitions(): ast.DefinitionNode[] {
       idx++;
       ignored();
       _definitions.push({
-        kind: 'OperationDefinition' as Or<GraphQL.Kind.OPERATION_DEFINITION, Kind.OPERATION_DEFINITION>,
+        kind: 'OperationDefinition' as Or<
+          GraphQL.Kind.OPERATION_DEFINITION,
+          Kind.OPERATION_DEFINITION
+        >,
         operation: 'query' as OperationTypeNode.QUERY,
         name: undefined,
         variableDefinitions: undefined,
@@ -523,7 +529,10 @@ function definitions(): ast.DefinitionNode[] {
             name = nameNode();
           }
           const opDef: ast.OperationDefinitionNode = {
-            kind: 'OperationDefinition' as Or<GraphQL.Kind.OPERATION_DEFINITION, Kind.OPERATION_DEFINITION>,
+            kind: 'OperationDefinition' as Or<
+              GraphQL.Kind.OPERATION_DEFINITION,
+              Kind.OPERATION_DEFINITION
+            >,
             operation: definition as OperationTypeNode,
             name,
             variableDefinitions: variableDefinitions(),
