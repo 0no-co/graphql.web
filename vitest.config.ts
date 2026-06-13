@@ -14,6 +14,7 @@ export default defineConfig({
         '**/__tests__/**',
         '**/*.d.ts',
         'src/ast.ts',
+        'src/coordinateAst.ts',
         'src/index.ts',
         'src/schemaAst.ts',
         'src/types.ts',

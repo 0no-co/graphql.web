@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "graphql": ["node_modules/graphql16old"],
+    },
+  },
+  "include": ["index.ts"],
+}
