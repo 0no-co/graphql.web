@@ -39,7 +39,7 @@
   "scripts": {
     "test": "vitest test",
     "bench": "vitest bench --typecheck.enabled=false",
-    "check": "tsc",
+    "check": "tsc && tsc -p fixtures/graphql16-old && tsc -p fixtures/graphql16-new",
     "lint": "eslint --ext=js,ts .",
     "build": "rollup -c scripts/rollup.config.mjs",
     "clean": "rimraf dist node_modules/.cache",
@@ -95,6 +95,8 @@
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-tsdoc": "^0.2.17",
     "graphql15": "npm:graphql@^15.8.0",
+    "graphql16old": "npm:graphql@16.11.0",
+    "graphql16new": "npm:graphql@16.12.0",
     "graphql16": "npm:graphql@^16.12.0",
     "graphql17": "npm:graphql@^17.0.0-alpha.9",
     "graphql": "^16.12.0",
