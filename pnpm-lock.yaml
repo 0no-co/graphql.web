@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      graphql:
-        specifier: ^14.0.0 || ^15.0.0 || ^16.0.0
-        version: 16.8.1
     devDependencies:
       '@actions/core':
         specifier: ^1.11.1
@@ -66,15 +62,24 @@ importers:
       eslint-plugin-tsdoc:
         specifier: ^0.2.17
         version: 0.2.17
+      graphql:
+        specifier: ^16.12.0
+        version: 16.12.0
       graphql15:
         specifier: npm:graphql@^15.8.0
         version: graphql@15.8.0
       graphql16:
-        specifier: npm:graphql@^16.8.1
-        version: graphql@16.8.1
+        specifier: npm:graphql@^16.12.0
+        version: graphql@16.12.0
+      graphql16new:
+        specifier: npm:graphql@16.12.0
+        version: graphql@16.12.0
+      graphql16old:
+        specifier: npm:graphql@16.11.0
+        version: graphql@16.11.0
       graphql17:
-        specifier: npm:graphql@^17.0.0-alpha.3
-        version: graphql@17.0.0-alpha.3
+        specifier: npm:graphql@^17.0.0-alpha.9
+        version: graphql@17.0.0-alpha.9
       husky-v4:
         specifier: ^4.3.8
         version: 4.3.8
@@ -1436,12 +1441,16 @@ packages:
     resolution: {integrity: sha512-5gghUc24tP9HRznNpV2+FIoq3xKkj5dTQqf4v0CpdPbFVwFkWoxOM+o+2OC9ZSvjEMTjfmG9QT+gcvggTwW1zw==}
     engines: {node: '>= 10.x'}
 
-  graphql@16.8.1:
-    resolution: {integrity: sha512-59LZHPdGZVh695Ud9lRzPBVTtlX9ZCV150Er2W43ro37wVof0ctenSaskPPjN7lVTIN8mSZt8PHUNKZuNQUuxw==}
+  graphql@16.11.0:
+    resolution: {integrity: sha512-mS1lbMsxgQj6hge1XZ6p7GPhbrtFwUFYi3wRzXAC/FmYnyXMTvvI3td3rjmQ2u8ewXueaSvRPWaEcgVVOT9Jnw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
-  graphql@17.0.0-alpha.3:
-    resolution: {integrity: sha512-+3gX29B8lQ3Q1KkABSgy6CyBF7nTMObd6EHwcIHg4Pkz03D5hy/eJiHjD/io68+ti3goJmpF+OLJXKaUkgReXg==}
+  graphql@16.12.0:
+    resolution: {integrity: sha512-DKKrynuQRne0PNpEbzuEdHlYOMksHSUI8Zc9Unei5gTsMNA2/vMpoMz/yKba50pejK56qj98qM0SjYxAKi13gQ==}
+    engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
+
+  graphql@17.0.0-alpha.9:
+    resolution: {integrity: sha512-jVK1BsvX5pUIEpRDlEgeKJr80GAxl3B8ISsFDjXHtl2xAxMXVGTEFF4Q4R8NH0Gw7yMwcHDndkNjoNT5CbwHKA==}
     engines: {node: ^16.19.0 || ^18.14.0 || >=19.7.0}
 
   has-bigints@1.0.2:
@@ -4132,9 +4141,11 @@ snapshots:
 
   graphql@15.8.0: {}
 
-  graphql@16.8.1: {}
+  graphql@16.11.0: {}
 
-  graphql@17.0.0-alpha.3: {}
+  graphql@16.12.0: {}
+
+  graphql@17.0.0-alpha.9: {}
 
   has-bigints@1.0.2: {}
 
