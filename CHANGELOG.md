@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.3.0
+
+### Minor Changes
+
+- Update AST types to comply with schema coordinates additions (`graphql@^16.12.0`)
+  Submitted by [@kitten](https://github.com/kitten) (See [#66](https://github.com/0no-co/graphql.web/pull/66))
+
 ## 1.2.0
 
 ### Minor Changes
