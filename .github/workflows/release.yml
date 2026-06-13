@@ -93,6 +93,9 @@ jobs:
           version: 9
           run_install: false
 
+      - name: Update npm
+        run: npm install -g npm@11.15.0
+
       - name: Get pnpm store directory
         id: pnpm-store
         run: echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
@@ -152,6 +155,9 @@ jobs:
         with:
           version: 9
           run_install: false
+
+      - name: Update npm
+        run: npm install -g npm@11.15.0
 
       - name: Get pnpm store directory
         id: pnpm-store
