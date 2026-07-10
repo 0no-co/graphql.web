@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.3.3
+
+### Patch Changes
+
+- Allow `undefined` on `DocumentNode.tokenCount` to preserve compatibility with `graphql` when `exactOptionalPropertyTypes` is enabled
+  Submitted by [@JoviDeCroock](https://github.com/JoviDeCroock) (See [#77](https://github.com/0no-co/graphql.web/pull/77))
+
 ## 1.3.2
 
 ### Patch Changes
