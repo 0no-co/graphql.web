@@ -99,12 +99,12 @@ export type NameNode = Or<
 >;
 
 export type DocumentNode = Or<
-  GraphQL.DocumentNode & { readonly tokenCount?: number },
+  GraphQL.DocumentNode & { readonly tokenCount?: number | undefined },
   {
     readonly kind: Kind.DOCUMENT;
     readonly definitions: ReadonlyArray<DefinitionNode>;
     readonly loc?: Location;
-    readonly tokenCount?: number;
+    readonly tokenCount?: number | undefined;
   }
 >;
 
