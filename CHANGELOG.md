@@ -1,5 +1,12 @@
 # @0no-co/graphql.web
 
+## 1.3.4
+
+### Patch Changes
+
+- Add GraphQL 17 to the supported peer dependency range
+  Submitted by [@JoviDeCroock](https://github.com/JoviDeCroock) (See [#80](https://github.com/0no-co/graphql.web/pull/80))
+
 ## 1.3.3
 
 ### Patch Changes
