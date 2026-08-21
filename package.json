@@ -23,7 +23,7 @@
     "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0"
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0"
   },
   "peerDependenciesMeta": {
     "graphql": {
@@ -39,7 +39,7 @@
   "scripts": {
     "test": "vitest test",
     "bench": "vitest bench --typecheck.enabled=false",
-    "check": "tsc && tsc -p fixtures/graphql16-old && tsc -p fixtures/graphql16-new",
+    "check": "tsc && tsc -p fixtures/graphql16-old && tsc -p fixtures/graphql16-new && tsc -p fixtures/graphql17",
     "lint": "eslint --ext=js,ts .",
     "build": "rollup -c scripts/rollup.config.mjs",
     "clean": "rimraf dist node_modules/.cache",
@@ -98,7 +98,7 @@
     "graphql16old": "npm:graphql@16.11.0",
     "graphql16new": "npm:graphql@16.12.0",
     "graphql16": "npm:graphql@^16.12.0",
-    "graphql17": "npm:graphql@^17.0.0-alpha.9",
+    "graphql17": "npm:graphql@^17.0.0",
     "graphql": "^16.12.0",
     "husky-v4": "^4.3.8",
     "jsr": "^0.12.1",
