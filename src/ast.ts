@@ -46,6 +46,7 @@ export type ASTNode = Or<
   | SelectionSetNode
   | FieldNode
   | ArgumentNode
+  | FragmentArgumentNode
   | FragmentSpreadNode
   | InlineFragmentNode
   | FragmentDefinitionNode
@@ -164,7 +165,7 @@ export type SelectionSetNode = Or<
 >;
 
 export declare type SelectionNode = Or<
-  GraphQL.SelectionNode,
+  Exclude<GraphQL.SelectionNode, GraphQL.FragmentSpreadNode> | FragmentSpreadNode,
   FieldNode | FragmentSpreadNode | InlineFragmentNode
 >;
 
@@ -201,11 +202,24 @@ export type ConstArgumentNode = Or<
   }
 >;
 
+/** A fragment argument, as passed on a fragment spread.
+ * @see https://github.com/graphql/graphql-spec/pull/1081
+ */
+export type FragmentArgumentNode = {
+  readonly kind: Kind.FRAGMENT_ARGUMENT;
+  readonly name: NameNode;
+  readonly value: ValueNode;
+  readonly loc?: Location;
+};
+
 export type FragmentSpreadNode = Or<
-  GraphQL.FragmentSpreadNode,
+  GraphQL.FragmentSpreadNode & {
+    readonly arguments?: ReadonlyArray<FragmentArgumentNode>;
+  },
   {
     readonly kind: Kind.FRAGMENT_SPREAD;
     readonly name: NameNode;
+    readonly arguments?: ReadonlyArray<FragmentArgumentNode>;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly loc?: Location;
   }
@@ -223,11 +237,15 @@ export type InlineFragmentNode = Or<
 >;
 
 export type FragmentDefinitionNode = Or<
-  GraphQL.FragmentDefinitionNode & { description?: StringValueNode },
+  GraphQL.FragmentDefinitionNode & {
+    description?: StringValueNode;
+    readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
+  },
   {
     readonly kind: Kind.FRAGMENT_DEFINITION;
     readonly name: NameNode;
     readonly description?: StringValueNode;
+    readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
     readonly typeCondition: NamedTypeNode;
     readonly directives?: ReadonlyArray<DirectiveNode>;
     readonly selectionSet: SelectionSetNode;

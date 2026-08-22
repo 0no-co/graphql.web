@@ -20,6 +20,7 @@ export declare const Kind: (IsGraphQLAny extends true ? {} : typeof GraphQL.Kind
   readonly SELECTION_SET: GraphQLKind<'SELECTION_SET', 'SelectionSet'>;
   readonly FIELD: GraphQLKind<'FIELD', 'Field'>;
   readonly ARGUMENT: GraphQLKind<'ARGUMENT', 'Argument'>;
+  readonly FRAGMENT_ARGUMENT: GraphQLKind<'FRAGMENT_ARGUMENT', 'FragmentArgument'>;
   readonly FRAGMENT_SPREAD: GraphQLKind<'FRAGMENT_SPREAD', 'FragmentSpread'>;
   readonly INLINE_FRAGMENT: GraphQLKind<'INLINE_FRAGMENT', 'InlineFragment'>;
   readonly FRAGMENT_DEFINITION: GraphQLKind<'FRAGMENT_DEFINITION', 'FragmentDefinition'>;
@@ -95,6 +96,7 @@ export declare namespace Kind {
   export type FIELD = GraphQLKind<'FIELD', 'Field'>;
   export type ARGUMENT = GraphQLKind<'ARGUMENT', 'Argument'>;
   /** Fragments */
+  export type FRAGMENT_ARGUMENT = GraphQLKind<'FRAGMENT_ARGUMENT', 'FragmentArgument'>;
   export type FRAGMENT_SPREAD = GraphQLKind<'FRAGMENT_SPREAD', 'FragmentSpread'>;
   export type INLINE_FRAGMENT = GraphQLKind<'INLINE_FRAGMENT', 'InlineFragment'>;
   export type FRAGMENT_DEFINITION = GraphQLKind<'FRAGMENT_DEFINITION', 'FragmentDefinition'>;

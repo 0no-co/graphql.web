@@ -94,3 +94,41 @@ export const graphqlVisit: typeof graphql.visit = visit;
 export const webVisit: typeof visit = graphql.visit;
 export const graphqlKind: typeof graphql.Kind = Kind;
 export const webKind: typeof Kind = graphql.Kind;
+
+export const fragmentArgumentsDocument: DocumentNode = {
+  kind: Kind.DOCUMENT,
+  definitions: [
+    {
+      kind: Kind.FRAGMENT_DEFINITION,
+      name: { kind: Kind.NAME, value: 'Fields' },
+      variableDefinitions: [
+        {
+          kind: Kind.VARIABLE_DEFINITION,
+          variable: { kind: Kind.VARIABLE, name: { kind: Kind.NAME, value: 'size' } },
+          type: {
+            kind: Kind.NON_NULL_TYPE,
+            type: { kind: Kind.NAMED_TYPE, name: { kind: Kind.NAME, value: 'Int' } },
+          },
+          defaultValue: { kind: Kind.INT, value: '64' },
+        },
+      ],
+      typeCondition: { kind: Kind.NAMED_TYPE, name: { kind: Kind.NAME, value: 'Product' } },
+      selectionSet: {
+        kind: Kind.SELECTION_SET,
+        selections: [
+          {
+            kind: Kind.FRAGMENT_SPREAD,
+            name: { kind: Kind.NAME, value: 'Image' },
+            arguments: [
+              {
+                kind: Kind.FRAGMENT_ARGUMENT,
+                name: { kind: Kind.NAME, value: 'size' },
+                value: { kind: Kind.VARIABLE, name: { kind: Kind.NAME, value: 'size' } },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+};

@@ -6,6 +6,7 @@ import type {
   SelectionSetNode,
   FieldNode,
   ArgumentNode,
+  FragmentArgumentNode,
   FragmentSpreadNode,
   InlineFragmentNode,
   VariableDefinitionNode,
@@ -144,8 +145,13 @@ const nodes = {
   Argument(node: ArgumentNode): string {
     return node.name.value + ': ' + _print(node.value);
   },
+  FragmentArgument(node: FragmentArgumentNode): string {
+    return node.name.value + ': ' + _print(node.value);
+  },
   FragmentSpread(node: FragmentSpreadNode): string {
     let out = '...' + node.name.value;
+    if (node.arguments && node.arguments.length)
+      out += '(' + mapJoin(node.arguments, ', ', nodes.FragmentArgument) + ')';
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
     return out;
@@ -164,6 +170,8 @@ const nodes = {
       out += nodes.StringValue(node.description) + '\n';
     }
     out += 'fragment ' + node.name.value;
+    if (node.variableDefinitions && node.variableDefinitions.length)
+      out += '(' + mapJoin(node.variableDefinitions, ', ', nodes.VariableDefinition) + ')';
     out += ' on ' + node.typeCondition.name.value;
     if (node.directives && node.directives.length)
       out += ' ' + mapJoin(node.directives, ' ', nodes.Directive);
