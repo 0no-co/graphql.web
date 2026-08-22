@@ -6,6 +6,7 @@ export const Kind = {
   SELECTION_SET: 'SelectionSet',
   FIELD: 'Field',
   ARGUMENT: 'Argument',
+  FRAGMENT_ARGUMENT: 'FragmentArgument',
   FRAGMENT_SPREAD: 'FragmentSpread',
   INLINE_FRAGMENT: 'InlineFragment',
   FRAGMENT_DEFINITION: 'FragmentDefinition',

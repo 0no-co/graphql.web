@@ -270,6 +270,27 @@ function arguments_(constant: boolean): ast.ArgumentNode[] | undefined {
   }
 }
 
+function fragmentArguments(): ast.FragmentArgumentNode[] | undefined {
+  if (input.charCodeAt(idx) === 40 /*'('*/) {
+    const args: ast.FragmentArgumentNode[] = [];
+    idx++;
+    ignored();
+    do {
+      const name = nameNode();
+      if (input.charCodeAt(idx++) !== 58 /*':'*/) throw error('FragmentArgument');
+      ignored();
+      args.push({
+        kind: 'FragmentArgument' as Kind.FRAGMENT_ARGUMENT,
+        name,
+        value: value(false),
+      });
+    } while (input.charCodeAt(idx) !== 41 /*')'*/);
+    idx++;
+    ignored();
+    return args;
+  }
+}
+
 function directives(constant: true): ast.ConstDirectiveNode[] | undefined;
 function directives(constant: boolean): ast.DirectiveNode[] | undefined;
 
@@ -358,9 +379,11 @@ function selectionSet(): ast.SelectionSetNode {
               selectionSet: selectionSetStart(),
             });
           } else {
+            const name = nameNode();
             selections.push({
               kind: 'FragmentSpread' as Or<GraphQL.Kind.FRAGMENT_SPREAD, Kind.FRAGMENT_SPREAD>,
-              name: nameNode(),
+              name,
+              arguments: fragmentArguments(),
               directives: directives(false),
             });
           }
@@ -377,12 +400,15 @@ function selectionSet(): ast.SelectionSetNode {
           });
           break;
 
-        default:
+        default: {
+          const name = nameNode();
           selections.push({
             kind: 'FragmentSpread' as Or<GraphQL.Kind.FRAGMENT_SPREAD, Kind.FRAGMENT_SPREAD>,
-            name: nameNode(),
+            name,
+            arguments: fragmentArguments(),
             directives: directives(false),
           });
+        }
       }
     } else {
       let name = nameNode();
@@ -468,12 +494,14 @@ function variableDefinitions(): ast.VariableDefinitionNode[] | undefined {
 
 function fragmentDefinition(description?: ast.StringValueNode): ast.FragmentDefinitionNode {
   const name = nameNode();
+  const _variableDefinitions = variableDefinitions();
   if (input.charCodeAt(idx++) !== 111 /*'o'*/ || input.charCodeAt(idx++) !== 110 /*'n'*/)
     throw error('FragmentDefinition');
   ignored();
   const fragDef: ast.FragmentDefinitionNode = {
     kind: 'FragmentDefinition' as Or<GraphQL.Kind.FRAGMENT_DEFINITION, Kind.FRAGMENT_DEFINITION>,
     name,
+    variableDefinitions: _variableDefinitions,
     typeCondition: {
       kind: 'NamedType' as Or<GraphQL.Kind.NAMED_TYPE, Kind.NAMED_TYPE>,
       name: nameNode(),

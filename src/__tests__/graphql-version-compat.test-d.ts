@@ -14,7 +14,9 @@ import type {
 
 describe('graphql@16.12 compatibility', () => {
   it('keeps Kind assignable after GraphQL added schema coordinate kinds', () => {
-    expectTypeOf<Kind>().toMatchTypeOf<graphql16new.Kind>();
+    // `Kind.FRAGMENT_ARGUMENT` is excluded, since fragment arguments are only modelled by
+    // GraphQL 17 and later, while every other kind must stay mutually assignable.
+    expectTypeOf<Exclude<Kind, Kind.FRAGMENT_ARGUMENT>>().toMatchTypeOf<graphql16new.Kind>();
     expectTypeOf<graphql16new.Kind>().toMatchTypeOf<Kind>();
     expectTypeOf<Kind.DOCUMENT>().toMatchTypeOf<graphql16new.Kind.DOCUMENT>();
     expectTypeOf<graphql16new.Kind.DOCUMENT>().toMatchTypeOf<Kind.DOCUMENT>();
