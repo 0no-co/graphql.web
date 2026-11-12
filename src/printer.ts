@@ -40,7 +40,10 @@ function printString(string: string): string {
 }
 
 function printBlockString(string: string): string {
-  return '"""\n' + string.replace(/"""/g, '\\"""') + '\n"""';
+  // Keep an indented first line on the opening line, since after a newline its
+  // indentation would be removed as common indentation when parsed again
+  const leadingLF = /^[ \t]/.test(string) ? '' : '\n';
+  return '"""' + leadingLF + string.replace(/"""/g, '\\"""') + '\n"""';
 }
 
 const MAX_LINE_LENGTH = 80;

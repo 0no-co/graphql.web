@@ -721,6 +721,29 @@ describe('parseValue', () => {
     expect(() => parseValue('"""')).toThrow();
   });
 
+  it('computes block string values like the spec', () => {
+    const blockValue = (source: string) => (parseValue(source) as any).value;
+
+    // first and last lines without indentation are kept
+    expect(blockValue('"""first line\n  second line"""')).toBe('first line\nsecond line');
+    expect(blockValue('"""\n  indented\nnot indented\n"""')).toBe('  indented\nnot indented');
+    // the first line keeps its own indentation
+    expect(blockValue('"""  a"""')).toBe('  a');
+    expect(blockValue('"""  a\n    b\n"""')).toBe('  a\nb');
+    // tabs count as indentation
+    expect(blockValue('"""\n\tx\n\ty\n"""')).toBe('x\ny');
+    // \r\n and \r are line terminators
+    expect(blockValue('"""\r\n  x\r\n  y\r\n"""')).toBe('x\ny');
+    expect(blockValue('"""\r  x\r  y\r"""')).toBe('x\ny');
+    // blank lines in between are kept, and lose their indentation
+    expect(blockValue('"""\n    a\n  \n    b\n"""')).toBe('a\n\nb');
+    expect(blockValue('"""  \n  \t\n"""')).toBe('');
+    // an escaped triple quote followed by more quotes
+    expect(blockValue('"""\\""""x"""')).toBe('""""x');
+    expect(() => parseValue('"""a\\\\"""')).toThrow();
+    expect(() => parseValue('"""\\""""')).toThrow();
+  });
+
   it('allows variables', () => {
     const result = parseValue('{ field: $var }');
     expect(result).toEqual({
