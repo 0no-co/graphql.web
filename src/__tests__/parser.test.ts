@@ -274,6 +274,20 @@ describe('parse', () => {
     );
   });
 
+  it('parses fragment spreads whose name starts with on', () => {
+    const doc = parse('{ me { ...onlineFields ...on_ ...on User { id } } }');
+    const selections = (doc.definitions[0] as any).selectionSet.selections[0].selectionSet
+      .selections;
+    expect(selections.map((s: any) => s.kind)).toEqual([
+      Kind.FRAGMENT_SPREAD,
+      Kind.FRAGMENT_SPREAD,
+      Kind.INLINE_FRAGMENT,
+    ]);
+    expect(selections[0].name.value).toBe('onlineFields');
+    expect(selections[1].name.value).toBe('on_');
+    expect(selections[2].typeCondition.name.value).toBe('User');
+  });
+
   it('parses inline fragments', () => {
     expect(() => parse('{ ... on Test }')).toThrow();
     expect(() => parse('{ ... {} }')).toThrow();
@@ -532,6 +546,22 @@ describe('parseValue', () => {
     expect(parseValue('n')).toEqual({ kind: Kind.ENUM, value: 'n' });
     expect(parseValue('f')).toEqual({ kind: Kind.ENUM, value: 'f' });
     expect(parseValue('t')).toEqual({ kind: Kind.ENUM, value: 't' });
+  });
+
+  it('parses enum values that start with null, true or false', () => {
+    expect(parseValue('nullsLast')).toEqual({ kind: Kind.ENUM, value: 'nullsLast' });
+    expect(parseValue('trueColor')).toEqual({ kind: Kind.ENUM, value: 'trueColor' });
+    expect(parseValue('falseStart')).toEqual({ kind: Kind.ENUM, value: 'falseStart' });
+    expect(parseValue('null_')).toEqual({ kind: Kind.ENUM, value: 'null_' });
+    expect(parseValue('true1')).toEqual({ kind: Kind.ENUM, value: 'true1' });
+    expect(parseValue('[null, true, false]')).toEqual({
+      kind: Kind.LIST,
+      values: [
+        { kind: Kind.NULL },
+        { kind: Kind.BOOLEAN, value: true },
+        { kind: Kind.BOOLEAN, value: false },
+      ],
+    });
   });
 
   it('parses list values', () => {

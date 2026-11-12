@@ -70,14 +70,20 @@ function ignored() {
   idx--;
 }
 
+function isNameChar(char: number): boolean {
+  return (
+    (char >= 48 /*'0'*/ && char <= 57) /*'9'*/ ||
+    (char >= 65 /*'A'*/ && char <= 90) /*'Z'*/ ||
+    char === 95 /*'_'*/ ||
+    (char >= 97 /*'a'*/ && char <= 122) /*'z'*/
+  );
+}
+
 function name(): string {
   const start = idx;
   for (
     let char = input.charCodeAt(idx++) | 0;
-    (char >= 48 /*'0'*/ && char <= 57) /*'9'*/ ||
-    (char >= 65 /*'A'*/ && char <= 90) /*'Z'*/ ||
-    char === 95 /*'_'*/ ||
-    (char >= 97 /*'a'*/ && char <= 122) /*'z'*/;
+    isNameChar(char);
     char = input.charCodeAt(idx++) | 0
   );
   if (start === idx - 1) throw error('Name');
@@ -212,7 +218,8 @@ function value(constant: boolean): ast.ValueNode {
       if (
         input.charCodeAt(idx + 1) === 117 &&
         input.charCodeAt(idx + 2) === 108 &&
-        input.charCodeAt(idx + 3) === 108
+        input.charCodeAt(idx + 3) === 108 &&
+        !isNameChar(input.charCodeAt(idx + 4))
       ) {
         idx += 4;
         ignored();
@@ -223,7 +230,8 @@ function value(constant: boolean): ast.ValueNode {
       if (
         input.charCodeAt(idx + 1) === 114 &&
         input.charCodeAt(idx + 2) === 117 &&
-        input.charCodeAt(idx + 3) === 101
+        input.charCodeAt(idx + 3) === 101 &&
+        !isNameChar(input.charCodeAt(idx + 4))
       ) {
         idx += 4;
         ignored();
@@ -235,7 +243,8 @@ function value(constant: boolean): ast.ValueNode {
         input.charCodeAt(idx + 1) === 97 &&
         input.charCodeAt(idx + 2) === 108 &&
         input.charCodeAt(idx + 3) === 115 &&
-        input.charCodeAt(idx + 4) === 101
+        input.charCodeAt(idx + 4) === 101 &&
+        !isNameChar(input.charCodeAt(idx + 5))
       ) {
         idx += 5;
         ignored();
@@ -345,7 +354,7 @@ function selectionSet(): ast.SelectionSetNode {
           break;
 
         case 111 /*'o'*/:
-          if (input.charCodeAt(idx + 1) === 110 /*'n'*/) {
+          if (input.charCodeAt(idx + 1) === 110 /*'n'*/ && !isNameChar(input.charCodeAt(idx + 2))) {
             idx += 2;
             ignored();
             selections.push({
