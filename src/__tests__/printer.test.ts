@@ -41,6 +41,21 @@ describe('printBlockString', () => {
     expect(printBlockString('test')).toEqual('"""\ntest\n"""');
     expect(printBlockString('\n')).toEqual('"""\n\n\n"""');
     expect(printBlockString('"""')).toEqual('"""\n\\"""\n"""');
+    expect(printBlockString('  a')).toEqual('"""  a\n"""');
+    expect(printBlockString('\tb')).toEqual('"""\tb\n"""');
+  });
+
+  it('keeps leading whitespace of block strings when printed and parsed again', () => {
+    const doc = parse('{ f(a: """  a""", b: """\n  x\n    y\n""", c: """  c\n    d\n""") }');
+    const printed = print(doc);
+    expect(printed).toBe(
+      '{\n  f(a: """  a\n  """, b: """\n  x\n    y\n  """, c: """  c\n  d\n  """)\n}'
+    );
+    for (const source of [printed, graphql16.print(doc)]) {
+      const args = (graphql16.parse(source).definitions[0] as any).selectionSet.selections[0]
+        .arguments;
+      expect(args.map((arg: any) => arg.value.value)).toEqual(['  a', 'x\n  y', '  c\nd']);
+    }
   });
 });
 

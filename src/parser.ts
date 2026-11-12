@@ -28,27 +28,26 @@ function advance(pattern: RegExp) {
   }
 }
 
-const leadingRe = / +(?=[^\s])/y;
+// See: https://spec.graphql.org/October2021/#BlockStringValue()
 function blockString(string: string) {
-  const lines = string.split('\n');
+  const lines = string.split(/\r\n?|\n/);
   let out = '';
-  let commonIndent = 0;
-  let firstNonEmptyLine = 0;
-  let lastNonEmptyLine = lines.length - 1;
+  let commonIndent = Infinity;
+  let firstNonEmptyLine = -1;
+  let lastNonEmptyLine = -1;
   for (let i = 0; i < lines.length; i++) {
-    leadingRe.lastIndex = 0;
-    if (leadingRe.test(lines[i])) {
-      if (i && (!commonIndent || leadingRe.lastIndex < commonIndent))
-        commonIndent = leadingRe.lastIndex;
-      firstNonEmptyLine = firstNonEmptyLine || i;
+    const indent = lines[i].search(/[^ \t]/);
+    if (indent > -1) {
+      if (i && indent < commonIndent) commonIndent = indent;
+      if (firstNonEmptyLine < 0) firstNonEmptyLine = i;
       lastNonEmptyLine = i;
     }
   }
-  for (let i = firstNonEmptyLine; i <= lastNonEmptyLine; i++) {
+  for (let i = firstNonEmptyLine; i > -1 && i <= lastNonEmptyLine; i++) {
     if (i !== firstNonEmptyLine) out += '\n';
-    out += lines[i].slice(commonIndent).replace(/\\"""/g, '"""');
+    out += i ? lines[i].slice(commonIndent) : lines[i];
   }
-  return out;
+  return out.replace(/\\"""/g, '"""');
 }
 
 // Note: This is equivalent to: /(?:[\s,]*|#[^\n\r]*)*/y
@@ -93,7 +92,7 @@ function nameNode(): ast.NameNode {
   };
 }
 
-const restBlockStringRe = /(?:"""|(?:[\s\S]*?[^\\])""")/y;
+const restBlockStringRe = /(?:[^"\\]|\\(?!""")|\\"""|"(?!""))*"""/y;
 const floatPartRe = /(?:(?:\.\d+)?[eE][+-]?\d+|\.\d+)/y;
 
 function value(constant: true): ast.ConstValueNode;
